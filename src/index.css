@@ -1,0 +1,177 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@theme {
+  --font-family-sans:
+    "Pretendard", system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+@font-face {
+  font-family: "Pretendard";
+  src: url("/fonts/PretendardVariable.woff2") format("woff2-variations");
+  font-weight: 45 920;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  /* 기본 텍스트 스타일 */
+  body {
+    @apply text-neutral-800 bg-white;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
+  }
+
+  /* 제목 스타일 */
+  .heading-1 {
+    @apply text-4xl font-bold leading-tight;
+  }
+
+  .heading-2 {
+    @apply text-3xl font-bold leading-tight;
+  }
+
+  .heading-3 {
+    @apply text-2xl font-semibold leading-snug;
+  }
+
+  .heading-4 {
+    @apply text-xl font-semibold leading-snug;
+  }
+
+  /* 본문 스타일 */
+  .body-large {
+    @apply text-lg font-normal leading-relaxed;
+  }
+
+  .body-base {
+    @apply text-base font-normal leading-normal;
+  }
+
+  .body-small {
+    @apply text-sm font-normal leading-normal;
+  }
+
+  /* 특수 텍스트 */
+  .caption {
+    @apply text-xs font-medium leading-normal text-neutral-600;
+  }
+
+  .label {
+    @apply text-sm font-medium leading-normal text-neutral-700;
+  }
+
+  /* 포커스 스타일 */
+  *:focus {
+    outline: 2px solid transparent;
+  }
+
+  *:focus-visible {
+    @apply ring-2 ring-primary-500 ring-offset-2;
+  }
+
+  /* 스크롤바 스타일 */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-neutral-100;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-neutral-300 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-neutral-400 transition-colors duration-base;
+  }
+}
+
+@layer components {
+  /* 버튼 기본 스타일 */
+  .btn {
+    @apply inline-flex items-center justify-center px-6 py-3 text-sm font-medium rounded-lg transition-all duration-base focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply btn bg-primary-500 text-white hover:bg-primary-600 focus-visible:ring-primary-500 active:bg-primary-700;
+  }
+
+  .btn-secondary {
+    @apply btn bg-transparent text-primary-700 border border-primary-500 hover:bg-primary-50 focus-visible:ring-primary-500 active:bg-primary-100;
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent text-neutral-700 hover:bg-neutral-100 focus-visible:ring-neutral-500 active:bg-neutral-200;
+  }
+
+  /* 입력 필드 스타일 */
+  .input {
+    @apply block w-full px-4 py-3 text-sm border border-neutral-300 rounded-lg placeholder:text-neutral-500 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 disabled:bg-neutral-50 disabled:text-neutral-500;
+  }
+
+  .input-error {
+    @apply border-error focus:border-error focus:ring-error;
+  }
+
+  /* 카드 스타일 */
+  .card {
+    @apply bg-white border border-neutral-200 rounded-lg p-6 shadow-sm;
+  }
+
+  .card-header {
+    @apply border-b border-neutral-200 pb-4 mb-6;
+  }
+
+  /* 레이아웃 */
+  .container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .page-layout {
+    @apply min-h-screen bg-neutral-50;
+  }
+
+  .page-content {
+    @apply container py-8;
+  }
+
+  /* 상태 표시 */
+  .status-success {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success-bg text-success border border-success-border;
+  }
+
+  .status-warning {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-warning-bg text-warning border border-warning-border;
+  }
+
+  .status-error {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-error-bg text-error border border-error-border;
+  }
+
+  .status-info {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-info-bg text-info border border-info-border;
+  }
+
+  /* 로딩 스피너 */
+  .spinner {
+    @apply animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full;
+  }
+
+  /* 폼 그룹 */
+  .form-group {
+    @apply space-y-2;
+  }
+
+  .form-error {
+    @apply text-sm text-error;
+  }
+
+  .form-helper {
+    @apply text-sm text-neutral-600;
+  }
+}
