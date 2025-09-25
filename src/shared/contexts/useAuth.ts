@@ -1,7 +1,7 @@
 import { createContext, useContext } from "react";
 import { type User, type Session } from "@supabase/supabase-js";
 import { type UserProfile } from "@/shared/lib/supabase";
-import type { SignUpData } from "@/features/auth/types/auth.types";
+import type { SignupFormData } from "@/features/auth/types/auth.types";
 
 // AuthContext 타입 정의
 export interface AuthContextType {
@@ -10,8 +10,9 @@ export interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (signUpData: SignUpData) => Promise<{ error: Error | null }>;
+  signUp: (signUpData: SignupFormData) => Promise<{ error: Error | null }>;
   signOut: () => Promise<{ error: Error | null }>;
+  forceSignOut: () => Promise<{ error: Error | null }>;
   refreshProfile: () => Promise<void>;
 }
 
@@ -23,6 +24,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(
 // useAuth 훅 정의
 export const useAuth = () => {
   const context = useContext(AuthContext);
+
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }

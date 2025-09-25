@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { type User, type Session } from "@supabase/supabase-js";
 import { supabase, type UserProfile } from "@/shared/lib/supabase";
-import type { SignUpData } from "@/features/auth/types/auth.types";
+import type { SignupFormData } from "@/features/auth/types/auth.types";
 import { AuthContext } from "./useAuth";
 
 interface AuthProviderProps {
@@ -15,71 +15,65 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   const [loading, setLoading] = useState(true);
 
   // 사용자 프로필 조회
-  const fetchUserProfile = async (
-    userId: string
-  ): Promise<UserProfile | null> => {
-    try {
-      const { data, error } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", userId)
-        .single();
+  // const fetchUserProfile = async (
+  //   userId: string
+  // ): Promise<UserProfile | null> => {
+  //   try {
+  //     const { data, error } = await supabase
+  //       .from("user_profile")
+  //       .select("*")
+  //       .eq("id", userId)
+  //       .single();
 
-      if (error) {
-        console.error("Error fetching user profile:", error);
-        return null;
-      }
+  //     if (error) {
+  //       console.warn("❌ User profile fetch error:", {
+  //         message: error.message,
+  //         details: error.details,
+  //         hint: error.hint,
+  //         code: error.code,
+  //       });
+  //       return null;
+  //     }
 
-      return data as UserProfile;
-    } catch (error) {
-      console.error("Error fetching user profile:", error);
-      return null;
-    }
-  };
+  //     return data as UserProfile;
+  //   } catch (error) {
+  //     console.warn("❌ Exception fetching user profile:", error);
+  //     return null;
+  //   }
+  // };
 
-  // 프로필 새로고침
+  // 프로필 새로고침 (현재 사용하지 않음 - user.user_metadata 사용)
   const refreshProfile = async () => {
     if (!user) return;
-    const profile = await fetchUserProfile(user.id);
-    setUserProfile(profile);
+    // Skip profile refresh since we're using user.user_metadata
+    setUserProfile(null);
   };
 
-  // 회원가입
-  const signUp = async (signUpData: SignUpData) => {
+  const signUp = async (formData: SignupFormData) => {
     try {
-      setLoading(true);
-
       const { data, error } = await supabase.auth.signUp({
-        email: signUpData.email,
-        password: signUpData.password,
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            name: formData.name, // raw_user_meta_data 로 들어감
+            agreedToTerms: formData.agreedToTerms,
+            agreedToPrivacy: formData.agreedToPrivacy,
+          },
+        },
       });
 
       if (error) {
-        return { error };
+        console.error("회원가입 실패:", error.message);
+        return { error: error as Error };
       }
 
-      // 사용자 프로필 생성
-      if (data.user) {
-        const { error: profileError } = await supabase.from("users").insert({
-          id: data.user.id,
-          email: signUpData.email,
-          name: signUpData.name,
-          credits: 0,
-          email_verified: false,
-          is_active: true,
-        });
-
-        if (profileError) {
-          console.error("Error creating user profile:", profileError);
-          return { error: new Error("프로필 생성에 실패했습니다.") };
-        }
-      }
-
+      // 이 시점에서 DB 트리거가 users 테이블에 자동으로 insert
+      console.log("회원가입 성공:", data.user);
       return { error: null };
-    } catch (error) {
-      return { error: error as Error };
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      console.error("알 수 없는 오류:", err);
+      return { error: err as Error };
     }
   };
 
@@ -102,7 +96,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         (async () => {
           try {
             await supabase
-              .from("users")
+              .from("user_profile")
               .update({
                 last_login_at: new Date().toISOString(),
                 updated_at: new Date().toISOString(),
@@ -140,6 +134,29 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
+  // 강제 로그아웃 (개발/디버깅용)
+  const forceSignOut = async () => {
+    try {
+      // 로컬 스토리지 정리
+      localStorage.clear();
+      sessionStorage.clear();
+
+      // Supabase 세션 정리
+      await supabase.auth.signOut();
+
+      // 상태 초기화
+      setUser(null);
+      setUserProfile(null);
+      setSession(null);
+
+      console.log("Force sign out completed");
+      return { error: null };
+    } catch (error) {
+      console.error("Force sign out error:", error);
+      return { error: error as Error };
+    }
+  };
+
   useEffect(() => {
     // 초기 세션 가져오기
     const getInitialSession = async () => {
@@ -147,12 +164,44 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         data: { session },
       } = await supabase.auth.getSession();
 
+      // Debug: 삭제된 사용자 감지 및 정리
+      if (session?.user) {
+        try {
+          // 사용자가 실제로 존재하는지 확인
+          const {
+            data: { user },
+            error,
+          } = await supabase.auth.getUser();
+
+          if (error || !user) {
+            console.warn(
+              "User no longer exists, clearing session:",
+              error?.message
+            );
+            await supabase.auth.signOut();
+            setSession(null);
+            setUser(null);
+            setUserProfile(null);
+            setLoading(false);
+            return;
+          }
+        } catch (error) {
+          console.warn("Error verifying user, clearing session:", error);
+          await supabase.auth.signOut();
+          setSession(null);
+          setUser(null);
+          setUserProfile(null);
+          setLoading(false);
+          return;
+        }
+      }
+
       setSession(session);
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        const profile = await fetchUserProfile(session.user.id);
-        setUserProfile(profile);
+        // Skip profile fetching since we're using user.user_metadata
+        setUserProfile(null);
       }
 
       setLoading(false);
@@ -170,8 +219,8 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        const profile = await fetchUserProfile(session.user.id);
-        setUserProfile(profile);
+        // Skip profile fetching since we're using user.user_metadata
+        setUserProfile(null);
       } else {
         setUserProfile(null);
       }
@@ -190,6 +239,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     signIn,
     signUp,
     signOut,
+    forceSignOut,
     refreshProfile,
   };
 

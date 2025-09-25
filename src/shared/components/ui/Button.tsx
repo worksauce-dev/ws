@@ -2,7 +2,7 @@ import { forwardRef } from "react";
 import { clsx } from "clsx";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "ghost";
+  variant?: "primary" | "secondary" | "outline" | "ghost";
   size?: "sm" | "md" | "lg";
   isLoading?: boolean;
   children: React.ReactNode;
@@ -29,6 +29,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         "bg-primary-500 text-white hover:bg-primary-600 focus-visible:ring-primary-500 active:bg-primary-700",
       secondary:
         "bg-transparent text-primary-700 border border-primary-500 hover:bg-primary-50 focus-visible:ring-primary-500 active:bg-primary-100",
+      outline:
+        "bg-transparent text-neutral-700 border border-neutral-300 hover:bg-neutral-50 focus-visible:ring-neutral-500 active:bg-neutral-100",
       ghost:
         "bg-transparent text-neutral-700 hover:bg-neutral-100 focus-visible:ring-neutral-500 active:bg-neutral-200",
     };

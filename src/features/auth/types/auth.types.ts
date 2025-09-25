@@ -1,12 +1,15 @@
-export interface SignUpData {
+export interface SignupFormData {
   email: string;
   password: string;
+  confirmPassword: string;
   name: string;
-  termsAccepted: boolean;
-  privacyAccepted: boolean;
+  agreedToTerms: boolean;
+  agreedToPrivacy: boolean;
 }
 
-export interface LoginData {
-  email: string;
-  password: string;
+export interface SignupStepProps {
+  onNext: () => void;
+  onPrev?: () => void;
+  formData: SignupFormData;
+  setFormData: (data: Partial<SignupFormData>) => void;
 }
