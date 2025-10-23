@@ -87,6 +87,7 @@ export const CreateGroupPage = () => {
     >
       <div className="max-w-7xl mx-auto">
         <form
+          id="create-group-form"
           onSubmit={handleSubmit}
           className="grid grid-cols-1 xl:grid-cols-3 gap-8 pb-24"
         >
@@ -117,7 +118,6 @@ export const CreateGroupPage = () => {
             form="create-group-form"
             variant="primary"
             size="md"
-            onClick={handleSubmit}
             disabled={groupForm.isSubmitting}
             isLoading={groupForm.isSubmitting}
           >

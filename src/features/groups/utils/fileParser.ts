@@ -13,6 +13,22 @@ export interface ParseResult {
   error?: string;
 }
 
+// 파일 업로드 제한 상수
+export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_MIME_TYPES = [
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
+  "application/vnd.ms-excel", // .xls
+];
+
+/**
+ * 파일 크기를 사람이 읽기 쉬운 형식으로 변환
+ */
+export const formatFileSize = (bytes: number): string => {
+  if (bytes < 1024) return `${bytes}B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
+};
+
 /**
  * Excel 파일을 파싱하여 지원자 목록을 추출합니다
  */
@@ -21,8 +37,30 @@ export const parseExcelFile = async (
   existingApplicants: Applicant[]
 ): Promise<ParseResult> => {
   try {
-    // 파일 형식 검증
-    if (!file.name.match(/\.(xlsx|xls)$/)) {
+    // 파일 크기 검증
+    if (file.size > MAX_FILE_SIZE) {
+      return {
+        success: false,
+        applicants: [],
+        duplicateEmails: [],
+        invalidRows: [],
+        error: `파일 크기가 너무 큽니다. 최대 ${formatFileSize(MAX_FILE_SIZE)}까지 업로드 가능합니다. (현재: ${formatFileSize(file.size)})`,
+      };
+    }
+
+    // MIME 타입 검증
+    if (file.type && !ALLOWED_MIME_TYPES.includes(file.type)) {
+      return {
+        success: false,
+        applicants: [],
+        duplicateEmails: [],
+        invalidRows: [],
+        error: "Excel 파일만 업로드 가능합니다 (.xlsx, .xls)",
+      };
+    }
+
+    // 파일 확장자 검증 (추가 안전장치)
+    if (!file.name.match(/\.(xlsx|xls)$/i)) {
       return {
         success: false,
         applicants: [],

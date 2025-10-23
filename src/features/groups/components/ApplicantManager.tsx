@@ -10,7 +10,11 @@ import { Button } from "@/shared/components/ui/Button";
 import { Checkbox } from "@/shared/components/ui/Checkbox";
 import { useToast } from "@/shared/components/ui/Toast";
 import { FileUploadZone } from "./FileUploadZone";
-import { formatParseResultMessage } from "../utils/fileParser";
+import {
+  formatParseResultMessage,
+  MAX_FILE_SIZE,
+  formatFileSize,
+} from "../utils/fileParser";
 import type { UseApplicantManagerReturn } from "../hooks/useApplicantManager";
 import type { UseFileUploadReturn } from "../hooks/useFileUpload";
 
@@ -333,6 +337,7 @@ export const ApplicantManager = ({
           <ul className="text-xs text-blue-700 space-y-1">
             <li>• 첫 번째 행에 헤더가 있어야 합니다</li>
             <li>• 헤더: '이름', '이메일' (또는 'name', 'email')</li>
+            <li>• 최대 파일 크기: {formatFileSize(MAX_FILE_SIZE)}</li>
             <li>• 중복 이메일은 자동으로 제외됩니다</li>
             <li>• 테스트 링크가 자동 발송됩니다</li>
           </ul>
