@@ -15,8 +15,8 @@ import {
   MAX_FILE_SIZE,
   formatFileSize,
 } from "../utils/fileParser";
-import type { UseApplicantManagerReturn } from "../hooks/useApplicantManager";
-import type { UseFileUploadReturn } from "../hooks/useFileUpload";
+import type { UseApplicantManagerReturn } from "../types/applicant.types";
+import type { UseFileUploadReturn } from "../types/fileUpload.types";
 
 interface ApplicantManagerProps {
   applicantManager: UseApplicantManagerReturn;
@@ -138,7 +138,10 @@ export const ApplicantManager = ({
                 type="text"
                 value={applicantManager.newApplicant.name}
                 onChange={e =>
-                  applicantManager.handleApplicantInputChange("name", e.target.value)
+                  applicantManager.handleApplicantInputChange(
+                    "name",
+                    e.target.value
+                  )
                 }
                 placeholder="예: 홍길동"
                 className="w-full pl-10 pr-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary focus:ring-opacity-50 focus:outline-none text-sm"
@@ -156,7 +159,10 @@ export const ApplicantManager = ({
                 type="email"
                 value={applicantManager.newApplicant.email}
                 onChange={e =>
-                  applicantManager.handleApplicantInputChange("email", e.target.value)
+                  applicantManager.handleApplicantInputChange(
+                    "email",
+                    e.target.value
+                  )
                 }
                 placeholder="example@email.com"
                 className="w-full pl-10 pr-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary focus:ring-opacity-50 focus:outline-none text-sm"
@@ -248,7 +254,9 @@ export const ApplicantManager = ({
                   <input
                     type="text"
                     value={applicantManager.searchTerm}
-                    onChange={e => applicantManager.setSearchTerm(e.target.value)}
+                    onChange={e =>
+                      applicantManager.setSearchTerm(e.target.value)
+                    }
                     placeholder="이름 또는 이메일로 검색"
                     className="w-full pl-10 pr-4 py-2.5 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary focus:ring-opacity-50 focus:outline-none text-sm"
                   />
@@ -282,7 +290,9 @@ export const ApplicantManager = ({
                     <div
                       key={applicant.id}
                       className={`flex items-center p-3 rounded-lg transition-colors duration-200 ${
-                        applicantManager.selectedApplicants.includes(applicant.id)
+                        applicantManager.selectedApplicants.includes(
+                          applicant.id
+                        )
                           ? "bg-primary-50 border border-primary-200"
                           : "bg-neutral-50 hover:bg-neutral-100"
                       }`}

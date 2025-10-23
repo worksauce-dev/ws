@@ -1,13 +1,13 @@
-import { WORK_TYPE_KEYWORDS } from "@/features/groups/const/workTypeKeywords";
-import { POSITION_OPTIONS } from "@/features/groups/const/positionOptions";
+import { WORK_TYPE_KEYWORDS } from "@/features/groups/constants/workTypeKeywords";
+import { POSITION_OPTIONS } from "@/features/groups/constants/positionOptions";
 import {
   SelectDropdown,
   SearchableSelectDropdown,
 } from "@/shared/components/ui/Dropdown";
 import { Tooltip } from "@/shared/components/ui/Tooltip";
 import { MdCheckCircle } from "react-icons/md";
-import type { UseGroupFormReturn } from "../hooks/useGroupForm";
-import type { PositionOption } from "../hooks/useCustomPosition";
+import type { UseGroupFormReturn } from "../types/group.types";
+import type { PositionOption } from "../types/group.types";
 
 interface GroupInfoFormProps {
   groupForm: UseGroupFormReturn;
@@ -36,7 +36,9 @@ export const GroupInfoForm = ({
             <input
               type="text"
               value={groupForm.formData.name}
-              onChange={e => groupForm.handleInputChange("name", e.target.value)}
+              onChange={e =>
+                groupForm.handleInputChange("name", e.target.value)
+              }
               placeholder="예: 2024년 3월 신입 개발자 채용"
               className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary focus:ring-opacity-50 focus:outline-none text-sm"
             />
@@ -115,9 +117,8 @@ export const GroupInfoForm = ({
             </label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {WORK_TYPE_KEYWORDS.map(type => {
-                const isSelected = groupForm.formData.preferredWorkTypes.includes(
-                  type.code
-                );
+                const isSelected =
+                  groupForm.formData.preferredWorkTypes.includes(type.code);
                 return (
                   <Tooltip
                     key={type.code}

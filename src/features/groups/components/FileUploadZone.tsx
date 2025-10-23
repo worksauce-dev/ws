@@ -1,5 +1,5 @@
 import { MdFileUpload, MdUpload } from "react-icons/md";
-import type { UseFileUploadReturn } from "../hooks/useFileUpload";
+import type { UseFileUploadReturn } from "../types/fileUpload.types";
 
 interface FileUploadZoneProps {
   fileUpload: UseFileUploadReturn;

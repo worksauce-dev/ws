@@ -1,43 +1,9 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-
-export interface GroupFormData {
-  name: string;
-  description: string;
-  position: string;
-  experienceLevel: string;
-  preferredWorkTypes: string[];
-  deadline: string;
-  autoReminder: string;
-}
-
-export interface UseGroupFormReturn {
-  // State
-  formData: GroupFormData;
-  isSubmitting: boolean;
-
-  // Actions
-  handleInputChange: (field: string, value: string) => void;
-  handleWorkTypeChange: (type: string, checked: boolean) => void;
-  handleSubmit: (
-    applicantsCount: number,
-    onSuccess?: () => void
-  ) => Promise<{ success: boolean; error?: string }>;
-  validateForm: (applicantsCount: number) => {
-    isValid: boolean;
-    error?: string;
-  };
-}
-
-const initialFormData: GroupFormData = {
-  name: "",
-  description: "",
-  position: "",
-  experienceLevel: "",
-  preferredWorkTypes: [],
-  deadline: "",
-  autoReminder: "",
-};
+import {
+  type GroupFormData,
+  type UseGroupFormReturn,
+} from "../types/group.types";
 
 /**
  * 그룹 정보 입력 훅
@@ -45,7 +11,15 @@ const initialFormData: GroupFormData = {
  */
 export const useGroupForm = (): UseGroupFormReturn => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState<GroupFormData>(initialFormData);
+  const [formData, setFormData] = useState<GroupFormData>({
+    name: "",
+    description: "",
+    position: "",
+    experienceLevel: "",
+    preferredWorkTypes: [],
+    deadline: "",
+    autoReminder: "",
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 입력 필드 변경
