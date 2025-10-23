@@ -76,10 +76,10 @@ export const isDuplicateEmail = (
 
 /**
  * 지원자 ID 생성
+ * crypto.randomUUID()를 사용하여 충돌 없는 고유 ID 생성
  */
-export const generateApplicantId = (index?: number): string => {
-  const timestamp = Date.now();
-  return index !== undefined ? `${timestamp}-${index}` : `${timestamp}`;
+export const generateApplicantId = (): string => {
+  return crypto.randomUUID();
 };
 
 /**
@@ -133,7 +133,7 @@ export const validateApplicants = (
 
     if (result.success) {
       valid.push({
-        id: generateApplicantId(index),
+        id: generateApplicantId(),
         name: result.data.name,
         email: result.data.email,
       });

@@ -115,7 +115,7 @@ export const parseExcelFile = async (
       }
 
       newApplicants.push({
-        id: generateApplicantId(i),
+        id: generateApplicantId(),
         name: validation.data.name,
         email: validation.data.email,
       });
