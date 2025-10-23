@@ -20,17 +20,13 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 });
 
-// 기본 타입들 (any로 간단하게)
 export type UserProfile = {
   id: string;
   email: string;
   name: string;
-  credits: number;
   created_at: string;
   updated_at: string;
-  last_login_at?: string | null;
   email_verified: boolean;
-  is_active: boolean;
 };
 
 export type Candidate = {
