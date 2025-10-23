@@ -5,7 +5,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "react-hot-toast";
+import { ToastProvider } from "@/shared/components/ui/Toast";
 import { AuthProvider } from "@/shared/contexts/AuthContext";
 import { useAuth } from "@/shared/contexts/useAuth";
 import { ProtectedRoute } from "@/shared/components/ProtectedRoute";
@@ -19,6 +19,9 @@ import { SignUpPage } from "@/features/auth/pages/SignUpPage";
 
 // Dashboard Pages
 import { DashboardPage } from "@/features/dashboard/pages/DashboardPage";
+import { DashboardDetail } from "@/features/dashboard/pages/DashboardDetail";
+import { CreateGroupPage } from "@/features/dashboard/pages/CreateGroupPage";
+import { ApplicantDetail } from "@/features/dashboard/pages/ApplicantDetail";
 
 // React Query 클라이언트 설정
 const queryClient = new QueryClient({
@@ -54,73 +57,77 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Router
-          future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        >
-          <div className="App">
-            <Routes>
-              {/* 랜딩페이지 - 메인 페이지 */}
-              <Route
-                path="/"
-                element={<LandingPage />} // PublicRoute 제거로 단순화
-              />
+        <ToastProvider>
+          <Router
+            future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+          >
+            <div className="App">
+              <Routes>
+                {/* 랜딩페이지 - 메인 페이지 */}
+                <Route
+                  path="/"
+                  element={<LandingPage />} // PublicRoute 제거로 단순화
+                />
 
-              {/* 인증 페이지들 - 로그인된 사용자는 대시보드로 리다이렉트 */}
-              <Route
-                path="/auth/login"
-                element={
-                  <PublicRoute>
-                    <LoginPage />
-                  </PublicRoute>
-                }
-              />
+                {/* 인증 페이지들 - 로그인된 사용자는 대시보드로 리다이렉트 */}
+                <Route
+                  path="/auth/login"
+                  element={
+                    <PublicRoute>
+                      <LoginPage />
+                    </PublicRoute>
+                  }
+                />
 
-              <Route
-                path="/auth/signup"
-                element={
-                  <PublicRoute>
-                    <SignUpPage />
-                  </PublicRoute>
-                }
-              />
+                <Route
+                  path="/auth/signup"
+                  element={
+                    <PublicRoute>
+                      <SignUpPage />
+                    </PublicRoute>
+                  }
+                />
 
-              {/* 보호된 페이지들 - 로그인 필요 */}
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <DashboardPage />
-                  </ProtectedRoute>
-                }
-              />
+                {/* 보호된 페이지들 - 로그인 필요 */}
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <DashboardPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard/create-group"
+                  element={
+                    <ProtectedRoute>
+                      <CreateGroupPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard/groups/:groupId"
+                  element={
+                    <ProtectedRoute>
+                      <DashboardDetail />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/applicant/detail"
+                  element={
+                    <ProtectedRoute>
+                      <ApplicantDetail />
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* 404 페이지 - 모든 잘못된 경로는 랜딩페이지로 리다이렉트 */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-
-            {/* 토스트 알림 */}
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 4000,
-                style: {
-                  background: "#363636",
-                  color: "#fff",
-                },
-                success: {
-                  style: {
-                    background: "#10b981",
-                  },
-                },
-                error: {
-                  style: {
-                    background: "#ef4444",
-                  },
-                },
-              }}
-            />
-          </div>
-        </Router>
+                {/* 404 페이지 - 모든 잘못된 경로는 랜딩페이지로 리다이렉트 */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </div>
+          </Router>
+        </ToastProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
