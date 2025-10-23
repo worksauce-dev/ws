@@ -87,6 +87,7 @@ export const CreateGroupPage = () => {
     >
       <div className="max-w-7xl mx-auto">
         <form
+          noValidate
           id="create-group-form"
           onSubmit={handleSubmit}
           className="grid grid-cols-1 xl:grid-cols-3 gap-8 pb-24"
