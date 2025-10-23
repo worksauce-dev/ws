@@ -54,21 +54,61 @@ export default {
         },
         // Status colors
         success: {
+          50: "oklch(95.8% 0.035 142.5)",
+          100: "oklch(91.5% 0.070 142.5)",
+          200: "oklch(85.2% 0.106 142.5)",
+          300: "oklch(77.8% 0.141 142.5)",
+          400: "oklch(71.7% 0.159 142.5)",
+          500: "oklch(65.7% 0.176 142.5)", // DEFAULT
+          600: "oklch(59.1% 0.158 142.5)",
+          700: "oklch(49.1% 0.131 142.5)",
+          800: "oklch(40.5% 0.108 142.5)",
+          900: "oklch(33.2% 0.089 142.5)",
           DEFAULT: "oklch(65.7% 0.176 142.5)",
           bg: "oklch(95.8% 0.035 142.5)",
           border: "oklch(85.2% 0.106 142.5)",
         },
         warning: {
+          50: "oklch(97.1% 0.027 85.4)",
+          100: "oklch(93.6% 0.055 85.4)",
+          200: "oklch(88.9% 0.082 85.4)",
+          300: "oklch(83.5% 0.110 85.4)",
+          400: "oklch(80.9% 0.124 85.4)",
+          500: "oklch(78.2% 0.137 85.4)", // DEFAULT
+          600: "oklch(70.4% 0.123 85.4)",
+          700: "oklch(58.5% 0.102 85.4)",
+          800: "oklch(48.2% 0.084 85.4)",
+          900: "oklch(39.5% 0.069 85.4)",
           DEFAULT: "oklch(78.2% 0.137 85.4)",
           bg: "oklch(97.1% 0.027 85.4)",
           border: "oklch(88.9% 0.082 85.4)",
         },
         error: {
+          50: "oklch(96.8% 0.035 22.2)",
+          100: "oklch(93.1% 0.071 22.2)",
+          200: "oklch(86.3% 0.106 22.2)",
+          300: "oklch(77.9% 0.141 22.2)",
+          400: "oklch(70.5% 0.159 22.2)",
+          500: "oklch(63.2% 0.176 22.2)", // DEFAULT
+          600: "oklch(56.8% 0.158 22.2)",
+          700: "oklch(47.2% 0.131 22.2)",
+          800: "oklch(38.9% 0.108 22.2)",
+          900: "oklch(31.9% 0.089 22.2)",
           DEFAULT: "oklch(63.2% 0.176 22.2)",
           bg: "oklch(96.8% 0.035 22.2)",
           border: "oklch(86.3% 0.106 22.2)",
         },
         info: {
+          50: "oklch(96.3% 0.025 252.8)",
+          100: "oklch(92.1% 0.049 252.8)",
+          200: "oklch(84.7% 0.074 252.8)",
+          300: "oklch(76.2% 0.098 252.8)",
+          400: "oklch(72.8% 0.111 252.8)",
+          500: "oklch(69.5% 0.123 252.8)", // DEFAULT
+          600: "oklch(62.6% 0.111 252.8)",
+          700: "oklch(52.0% 0.092 252.8)",
+          800: "oklch(42.9% 0.076 252.8)",
+          900: "oklch(35.2% 0.062 252.8)",
           DEFAULT: "oklch(69.5% 0.123 252.8)",
           bg: "oklch(96.3% 0.025 252.8)",
           border: "oklch(84.7% 0.074 252.8)",
@@ -137,7 +177,33 @@ export default {
         "ease-out": "cubic-bezier(0, 0, 0.2, 1)",
         "ease-in": "cubic-bezier(0.4, 0, 1, 1)",
       },
+      keyframes: {
+        "slide-in-right": {
+          "0%": {
+            transform: "translateX(100%)",
+            opacity: "0",
+          },
+          "100%": {
+            transform: "translateX(0)",
+            opacity: "1",
+          },
+        },
+        "slide-out-right": {
+          "0%": {
+            transform: "translateX(0)",
+            opacity: "1",
+          },
+          "100%": {
+            transform: "translateX(100%)",
+            opacity: "0",
+          },
+        },
+      },
+      animation: {
+        "slide-in-right": "slide-in-right 0.3s ease-out",
+        "slide-out-right": "slide-out-right 0.3s ease-in",
+      },
     },
   },
-  plugins: [],
+  plugins: [require('tailwind-scrollbar-hide')],
 };
