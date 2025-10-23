@@ -17,7 +17,7 @@ import {
   MdStarBorder,
   MdVisibility,
 } from "react-icons/md";
-import { DashboardLayout } from "../DashboardLayout";
+import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
 import { TabGroup } from "@/shared/components/ui/TabGroup";
 
 // Types

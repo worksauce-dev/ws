@@ -18,7 +18,7 @@ import {
   MdDownload,
   MdDelete,
 } from "react-icons/md";
-import { DashboardLayout } from "../DashboardLayout";
+import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
 import { useAuth } from "@/shared/contexts/useAuth";
 import type { UserProfile } from "@/shared/lib/supabase";
 import { generateGreeting } from "@/shared/utils/dashboardGreetings";

@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { DashboardHeader } from "./components/DashboardHeader";
+import { DashboardHeader } from "@/shared/layouts/DashboardHeader";
 import { useAuth } from "@/shared/contexts/useAuth";
 import type { UserProfile } from "@/shared/lib/supabase";
 

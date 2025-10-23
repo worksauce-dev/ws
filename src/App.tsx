@@ -20,7 +20,7 @@ import { SignUpPage } from "@/features/auth/pages/SignUpPage";
 // Dashboard Pages
 import { DashboardPage } from "@/features/dashboard/pages/DashboardPage";
 import { DashboardDetail } from "@/features/dashboard/pages/DashboardDetail";
-import { CreateGroupPage } from "@/features/dashboard/pages/CreateGroupPage";
+import { CreateGroupPage } from "@/features/groups/pages/CreateGroupPage";
 import { ApplicantDetail } from "@/features/dashboard/pages/ApplicantDetail";
 
 // React Query 클라이언트 설정
