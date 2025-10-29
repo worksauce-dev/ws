@@ -1,44 +1,20 @@
-import { createContext, useContext, useState, useCallback, ReactNode, useEffect } from "react";
-import { MdCheckCircle, MdError, MdWarning, MdInfo, MdClose } from "react-icons/md";
+import { useState, useCallback, type ReactNode } from "react";
+import {
+  MdCheckCircle,
+  MdError,
+  MdWarning,
+  MdInfo,
+  MdClose,
+} from "react-icons/md";
 import { clsx } from "clsx";
-
-export type ToastType = "success" | "error" | "warning" | "info";
-
-export interface Toast {
-  id: string;
-  type: ToastType;
-  title: string;
-  message?: string;
-  duration?: number;
-  isRemoving?: boolean;
-}
-
-interface ToastContextType {
-  toasts: Toast[];
-  showToast: (
-    type: ToastType,
-    title: string,
-    message?: string,
-    duration?: number
-  ) => void;
-  removeToast: (id: string) => void;
-}
-
-const ToastContext = createContext<ToastContextType | undefined>(undefined);
-
-export const useToast = () => {
-  const context = useContext(ToastContext);
-  if (!context) {
-    throw new Error("useToast must be used within ToastProvider");
-  }
-  return context;
-};
+import type { Toast, ToastType } from "./toast.types";
+import { ToastContext } from "./toast.context";
 
 interface ToastProviderProps {
   children: ReactNode;
 }
 
-export const ToastProvider = ({ children }: ToastProviderProps) => {
+const ToastProvider = ({ children }: ToastProviderProps) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   const removeToast = useCallback((id: string) => {
@@ -58,7 +34,14 @@ export const ToastProvider = ({ children }: ToastProviderProps) => {
   const showToast = useCallback(
     (type: ToastType, title: string, message?: string, duration = 5000) => {
       const id = `toast-${Date.now()}-${Math.random()}`;
-      const newToast: Toast = { id, type, title, message, duration, isRemoving: false };
+      const newToast: Toast = {
+        id,
+        type,
+        title,
+        message,
+        duration,
+        isRemoving: false,
+      };
 
       setToasts(prev => [...prev, newToast]);
 
@@ -153,3 +136,5 @@ const ToastItem = ({ toast, onRemove }: ToastItemProps) => {
     </div>
   );
 };
+
+export default ToastProvider;
