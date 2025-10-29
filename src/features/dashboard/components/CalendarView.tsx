@@ -1,157 +1,30 @@
-import { useState, useMemo } from "react";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import { clsx } from "clsx";
-
-interface GroupSummary {
-  id: string;
-  name: string;
-  description: string;
-  totalCandidates: number;
-  completedTests: number;
-  recommendedCandidates: number;
-  filteredCandidates: number;
-  createdAt: string;
-  updatedAt: string;
-  deadline: string;
-  status: "active" | "completed" | "draft";
-}
+import type { Group } from "@/features/groups/types/group.types";
+import { useCalendar } from "../hooks/useCalendar";
+import { useGroupsByDate } from "../hooks/useGroupsByDate";
+import { useDdayCalculator } from "../hooks/useDdayCalculator";
+import { getStatusColor } from "../utils/calendarHelpers";
 
 interface CalendarViewProps {
-  groups: GroupSummary[];
+  groups: Group[];
   onGroupClick: (groupId: string) => void;
 }
 
 export const CalendarView = ({ groups, onGroupClick }: CalendarViewProps) => {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  // 커스텀 훅으로 로직 분리
+  const {
+    calendarDays,
+    monthYearText,
+    isToday,
+    isCurrentMonth,
+    goToPreviousMonth,
+    goToNextMonth,
+    goToToday,
+  } = useCalendar();
 
-  // 현재 월의 첫날과 마지막날
-  const firstDayOfMonth = new Date(
-    currentDate.getFullYear(),
-    currentDate.getMonth(),
-    1
-  );
-  const lastDayOfMonth = new Date(
-    currentDate.getFullYear(),
-    currentDate.getMonth() + 1,
-    0
-  );
-
-  // 캘린더 그리드를 위한 시작일 (이전 달의 일부 날짜 포함)
-  const startDate = new Date(firstDayOfMonth);
-  startDate.setDate(startDate.getDate() - firstDayOfMonth.getDay());
-
-  // 캘린더 그리드를 위한 종료일 (다음 달의 일부 날짜 포함)
-  const endDate = new Date(lastDayOfMonth);
-  endDate.setDate(endDate.getDate() + (6 - lastDayOfMonth.getDay()));
-
-  // 캘린더에 표시할 날짜 배열 생성
-  const calendarDays = useMemo(() => {
-    const days = [];
-    const current = new Date(startDate);
-
-    while (current <= endDate) {
-      days.push(new Date(current));
-      current.setDate(current.getDate() + 1);
-    }
-
-    return days;
-  }, [startDate, endDate]);
-
-  // 특정 날짜에 해당하는 그룹들 찾기
-  const getGroupsForDate = (date: Date) => {
-    // 타임존 이슈 방지: 로컬 날짜를 직접 문자열로 변환
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const dateStr = `${year}-${month}-${day}`;
-    return groups.filter(group => group.deadline === dateStr);
-  };
-
-  // D-day 계산
-  const calculateDday = (deadline: string) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const deadlineDate = new Date(deadline);
-    deadlineDate.setHours(0, 0, 0, 0);
-    const diffTime = deadlineDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays < 0) return `D+${Math.abs(diffDays)}`;
-    if (diffDays === 0) return "D-Day";
-    return `D-${diffDays}`;
-  };
-
-  // 상태별 색상
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "bg-blue-500 border-blue-600";
-      case "completed":
-        return "bg-green-500 border-green-600";
-      case "draft":
-        return "bg-gray-400 border-gray-500";
-      default:
-        return "bg-gray-400 border-gray-500";
-    }
-  };
-
-  // D-day에 따른 긴급도 색상
-  const getDdayColor = (deadline: string, status: string) => {
-    if (status === "completed") return "text-green-600";
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const deadlineDate = new Date(deadline);
-    deadlineDate.setHours(0, 0, 0, 0);
-    const diffTime = deadlineDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays < 0) return "text-gray-400"; // 지난 마감일
-    if (diffDays === 0) return "text-red-600 font-bold"; // 오늘 마감
-    if (diffDays <= 3) return "text-red-500"; // 3일 이내
-    if (diffDays <= 7) return "text-orange-500"; // 7일 이내
-    return "text-blue-600"; // 여유있음
-  };
-
-  // 이전 달
-  const goToPreviousMonth = () => {
-    setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
-    );
-  };
-
-  // 다음 달
-  const goToNextMonth = () => {
-    setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
-    );
-  };
-
-  // 오늘로 돌아가기
-  const goToToday = () => {
-    setCurrentDate(new Date());
-  };
-
-  // 현재 월 표시 형식
-  const monthYearText = currentDate.toLocaleDateString("ko-KR", {
-    year: "numeric",
-    month: "long",
-  });
-
-  // 오늘 날짜인지 확인
-  const isToday = (date: Date) => {
-    const today = new Date();
-    return (
-      date.getDate() === today.getDate() &&
-      date.getMonth() === today.getMonth() &&
-      date.getFullYear() === today.getFullYear()
-    );
-  };
-
-  // 현재 월인지 확인
-  const isCurrentMonth = (date: Date) => {
-    return date.getMonth() === currentDate.getMonth();
-  };
+  const { getGroupsForDate } = useGroupsByDate(groups);
+  const { calculateDday, getDdayColor } = useDdayCalculator();
 
   return (
     <div className="bg-white rounded-xl border border-neutral-200 p-6">
@@ -161,7 +34,7 @@ export const CalendarView = ({ groups, onGroupClick }: CalendarViewProps) => {
         <div className="flex items-center gap-2">
           <button
             onClick={goToToday}
-            className="px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary-50 transition-colors duration-200"
+            className="px-4 py-2 text-sm font-medium text-primary-500 border border-primary-500 rounded-lg hover:bg-primary-50 transition-colors duration-200"
           >
             오늘
           </button>
@@ -207,7 +80,7 @@ export const CalendarView = ({ groups, onGroupClick }: CalendarViewProps) => {
                 isCurrentMonthDay
                   ? "bg-white border-neutral-200"
                   : "bg-neutral-50 border-neutral-100",
-                isTodayDay && "ring-2 ring-primary ring-opacity-50"
+                isTodayDay && "ring-2 ring-primary-500 ring-opacity-50"
               )}
             >
               {/* 날짜 */}
@@ -216,7 +89,7 @@ export const CalendarView = ({ groups, onGroupClick }: CalendarViewProps) => {
                   "text-sm font-medium mb-2",
                   isCurrentMonthDay ? "text-neutral-800" : "text-neutral-400",
                   isTodayDay &&
-                    "w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center"
+                    "w-6 h-6 bg-primary-500 text-white rounded-full flex items-center justify-center"
                 )}
               >
                 {date.getDate()}
@@ -224,20 +97,44 @@ export const CalendarView = ({ groups, onGroupClick }: CalendarViewProps) => {
 
               {/* 그룹 배지 */}
               <div className="space-y-1">
-                {dayGroups.slice(0, 3).map(group => (
-                  <button
-                    key={group.id}
-                    onClick={() => onGroupClick(group.id)}
-                    className={clsx(
-                      "w-full text-left px-2 py-1 rounded text-xs border cursor-pointer hover:opacity-80 transition-opacity duration-200",
-                      getStatusColor(group.status),
-                      "text-white truncate"
-                    )}
-                    title={`${group.name} - ${calculateDday(group.deadline)}`}
-                  >
-                    {group.name}
-                  </button>
-                ))}
+                {dayGroups.slice(0, 3).map(group => {
+                  const applicantCount = group.applicants?.length || 0;
+                  const completedCount =
+                    group.applicants?.filter(a => a.test_status === "completed")
+                      .length || 0;
+
+                  return (
+                    <button
+                      key={group.id}
+                      onClick={() => onGroupClick(group.id)}
+                      className={clsx(
+                        "w-full text-left px-2 py-1.5 rounded text-xs border cursor-pointer hover:opacity-80 transition-opacity duration-200",
+                        getStatusColor(group.status),
+                        "text-white"
+                      )}
+                      title={`${group.name}\n${calculateDday(group.deadline)}\n지원자: ${applicantCount}명 (완료: ${completedCount}명)`}
+                    >
+                      <div className="space-y-1">
+                        {/* 그룹명과 지원자 수 */}
+                        <div className="flex items-center justify-between gap-1">
+                          <span className="truncate flex-1">{group.name}</span>
+                          <span className="text-[10px] opacity-90 shrink-0">
+                            {applicantCount}명
+                          </span>
+                        </div>
+                        {/* D-day 배지 */}
+                        <span
+                          className={clsx(
+                            "inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded bg-white",
+                            getDdayColor(group.deadline, group.status)
+                          )}
+                        >
+                          {calculateDday(group.deadline)}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
                 {dayGroups.length > 3 && (
                   <div className="text-xs text-neutral-500 text-center">
                     +{dayGroups.length - 3}개 더보기
