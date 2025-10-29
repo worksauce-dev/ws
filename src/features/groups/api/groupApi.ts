@@ -7,12 +7,8 @@ import { supabase } from "@/shared/lib/supabase";
 import type {
   Group,
   CreateGroupRequest,
-  CreateGroupResponse,
   UpdateGroupRequest,
-  GroupWithApplicants,
-  GroupStats,
 } from "../types/group.types";
-import type { Applicant } from "../types/applicant.types";
 import { nanoid } from "nanoid";
 
 /**
@@ -97,49 +93,6 @@ export const getGroups = async (): Promise<Group[]> => {
 };
 
 /**
- * 그룹 상세 조회 (지원자 포함)
- *
- * @param groupId 그룹 ID
- * @returns 그룹 정보 + 지원자 목록 + 통계
- */
-export const getGroupWithApplicants = async (
-  groupId: string
-): Promise<GroupWithApplicants> => {
-  // 그룹 정보 조회
-  const { data: group, error: groupError } = await supabase
-    .from("groups")
-    .select("*")
-    .eq("id", groupId)
-    .single();
-
-  if (groupError) {
-    console.error("그룹 조회 실패:", groupError);
-    throw new Error(groupError.message);
-  }
-
-  // 지원자 목록 조회
-  const { data: applicants, error: applicantsError } = await supabase
-    .from("applicants")
-    .select("id, name, email, test_status, test_result")
-    .eq("group_id", groupId)
-    .order("created_at", { ascending: true });
-
-  if (applicantsError) {
-    console.error("지원자 목록 조회 실패:", applicantsError);
-    throw new Error(applicantsError.message);
-  }
-
-  // 통계 계산
-  const stats = calculateGroupStats(applicants || []);
-
-  return {
-    ...group,
-    applicants: applicants || [],
-    stats,
-  };
-};
-
-/**
  * 그룹 수정
  *
  * @param groupId 그룹 ID
@@ -180,37 +133,10 @@ export const deleteGroup = async (groupId: string): Promise<void> => {
   }
 };
 
-/**
- * 그룹 통계 계산 헬퍼 함수
- */
-const calculateGroupStats = (
-  applicants: Pick<Applicant, "test_status">[]
-): GroupStats => {
-  const total = applicants.length;
-  const pending = applicants.filter(a => a.test_status === "pending").length;
-  const inProgress = applicants.filter(
-    a => a.test_status === "in_progress"
-  ).length;
-  const completed = applicants.filter(
-    a => a.test_status === "completed"
-  ).length;
-
-  const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
-
-  return {
-    total,
-    pending,
-    in_progress: inProgress,
-    completed,
-    completion_rate: completionRate,
-  };
-};
-
 // 기본 export (객체로 묶어서 export)
 export const groupApi = {
   createGroup,
   getGroups,
-  getGroupWithApplicants,
   updateGroup,
   deleteGroup,
 };
