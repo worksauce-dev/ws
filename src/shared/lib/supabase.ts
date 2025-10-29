@@ -43,3 +43,55 @@ export type Candidate = {
   created_at: string;
   updated_at: string;
 };
+
+// 타입 헬퍼 (선택사항)
+export type Database = {
+  public: {
+    Tables: {
+      groups: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          description: string | null;
+          position: string;
+          experience_level: string | null;
+          preferred_work_types: string[];
+          deadline: string;
+          auto_reminder: boolean;
+          status: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<
+          Database["public"]["Tables"]["groups"]["Row"],
+          "id" | "created_at" | "updated_at"
+        >;
+        Update: Partial<Database["public"]["Tables"]["groups"]["Insert"]>;
+      };
+      applicants: {
+        Row: {
+          id: string;
+          group_id: string;
+          name: string;
+          email: string;
+          test_token: string;
+          test_status: string;
+          test_result: unknown | null;
+          test_url: string | null;
+          email_sent_at: string | null;
+          email_opened_at: string | null;
+          test_started_at: string | null;
+          test_submitted_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<
+          Database["public"]["Tables"]["applicants"]["Row"],
+          "id" | "created_at" | "updated_at"
+        >;
+        Update: Partial<Database["public"]["Tables"]["applicants"]["Insert"]>;
+      };
+    };
+  };
+};

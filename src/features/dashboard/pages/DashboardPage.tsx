@@ -26,231 +26,242 @@ import { SelectDropdown, Dropdown } from "@/shared/components/ui/Dropdown";
 import { CalendarView } from "../components/CalendarView";
 import type { DropdownItem } from "@/shared/components/ui/Dropdown";
 import { TabGroup } from "@/shared/components/ui/TabGroup";
+import type { Group } from "@/features/groups/types/group.types";
+import { useGroups } from "../hooks/useGroups";
+import { GroupsErrorDisplay } from "../components/GroupsErrorDisplay";
+import { useMinimumLoadingTime } from "@/shared/hooks/useMinimumLoadingTime";
+import DashboardSkeleton from "../components/DashboardSkeleton";
 
-// Types
-interface GroupSummary {
-  id: string;
-  name: string;
-  description: string;
-  totalCandidates: number;
-  completedTests: number;
-  recommendedCandidates: number;
-  filteredCandidates: number;
-  createdAt: string;
-  updatedAt: string;
-  deadline: string; // 마감일
-  status: "active" | "completed" | "draft";
-}
-
-// Mock data
-const mockGroups: GroupSummary[] = [
+const mockGroups: Group[] = [
   {
-    id: "1",
-    name: "9월 신입 개발자 채용",
+    id: "group-550e8400-e29b-41d4-a716-446655440000",
+    user_id: "user-123e4567-e89b-12d3-a456-426614174000",
+    name: "2025년 10월 신입 개발자 채용",
     description: "Frontend/Backend 신입 개발자 공개 채용",
-    totalCandidates: 24,
-    completedTests: 18,
-    recommendedCandidates: 6,
-    filteredCandidates: 12,
-    createdAt: "2025-09-01",
-    updatedAt: "2025-09-20",
-    deadline: "2025-10-05",
+    position: "Frontend Developer",
+    experience_level: "junior",
+    preferred_work_types: ["기준형", "예술형", "도전형"],
+    deadline: "2025-10-31T23:59:59.000Z",
+    auto_reminder: true,
     status: "active",
+    created_at: "2025-10-01T00:00:00.000Z",
+    updated_at: "2025-10-01T00:00:00.000Z",
+    applicants: [
+      {
+        id: "applicant-001",
+        name: "김철수",
+        email: "kim.cs@email.com",
+        test_status: "completed",
+      },
+      {
+        id: "applicant-002",
+        name: "이영희",
+        email: "lee.yh@email.com",
+        test_status: "completed",
+      },
+      {
+        id: "applicant-003",
+        name: "박민수",
+        email: "park.ms@email.com",
+        test_status: "pending",
+      },
+      {
+        id: "applicant-004",
+        name: "최지원",
+        email: "choi.jw@email.com",
+        test_status: "in_progress",
+      },
+      {
+        id: "applicant-005",
+        name: "정수진",
+        email: "jung.sj@email.com",
+        test_status: "pending",
+      },
+    ],
   },
   {
-    id: "2",
-    name: "디자이너 경력 채용",
-    description: "UX/UI 디자이너 3년 이상 경력직",
-    totalCandidates: 15,
-    completedTests: 12,
-    recommendedCandidates: 4,
-    filteredCandidates: 8,
-    createdAt: "2025-08-15",
-    updatedAt: "2025-09-18",
-    deadline: "2025-10-15",
+    id: "group-001",
+    user_id: "user-123e4567-e89b-12d3-a456-426614174000",
+    name: "2025년 상반기 마케팅 인턴 채용",
+    description: "브랜드 마케팅팀 인턴 공개 모집",
+    position: "Marketing Intern",
+    experience_level: "intern",
+    preferred_work_types: ["예술형", "협력형"],
+    deadline: "2025-11-10T23:59:59.000Z",
+    auto_reminder: false,
     status: "active",
+    created_at: "2025-10-05T00:00:00.000Z",
+    updated_at: "2025-10-05T00:00:00.000Z",
+    applicants: [
+      {
+        id: "applicant-101",
+        name: "한지민",
+        email: "han.jm@email.com",
+        test_status: "pending",
+      },
+      {
+        id: "applicant-102",
+        name: "오세훈",
+        email: "oh.sh@email.com",
+        test_status: "completed",
+      },
+    ],
   },
   {
-    id: "3",
-    name: "8월 인턴십 프로그램",
-    description: "여름 인턴십 프로그램 참가자 선발",
-    totalCandidates: 45,
-    completedTests: 45,
-    recommendedCandidates: 12,
-    filteredCandidates: 33,
-    createdAt: "2025-07-20",
-    updatedAt: "2025-08-30",
-    deadline: "2025-08-31",
-    status: "completed",
-  },
-  {
-    id: "4",
-    name: "마케터 신규 채용",
-    description: "디지털 마케팅 담당자 채용",
-    totalCandidates: 8,
-    completedTests: 3,
-    recommendedCandidates: 1,
-    filteredCandidates: 2,
-    createdAt: "2025-09-10",
-    updatedAt: "2025-09-19",
-    deadline: "2025-10-25",
+    id: "group-002",
+    user_id: "user-123e4567-e89b-12d3-a456-426614174000",
+    name: "2025년 고객지원 매니저 채용",
+    description: "고객센터 운영 및 VOC 관리 담당자 모집",
+    position: "Customer Support Manager",
+    experience_level: "mid",
+    preferred_work_types: ["협력형", "기준형"],
+    deadline: "2025-11-15T23:59:59.000Z",
+    auto_reminder: true,
     status: "active",
+    created_at: "2025-10-06T00:00:00.000Z",
+    updated_at: "2025-10-06T00:00:00.000Z",
+    applicants: [
+      {
+        id: "applicant-201",
+        name: "이하늘",
+        email: "lee.hn@email.com",
+        test_status: "completed",
+      },
+      {
+        id: "applicant-202",
+        name: "강하나",
+        email: "kang.hn@email.com",
+        test_status: "pending",
+      },
+    ],
   },
   {
-    id: "5",
-    name: "백엔드 개발자 시니어 채용",
-    description: "Node.js/Python 5년 이상 시니어 개발자",
-    totalCandidates: 32,
-    completedTests: 28,
-    recommendedCandidates: 8,
-    filteredCandidates: 15,
-    createdAt: "2025-08-01",
-    updatedAt: "2025-09-21",
-    deadline: "2025-10-10",
+    id: "group-003",
+    user_id: "user-123e4567-e89b-12d3-a456-426614174000",
+    name: "2025년 데이터 분석가 채용",
+    description: "데이터 기반 의사결정을 이끌 분석 전문가 채용",
+    position: "Data Analyst",
+    experience_level: "senior",
+    preferred_work_types: ["분석형", "기준형"],
+    deadline: "2025-12-01T23:59:59.000Z",
+    auto_reminder: true,
     status: "active",
+    created_at: "2025-10-07T00:00:00.000Z",
+    updated_at: "2025-10-07T00:00:00.000Z",
+    applicants: [
+      {
+        id: "applicant-301",
+        name: "정윤호",
+        email: "jung.yh@email.com",
+        test_status: "in_progress",
+      },
+    ],
   },
   {
-    id: "6",
-    name: "프로덕트 매니저 채용",
-    description: "IT 서비스 PM 경력 3년 이상",
-    totalCandidates: 19,
-    completedTests: 19,
-    recommendedCandidates: 5,
-    filteredCandidates: 11,
-    createdAt: "2025-07-10",
-    updatedAt: "2025-08-25",
-    deadline: "2025-09-10",
-    status: "completed",
-  },
-  {
-    id: "7",
-    name: "데이터 분석가 신입 채용",
-    description: "SQL, Python 활용 가능한 데이터 분석가",
-    totalCandidates: 28,
-    completedTests: 22,
-    recommendedCandidates: 7,
-    filteredCandidates: 14,
-    createdAt: "2025-09-05",
-    updatedAt: "2025-09-22",
-    deadline: "2025-10-20",
+    id: "group-004",
+    user_id: "user-123e4567-e89b-12d3-a456-426614174000",
+    name: "2025년 UI/UX 디자이너 채용",
+    description: "사용자 경험을 설계하는 디자이너 채용",
+    position: "UI/UX Designer",
+    experience_level: "mid",
+    preferred_work_types: ["예술형", "협력형"],
+    deadline: "2025-11-25T23:59:59.000Z",
+    auto_reminder: false,
     status: "active",
+    created_at: "2025-10-08T00:00:00.000Z",
+    updated_at: "2025-10-08T00:00:00.000Z",
+    applicants: [
+      {
+        id: "applicant-401",
+        name: "백은정",
+        email: "baek.ej@email.com",
+        test_status: "completed",
+      },
+      {
+        id: "applicant-402",
+        name: "홍재현",
+        email: "hong.jh@email.com",
+        test_status: "pending",
+      },
+    ],
   },
   {
-    id: "8",
-    name: "QA 엔지니어 채용",
-    description: "테스트 자동화 경험 보유자 우대",
-    totalCandidates: 12,
-    completedTests: 8,
-    recommendedCandidates: 3,
-    filteredCandidates: 5,
-    createdAt: "2025-09-15",
-    updatedAt: "2025-09-23",
-    deadline: "2025-10-30",
+    id: "group-005",
+    user_id: "user-123e4567-e89b-12d3-a456-426614174000",
+    name: "2025년 HR담당자 경력직 채용",
+    description: "조직문화 개선 및 인재관리 담당자 모집",
+    position: "HR Manager",
+    experience_level: "senior",
+    preferred_work_types: ["기준형", "협력형"],
+    deadline: "2025-11-20T23:59:59.000Z",
+    auto_reminder: true,
     status: "active",
+    created_at: "2025-10-09T00:00:00.000Z",
+    updated_at: "2025-10-09T00:00:00.000Z",
+    applicants: [
+      {
+        id: "applicant-501",
+        name: "서현진",
+        email: "seo.hj@email.com",
+        test_status: "in_progress",
+      },
+      {
+        id: "applicant-502",
+        name: "김하늘",
+        email: "kim.hn@email.com",
+        test_status: "completed",
+      },
+    ],
   },
   {
-    id: "9",
-    name: "DevOps 엔지니어 채용",
-    description: "AWS/GCP 인프라 운영 경험자",
-    totalCandidates: 16,
-    completedTests: 16,
-    recommendedCandidates: 4,
-    filteredCandidates: 9,
-    createdAt: "2025-06-20",
-    updatedAt: "2025-07-30",
-    deadline: "2025-08-05",
-    status: "completed",
-  },
-  {
-    id: "10",
-    name: "프론트엔드 개발자 경력 채용",
-    description: "React, TypeScript 실무 경험 3년 이상",
-    totalCandidates: 35,
-    completedTests: 30,
-    recommendedCandidates: 9,
-    filteredCandidates: 18,
-    createdAt: "2025-08-20",
-    updatedAt: "2025-09-24",
-    deadline: "2025-10-18",
+    id: "group-006",
+    user_id: "user-123e4567-e89b-12d3-a456-426614174000",
+    name: "2025년 백엔드 개발자",
+    description: "Node.js, Supabase 경험자를 우대합니다.",
+    position: "Backend Developer",
+    experience_level: "mid",
+    preferred_work_types: ["도전형", "분석형"],
+    deadline: "2025-12-05T23:59:59.000Z",
+    auto_reminder: true,
     status: "active",
+    created_at: "2025-10-10T00:00:00.000Z",
+    updated_at: "2025-10-10T00:00:00.000Z",
+    applicants: [
+      {
+        id: "applicant-601",
+        name: "장민호",
+        email: "jang.mh@email.com",
+        test_status: "completed",
+      },
+      {
+        id: "applicant-602",
+        name: "윤소라",
+        email: "yoon.sr@email.com",
+        test_status: "pending",
+      },
+    ],
   },
   {
-    id: "11",
-    name: "콘텐츠 마케터 채용",
-    description: "SNS 마케팅 및 콘텐츠 기획 경험자",
-    totalCandidates: 21,
-    completedTests: 21,
-    recommendedCandidates: 6,
-    filteredCandidates: 13,
-    createdAt: "2025-07-05",
-    updatedAt: "2025-08-15",
-    deadline: "2025-08-20",
-    status: "completed",
-  },
-  {
-    id: "12",
-    name: "모바일 개발자 채용",
-    description: "iOS/Android 네이티브 또는 Flutter 개발자",
-    totalCandidates: 18,
-    completedTests: 14,
-    recommendedCandidates: 5,
-    filteredCandidates: 8,
-    createdAt: "2025-09-12",
-    updatedAt: "2025-09-25",
-    deadline: "2025-11-05",
-    status: "active",
-  },
-  {
-    id: "13",
-    name: "AI/ML 엔지니어 채용",
-    description: "머신러닝 모델 개발 및 배포 경험자",
-    totalCandidates: 14,
-    completedTests: 9,
-    recommendedCandidates: 3,
-    filteredCandidates: 6,
-    createdAt: "2025-09-18",
-    updatedAt: "2025-09-26",
-    deadline: "2025-11-10",
-    status: "active",
-  },
-  {
-    id: "14",
-    name: "HR 매니저 채용",
-    description: "채용 프로세스 설계 및 운영 경험자",
-    totalCandidates: 11,
-    completedTests: 11,
-    recommendedCandidates: 3,
-    filteredCandidates: 7,
-    createdAt: "2025-06-15",
-    updatedAt: "2025-07-20",
-    deadline: "2025-07-25",
-    status: "completed",
-  },
-  {
-    id: "15",
-    name: "10월 대규모 공채",
-    description: "전 직군 신입/경력 공개 채용",
-    totalCandidates: 120,
-    completedTests: 85,
-    recommendedCandidates: 25,
-    filteredCandidates: 60,
-    createdAt: "2025-09-25",
-    updatedAt: "2025-09-27",
-    deadline: "2025-10-31",
-    status: "active",
-  },
-  {
-    id: "16",
-    name: "브랜드 디자이너 채용",
-    description: "브랜드 아이덴티티 디자인 경험자",
-    totalCandidates: 9,
-    completedTests: 5,
-    recommendedCandidates: 2,
-    filteredCandidates: 3,
-    createdAt: "2025-09-20",
-    updatedAt: "2025-09-26",
-    deadline: "2025-11-15",
+    id: "group-007",
+    user_id: "user-123e4567-e89b-12d3-a456-426614174000",
+    name: "2025년 PM 채용",
+    description: "서비스 개선 및 프로젝트 관리 담당",
+    position: "Product Manager",
+    experience_level: "senior",
+    preferred_work_types: ["기준형", "도전형", "협력형"],
+    deadline: "2025-12-10T23:59:59.000Z",
+    auto_reminder: false,
     status: "draft",
+    created_at: "2025-10-11T00:00:00.000Z",
+    updated_at: "2025-10-11T00:00:00.000Z",
+    applicants: [
+      {
+        id: "applicant-701",
+        name: "이수민",
+        email: "lee.sm@email.com",
+        test_status: "pending",
+      },
+    ],
   },
 ];
 
@@ -265,8 +276,24 @@ export const DashboardPage = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { groups, isLoading, error, refetch } = useGroups();
 
-  // ProtectedRoute로 보호되어 있지만 TypeScript 안전성을 위한 방어적 코딩
+  const showLoading = useMinimumLoadingTime(isLoading, 1250);
+
+  if (showLoading) {
+    return <DashboardSkeleton />;
+  }
+
+  if (error) {
+    return (
+      <DashboardLayout title="대시보드">
+        <div className="max-w-2xl mx-auto">
+          <GroupsErrorDisplay error={error} onRetry={refetch} />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   if (!user) {
     return null; // 또는 로딩 스피너
   }
@@ -280,10 +307,10 @@ export const DashboardPage = () => {
     email: user.email ?? "",
   };
 
-  const filteredGroups = mockGroups.filter(group => {
-    const matchesSearch =
-      group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      group.description.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredGroups: Group[] = groups.filter(group => {
+    const matchesSearch = group.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
     const matchesStatus =
       selectedStatus === "all" || group.status === selectedStatus;
 
@@ -463,7 +490,7 @@ export const DashboardPage = () => {
             <div>
               <p className="text-sm font-medium text-neutral-600">전체 그룹</p>
               <p className="text-2xl font-bold text-neutral-800">
-                {mockGroups.length}
+                {groups.length}
               </p>
             </div>
           </div>
@@ -476,7 +503,7 @@ export const DashboardPage = () => {
             <div>
               <p className="text-sm font-medium text-neutral-600">활성 그룹</p>
               <p className="text-2xl font-bold text-neutral-800">
-                {mockGroups.filter(g => g.status === "active").length}
+                {groups.filter(g => g.status === "active").length}
               </p>
             </div>
           </div>
@@ -489,8 +516,8 @@ export const DashboardPage = () => {
             <div>
               <p className="text-sm font-medium text-neutral-600">총 지원자</p>
               <p className="text-2xl font-bold text-neutral-800">
-                {mockGroups.reduce(
-                  (sum, group) => sum + group.totalCandidates,
+                {groups.reduce(
+                  (sum, group) => sum + group.applicants.length,
                   0
                 )}
               </p>
@@ -503,10 +530,16 @@ export const DashboardPage = () => {
               <MdTrendingUp className="w-6 h-6 text-warning" />
             </div>
             <div>
-              <p className="text-sm font-medium text-neutral-600">추천 후보</p>
+              <p className="text-sm font-medium text-neutral-600">
+                완료 지원자
+              </p>
               <p className="text-2xl font-bold text-neutral-800">
-                {mockGroups.reduce(
-                  (sum, group) => sum + group.recommendedCandidates,
+                {groups.reduce(
+                  (sum, group) =>
+                    sum +
+                    group.applicants.filter(
+                      applicant => applicant.test_status === "completed"
+                    ).length,
                   0
                 )}
               </p>
@@ -629,8 +662,10 @@ export const DashboardPage = () => {
                     </span>
                     <span className="text-sm font-semibold text-primary">
                       {getCompletionRate(
-                        group.completedTests,
-                        group.totalCandidates
+                        group.applicants.filter(
+                          applicant => applicant.test_status === "completed"
+                        ).length,
+                        group.applicants.length
                       )}
                       %
                     </span>
@@ -639,7 +674,12 @@ export const DashboardPage = () => {
                     <div
                       className="h-2 rounded-full transition-all duration-300 bg-primary-500"
                       style={{
-                        width: `${getCompletionRate(group.completedTests, group.totalCandidates)}%`,
+                        width: `${getCompletionRate(
+                          group.applicants.filter(
+                            applicant => applicant.test_status === "completed"
+                          ).length,
+                          group.applicants.length
+                        )}%`,
                       }}
                     />
                   </div>
@@ -649,29 +689,27 @@ export const DashboardPage = () => {
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div className="text-center p-3 rounded-lg bg-neutral-50">
                     <p className="text-2xl font-bold text-neutral-800">
-                      {group.totalCandidates}
+                      {group.applicants.length}
                     </p>
                     <p className="text-xs text-neutral-600">총 지원자</p>
                   </div>
                   <div className="text-center p-3 rounded-lg bg-neutral-50">
                     <p className="text-2xl font-bold text-success">
-                      {group.recommendedCandidates}
+                      {
+                        group.applicants.filter(
+                          applicant => applicant.test_status === "completed"
+                        ).length
+                      }
                     </p>
-                    <p className="text-xs text-neutral-600">추천 후보</p>
+                    <p className="text-xs text-neutral-600">완료 지원자</p>
                   </div>
-                </div>
-
-                {/* Quick Stats */}
-                <div className="flex justify-between items-center text-xs mb-4 text-neutral-600">
-                  <span>테스트 완료: {group.completedTests}명</span>
-                  <span>필터링: {group.filteredCandidates}명</span>
                 </div>
 
                 {/* Footer */}
                 <div className="flex items-center justify-between pt-4 border-t border-neutral-200">
                   <div className="flex items-center text-xs text-neutral-600">
                     <MdCalendarToday className="w-3 h-3 mr-1" />
-                    최근 업데이트: {formatDate(group.updatedAt)}
+                    최근 업데이트: {formatDate(group.updated_at)}
                   </div>
                   <MdChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-primary" />
                 </div>
@@ -786,7 +824,10 @@ export const DashboardPage = () => {
 
       {/* Calendar View */}
       {viewMode === "calendar" && (
-        <CalendarView groups={filteredGroups} onGroupClick={handleGroupClick} />
+        <CalendarView
+          groups={mockGroups as Group[]}
+          onGroupClick={handleGroupClick}
+        />
       )}
     </DashboardLayout>
   );

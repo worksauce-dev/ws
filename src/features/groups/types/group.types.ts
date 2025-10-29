@@ -1,3 +1,5 @@
+import type { ApplicantSummary } from "./applicant.types";
+
 export interface GroupFormData {
   name: string;
   description: string;
@@ -11,19 +13,15 @@ export interface GroupFormData {
 export interface UseGroupFormReturn {
   // State
   formData: GroupFormData;
-  isSubmitting: boolean;
 
   // Actions
   handleInputChange: (field: string, value: string) => void;
   handleWorkTypeChange: (type: string, checked: boolean) => void;
-  handleSubmit: (
-    applicantsCount: number,
-    onSuccess?: () => void
-  ) => Promise<{ success: boolean; error?: string }>;
   validateForm: (applicantsCount: number) => {
     isValid: boolean;
     error?: string;
   };
+  resetForm: () => void;
 }
 
 export interface PositionOption {
@@ -39,4 +37,85 @@ export interface UseCustomPositionReturn {
   openModal: () => void;
   closeModal: () => void;
   addCustomPosition: (position: string) => void;
+}
+
+/**
+ * 그룹 관련 타입 정의
+ */
+
+// 그룹 상태
+export type GroupStatus = "active" | "completed" | "draft";
+
+// 데이터베이스 그룹 타입 (Supabase에서 반환되는 타입)
+export interface Group {
+  id: string;
+  user_id: string;
+  name: string;
+  description: string | null;
+  position: string;
+  experience_level: string | null;
+  preferred_work_types: string[];
+  deadline: string; // ISO 8601 timestamp
+  auto_reminder: boolean;
+  status: GroupStatus;
+  created_at: string;
+  updated_at: string;
+  applicants: ApplicantSummary[];
+}
+
+// 그룹 생성 요청 타입 (API 호출 시 사용)
+export interface CreateGroupRequest {
+  user_id: string;
+  name: string;
+  description: string;
+  position: string;
+  experience_level: string;
+  preferred_work_types: string[];
+  deadline: string;
+  auto_reminder: boolean;
+  applicants: {
+    name: string;
+    email: string;
+  }[];
+}
+
+// 그룹 생성 응답 타입
+export interface CreateGroupResponse {
+  group: Group;
+  applicants: Array<{
+    id: string;
+    name: string;
+    email: string;
+    test_token: string;
+  }>;
+}
+
+// 그룹 통계 타입
+export interface GroupStats {
+  total: number;
+  pending: number;
+  in_progress: number;
+  completed: number;
+  completion_rate: number;
+}
+
+// 지원자 정보를 포함한 그룹 타입 (상세 조회용)
+// export interface GroupWithApplicants extends Group {
+//   applicants: Array<{
+//     id: string;
+//     name: string;
+//     email: string;
+//     test_status: string;
+//     test_result: unknown | null;
+//   }>;
+//   stats: GroupStats;
+// }
+
+// 그룹 수정 요청 타입
+export interface UpdateGroupRequest {
+  name?: string;
+  description?: string;
+  deadline?: string;
+  auto_reminder?: boolean;
+  status?: GroupStatus;
 }
