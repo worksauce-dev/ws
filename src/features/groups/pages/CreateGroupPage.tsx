@@ -7,7 +7,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
 import { Button } from "@/shared/components/ui/Button";
 import { Modal } from "@/shared/components/ui/Modal";
-import { useToast } from "@/shared/components/ui/Toast";
+import { useToast } from "@/shared/components/ui/useToast";
 import { ApplicantManager } from "../components/ApplicantManager";
 import { GroupInfoForm } from "../components/GroupInfoForm";
 import { useGroupForm } from "../hooks/useGroupForm";

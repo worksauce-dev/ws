@@ -8,7 +8,7 @@ import {
 } from "react-icons/md";
 import { Button } from "@/shared/components/ui/Button";
 import { Checkbox } from "@/shared/components/ui/Checkbox";
-import { useToast } from "@/shared/components/ui/Toast";
+import { useToast } from "@/shared/components/ui/useToast";
 import { FileUploadZone } from "./FileUploadZone";
 import {
   formatParseResultMessage,

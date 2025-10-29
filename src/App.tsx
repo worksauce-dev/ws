@@ -5,7 +5,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ToastProvider } from "@/shared/components/ui/Toast";
+import ToastProvider from "@/shared/components/ui/Toast";
 import { AuthProvider } from "@/shared/contexts/AuthContext";
 import { useAuth } from "@/shared/contexts/useAuth";
 import { ProtectedRoute } from "@/shared/components/ProtectedRoute";
