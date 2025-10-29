@@ -1,26 +1,28 @@
+/**
+ * 그룹 정보 폼 관리 훅
+ * 폼 상태 관리와 유효성 검증에만 집중
+ * API 호출은 useCreateGroup 훅이 담당
+ */
+
 import { useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  type GroupFormData,
-  type UseGroupFormReturn,
-} from "../types/group.types";
+import type { GroupFormData, UseGroupFormReturn } from "../types/group.types";
+
+const initialFormData: GroupFormData = {
+  name: "",
+  description: "",
+  position: "",
+  experienceLevel: "",
+  preferredWorkTypes: [],
+  deadline: "",
+  autoReminder: "",
+};
 
 /**
  * 그룹 정보 입력 훅
  * 유효성 검사, 작업 유형 변경 등의 기능을 제공합니다
  */
 export const useGroupForm = (): UseGroupFormReturn => {
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState<GroupFormData>({
-    name: "",
-    description: "",
-    position: "",
-    experienceLevel: "",
-    preferredWorkTypes: [],
-    deadline: "",
-    autoReminder: "",
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState<GroupFormData>(initialFormData);
 
   // 입력 필드 변경
   const handleInputChange = useCallback((field: string, value: string) => {
@@ -55,8 +57,18 @@ export const useGroupForm = (): UseGroupFormReturn => {
         return { isValid: false, error: "마감일을 선택해주세요." };
       }
 
+      // 마감일이 현재 시간보다 이전인지 확인
+      const deadlineDate = new Date(formData.deadline);
+      const now = new Date();
+      if (deadlineDate <= now) {
+        return { isValid: false, error: "마감일은 현재 시간 이후여야 합니다." };
+      }
+
       if (applicantsCount === 0) {
-        return { isValid: false, error: "지원자가 없습니다." };
+        return {
+          isValid: false,
+          error: "최소 1명 이상의 지원자를 추가해주세요.",
+        };
       }
 
       return { isValid: true };
@@ -64,61 +76,16 @@ export const useGroupForm = (): UseGroupFormReturn => {
     [formData]
   );
 
-  // 폼 제출
-  const handleSubmit = useCallback(
-    async (
-      applicantsCount: number,
-      onSuccess?: () => void
-    ): Promise<{ success: boolean; error?: string }> => {
-      // 유효성 검사
-      const validation = validateForm(applicantsCount);
-      if (!validation.isValid) {
-        return { success: false, error: validation.error };
-      }
-
-      setIsSubmitting(true);
-
-      try {
-        console.log("그룹 정보:", formData);
-
-        // TODO: API 호출
-        // const response = await createGroup(formData, applicants);
-
-        // TODO: 3초 대기
-        await new Promise(resolve => setTimeout(resolve, 3000));
-
-        console.log("그룹 생성 완료");
-
-        // 성공 콜백
-        if (onSuccess) {
-          onSuccess();
-        }
-
-        // 500ms 후 대시보드로 이동
-        setTimeout(() => {
-          navigate("/dashboard");
-        }, 500);
-
-        return { success: true };
-      } catch (error) {
-        console.error("그룹 생성 실패:", error);
-        return {
-          success: false,
-          error: "그룹 생성 실패. 그룹명, 포지션, 마감일을 확인해주세요.",
-        };
-      } finally {
-        setIsSubmitting(false);
-      }
-    },
-    [formData, validateForm, navigate]
-  );
+  // 폼 초기화
+  const resetForm = useCallback(() => {
+    setFormData(initialFormData);
+  }, []);
 
   return {
     formData,
-    isSubmitting,
     handleInputChange,
     handleWorkTypeChange,
-    handleSubmit,
     validateForm,
+    resetForm,
   };
 };

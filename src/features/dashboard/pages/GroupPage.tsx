@@ -21,7 +21,7 @@ import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
 import { TabGroup } from "@/shared/components/ui/TabGroup";
 
 // Types
-interface Candidate {
+interface Applicant {
   id: string;
   name: string;
   email: string;
@@ -64,7 +64,7 @@ const mockGroup: GroupDetail = {
   filteredCandidates: 12,
 };
 
-const mockCandidates: Candidate[] = [
+const mockApplicants: Applicant[] = [
   {
     id: "1",
     name: "김철수",
@@ -184,7 +184,7 @@ const workTypeDistribution = [
   },
 ];
 
-export const DashboardDetail = () => {
+export const GroupPage = () => {
   const [selectedTab, setSelectedTab] = useState<
     "recommended" | "all" | "filtered"
   >("recommended");
@@ -222,16 +222,16 @@ export const DashboardDetail = () => {
     }
   };
 
-  const filteredCandidates = mockCandidates
-    .filter(candidate => {
+  const filteredApplicants = mockApplicants
+    .filter(applicant => {
       const matchesTab =
         selectedTab === "all" ||
-        (selectedTab === "recommended" && candidate.status === "recommended") ||
-        (selectedTab === "filtered" && candidate.status === "filtered");
+        (selectedTab === "recommended" && applicant.status === "recommended") ||
+        (selectedTab === "filtered" && applicant.status === "filtered");
       const matchesSearch =
-        candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        candidate.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        candidate.position.toLowerCase().includes(searchTerm.toLowerCase());
+        applicant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        applicant.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        applicant.position.toLowerCase().includes(searchTerm.toLowerCase());
       return matchesTab && matchesSearch;
     })
     .sort((a, b) => {
@@ -465,101 +465,101 @@ export const DashboardDetail = () => {
 
             {/* Candidate List */}
             <div className="divide-y divide-neutral-200">
-              {filteredCandidates.map(candidate => (
+              {filteredApplicants.map(applicant => (
                 <div
-                  key={candidate.id}
+                  key={applicant.id}
                   className="p-6 hover:bg-gray-50 transition-colors duration-200"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <button
-                          onClick={() => toggleStar(candidate.id)}
+                          onClick={() => toggleStar(applicant.id)}
                           className="p-1 rounded hover:bg-gray-200 transition-colors duration-200"
                         >
-                          {candidate.isStarred ? (
+                          {applicant.isStarred ? (
                             <MdStar className="w-4 h-4 text-warning" />
                           ) : (
                             <MdStarBorder className="w-4 h-4 text-neutral-500" />
                           )}
                         </button>
                         <h3 className="font-semibold text-lg text-neutral-800">
-                          {candidate.name}
+                          {applicant.name}
                         </h3>
                         <span
-                          className={`px-2 py-1 rounded-md text-xs font-medium border ${getStatusColor(candidate.status)}`}
+                          className={`px-2 py-1 rounded-md text-xs font-medium border ${getStatusColor(applicant.status)}`}
                         >
-                          {getStatusIcon(candidate.status)}
+                          {getStatusIcon(applicant.status)}
                         </span>
-                        {candidate.workType && (
+                        {applicant.workType && (
                           <span className="px-2 py-1 rounded-md text-xs font-medium bg-primary-100 text-primary">
-                            {candidate.workType}
+                            {applicant.workType}
                           </span>
                         )}
                       </div>
 
                       <div className="flex items-center gap-4 mb-3 text-sm text-neutral-600">
-                        <span>{candidate.email}</span>
+                        <span>{applicant.email}</span>
                         <span>•</span>
-                        <span>{candidate.position}</span>
+                        <span>{applicant.position}</span>
                         <span>•</span>
-                        <span>지원일: {formatDate(candidate.appliedAt)}</span>
-                        {candidate.testCompletedAt && (
+                        <span>지원일: {formatDate(applicant.appliedAt)}</span>
+                        {applicant.testCompletedAt && (
                           <>
                             <span>•</span>
                             <span>
-                              완료일: {formatDate(candidate.testCompletedAt)}
+                              완료일: {formatDate(applicant.testCompletedAt)}
                             </span>
                           </>
                         )}
                       </div>
 
-                      {candidate.score && (
+                      {applicant.score && (
                         <div className="flex items-center gap-6 mb-3">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium text-neutral-700">
                               테스트 점수
                             </span>
                             <span
-                              className={`text-lg font-bold ${getScoreColorClass(candidate.score)}`}
+                              className={`text-lg font-bold ${getScoreColorClass(applicant.score)}`}
                             >
-                              {candidate.score}점
+                              {applicant.score}점
                             </span>
                           </div>
-                          {candidate.matchScore && (
+                          {applicant.matchScore && (
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-medium text-neutral-700">
                                 직무 적합도
                               </span>
                               <span
-                                className={`text-lg font-bold ${getScoreColorClass(candidate.matchScore)}`}
+                                className={`text-lg font-bold ${getScoreColorClass(applicant.matchScore)}`}
                               >
-                                {candidate.matchScore}%
+                                {applicant.matchScore}%
                               </span>
                             </div>
                           )}
                         </div>
                       )}
 
-                      {candidate.strengths &&
-                        candidate.strengths.length > 0 && (
+                      {applicant.strengths &&
+                        applicant.strengths.length > 0 && (
                           <div className="mb-2">
                             <span className="text-xs font-medium text-success">
                               강점:
                             </span>
                             <span className="text-xs ml-2 text-neutral-600">
-                              {candidate.strengths.join(", ")}
+                              {applicant.strengths.join(", ")}
                             </span>
                           </div>
                         )}
 
-                      {candidate.concerns && candidate.concerns.length > 0 && (
+                      {applicant.concerns && applicant.concerns.length > 0 && (
                         <div>
                           <span className="text-xs font-medium text-warning">
                             고려사항:
                           </span>
                           <span className="text-xs ml-2 text-neutral-600">
-                            {candidate.concerns.join(", ")}
+                            {applicant.concerns.join(", ")}
                           </span>
                         </div>
                       )}
@@ -578,7 +578,7 @@ export const DashboardDetail = () => {
               ))}
             </div>
 
-            {filteredCandidates.length === 0 && (
+            {filteredApplicants.length === 0 && (
               <div className="text-center py-12">
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
                   <MdAssignment className="w-8 h-8 text-neutral-500" />

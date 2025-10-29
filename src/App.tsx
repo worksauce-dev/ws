@@ -19,7 +19,7 @@ import { SignUpPage } from "@/features/auth/pages/SignUpPage";
 
 // Dashboard Pages
 import { DashboardPage } from "@/features/dashboard/pages/DashboardPage";
-import { DashboardDetail } from "@/features/dashboard/pages/DashboardDetail";
+import { GroupPage } from "@/features/dashboard/pages/GroupPage";
 import { CreateGroupPage } from "@/features/groups/pages/CreateGroupPage";
 import { ApplicantDetail } from "@/features/dashboard/pages/ApplicantDetail";
 
@@ -109,7 +109,7 @@ function App() {
                   path="/dashboard/groups/:groupId"
                   element={
                     <ProtectedRoute>
-                      <DashboardDetail />
+                      <GroupPage />
                     </ProtectedRoute>
                   }
                 />
