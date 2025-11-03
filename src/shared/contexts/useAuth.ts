@@ -13,6 +13,7 @@ export interface AuthContextType {
   signUp: (signUpData: SignupFormData) => Promise<{ error: Error | null }>;
   signOut: () => Promise<{ error: Error | null }>;
   forceSignOut: () => Promise<{ error: Error | null }>;
+  deleteAccount: () => Promise<{ error: Error | null }>;
   refreshProfile: () => Promise<void>;
 }
 

@@ -51,7 +51,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const signUp = async (formData: SignupFormData) => {
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
@@ -68,8 +68,6 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         return { error: error as Error };
       }
 
-      // 이 시점에서 DB 트리거가 users 테이블에 자동으로 insert
-      console.log("회원가입 성공:", data.user);
       return { error: null };
     } catch (err) {
       console.error("알 수 없는 오류:", err);
@@ -157,6 +155,41 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
+  // 회원 탈퇴 (개발/디버깅용)
+  const deleteAccount = async () => {
+    try {
+      if (!user) {
+        return { error: new Error("No user logged in") };
+      }
+
+      // Supabase에서 현재 로그인된 사용자 삭제
+      const { error } = await supabase.rpc("delete_user");
+
+      if (error) {
+        console.error("Account deletion error:", error);
+        return { error };
+      }
+
+      // 로컬 스토리지 및 세션 정리
+      localStorage.clear();
+      sessionStorage.clear();
+
+      // Supabase 세션 정리
+      await supabase.auth.signOut();
+
+      // 상태 초기화
+      setUser(null);
+      setUserProfile(null);
+      setSession(null);
+
+      console.log("Account deleted successfully");
+      return { error: null };
+    } catch (error) {
+      console.error("Account deletion error:", error);
+      return { error: error as Error };
+    }
+  };
+
   useEffect(() => {
     // 초기 세션 가져오기
     const getInitialSession = async () => {
@@ -240,6 +273,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     signUp,
     signOut,
     forceSignOut,
+    deleteAccount,
     refreshProfile,
   };
 

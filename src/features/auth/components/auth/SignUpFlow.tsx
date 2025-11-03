@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { clsx } from "clsx";
 import { MdCheck } from "react-icons/md";
-import toast from "react-hot-toast";
+import { useToast } from "@/shared/components/ui/useToast";
 import { NameStep } from "@/features/auth/components/auth/steps/NameStep";
 import { EmailStep } from "@/features/auth/components/auth/steps/EmailStep";
 import { PasswordStep } from "@/features/auth/components/auth/steps/PasswordStep";
@@ -97,6 +97,7 @@ export const SignupFlow = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<SignupFormData>(INITIAL_FORM_DATA);
   const { signUp } = useAuth();
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
   const updateFormData = (data: Partial<SignupFormData>) => {
@@ -125,17 +126,17 @@ export const SignupFlow = () => {
 
       if (error) {
         if (error.message.includes("User already registered")) {
-          toast.error("이미 등록된 이메일입니다");
+          showToast("error", "회원가입 실패", "이미 등록된 이메일입니다");
         } else {
-          toast.error("회원가입에 실패했습니다");
+          showToast("error", "회원가입 실패", "회원가입에 실패했습니다");
         }
       } else {
-        toast.success("회원가입이 완료되었습니다. 이메일을 확인해주세요.");
+        showToast("success", "회원가입 완료", "회원가입이 완료되었습니다. 이메일을 확인해주세요.");
         navigate("/auth/login");
       }
     } catch (error) {
       console.error("Signup error:", error);
-      toast.error("회원가입 중 오류가 발생했습니다");
+      showToast("error", "회원가입 실패", "회원가입 중 오류가 발생했습니다");
     }
   };
 

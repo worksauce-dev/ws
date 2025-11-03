@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { MdRefresh } from "react-icons/md";
-import toast from "react-hot-toast";
+import { useToast } from "@/shared/components/ui/useToast";
 import { useAuth } from "@/shared/contexts/useAuth";
 import { usePageSEO, WORKSAUCE_SEO_PRESETS } from "@/shared/hooks/usePageSEO";
 import { Button } from "@/shared/components/ui/Button";
@@ -21,6 +21,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export const LoginPage = () => {
   const { signIn, user, loading: authLoading } = useAuth();
+  const { showToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -49,22 +50,35 @@ export const LoginPage = () => {
     const { error } = await signIn(data.email, data.password);
 
     if (error) {
-      toast.error(
-        error.message === "Invalid login credentials"
-          ? "이메일 또는 비밀번호가 올바르지 않습니다"
-          : "로그인에 실패했습니다"
-      );
+      // Supabase 에러 메시지에 따른 한글 에러 처리
+      let errorMessage = "로그인에 실패했습니다";
+
+      if (error.message === "Invalid login credentials") {
+        errorMessage =
+          "등록되지 않은 이메일이거나 비밀번호가 일치하지 않습니다";
+      } else if (error.message.includes("Email not confirmed")) {
+        errorMessage = "이메일 인증이 완료되지 않았습니다";
+      } else if (error.message.includes("User not found")) {
+        errorMessage = "가입되지 않은 이메일입니다";
+      } else if (error.message.includes("Invalid email")) {
+        errorMessage = "올바르지 않은 이메일 형식입니다";
+      } else if (
+        error.message.includes("network") ||
+        error.message.includes("fetch")
+      ) {
+        errorMessage = "네트워크 오류가 발생했습니다. 다시 시도해주세요";
+      }
+
+      showToast("error", "로그인 실패", errorMessage);
     } else {
-      toast.success("로그인되었습니다");
+      showToast("success", "로그인 성공", "로그인되었습니다");
       navigate(from, { replace: true });
     }
   };
 
   // 소셜 로그인 핸들러 (추후 구현)
   const handleSocialLogin = (provider: "kakao" | "google") => {
-    toast(`${provider} 로그인은 준비 중입니다`, {
-      icon: "ℹ️",
-    });
+    showToast("info", "준비 중", `${provider} 로그인은 준비 중입니다`);
   };
 
   if (authLoading) {

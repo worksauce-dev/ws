@@ -58,9 +58,10 @@ export const createGroup = async (data: CreateGroupRequest) => {
     };
   });
 
-  const { error: applicantsError } = await supabase
+  const { data: insertedApplicants, error: applicantsError } = await supabase
     .from("applicants")
-    .insert(applicantsToInsert);
+    .insert(applicantsToInsert)
+    .select();
 
   if (applicantsError) throw applicantsError;
 
@@ -70,7 +71,10 @@ export const createGroup = async (data: CreateGroupRequest) => {
     // await sendTestInviteEmails(applicantsToInsert);
   }
 
-  return newGroup;
+  return {
+    group: newGroup,
+    applicants: insertedApplicants || [],
+  };
 };
 
 /**
