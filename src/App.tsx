@@ -9,6 +9,7 @@ import ToastProvider from "@/shared/components/ui/Toast";
 import { AuthProvider } from "@/shared/contexts/AuthContext";
 import { useAuth } from "@/shared/contexts/useAuth";
 import { ProtectedRoute } from "@/shared/components/ProtectedRoute";
+import { SauceTestPage } from "@/features/sauceTest/page/SauceTestPage";
 
 // Landing Pages
 import { LandingPage } from "@/features/landing/pages/LandingPage";
@@ -87,6 +88,8 @@ function App() {
                     </PublicRoute>
                   }
                 />
+
+                <Route path="/test/:testId" element={<SauceTestPage />} />
 
                 {/* 보호된 페이지들 - 로그인 필요 */}
                 <Route
