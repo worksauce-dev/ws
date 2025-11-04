@@ -3,6 +3,7 @@
  * 그룹 정보 입력 및 지원자 관리 기능 제공
  */
 
+import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
 import { Button } from "@/shared/components/ui/Button";
@@ -10,18 +11,24 @@ import { Modal } from "@/shared/components/ui/Modal";
 import { useToast } from "@/shared/components/ui/useToast";
 import { ApplicantManager } from "../components/ApplicantManager";
 import { GroupInfoForm } from "../components/GroupInfoForm";
+import PreviewTestEmail from "../components/PreviewTestEmail";
 import { useGroupForm } from "../hooks/useGroupForm";
 import { useCustomPosition } from "../hooks/useCustomPosition";
 import { useApplicantManager } from "../hooks/useApplicantManager";
 import { useFileUpload } from "../hooks/useFileUpload";
 import { useCreateGroup } from "../hooks/useCreateGroup";
-import type { CreateGroupRequest } from "../types/group.types";
+import type { CreateGroupRequest, Group } from "../types/group.types";
 import { useAuth } from "@/shared/contexts/useAuth";
+import { sendSauceTestEmail } from "@/shared/services/sauceTestService";
 
 export const CreateGroupPage = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { user } = useAuth();
+
+  // State
+  const [showEmailPreview, setShowEmailPreview] = useState(false);
+  const [showRealName, setShowRealName] = useState(true); // 기본값: 실명 표시
 
   // Hooks
   const groupForm = useGroupForm();
@@ -31,12 +38,16 @@ export const CreateGroupPage = () => {
 
   // 그룹 생성 mutation
   const { mutate: createGroup, isPending: isCreating } = useCreateGroup({
-    onSuccess: data => {
+    onSuccess: async data => {
       showToast(
         "success",
         "그룹 생성 완료",
         `채용 그룹이 생성되었습니다. ${data.applicants.length}명의 지원자가 추가되었습니다.`
       );
+
+      // 모든 지원자에게 소스테스트 이메일 발송
+      await handleSendSauceTest(data.group, data.applicants);
+
       navigate(`/dashboard/groups/${data.group.id}`);
     },
     onError: error => {
@@ -79,6 +90,88 @@ export const CreateGroupPage = () => {
       "포지션 추가 완료",
       `"${customPosition.customPosition.trim()}" 포지션이 추가되었습니다.`
     );
+  };
+
+  /**
+   * 소스테스트 이메일 발송 함수
+   * @param group 생성된 그룹 정보
+   * @param applicants 생성된 지원자 배열
+   */
+  const handleSendSauceTest = async (
+    group: Pick<Group, "id" | "deadline">,
+    applicants: Array<{ id: string; name: string; email: string; test_token: string }>
+  ) => {
+    try {
+      // 사용자 이름 가져오기 (showRealName 설정에 따라)
+      const userName = showRealName
+        ? (user?.user_metadata?.name || user?.email?.split("@")[0] || "관리자")
+        : "담당자";
+
+      // 모든 지원자에게 이메일 발송
+      const emailPromises = applicants.map(applicant =>
+        sendSauceTestEmail({
+          applicantEmail: applicant.email,
+          userName: userName,
+          applicantName: applicant.name,
+          testId: applicant.test_token,
+          dashboardId: group.id,
+          deadline: group.deadline,
+        })
+      );
+
+      // 모든 이메일 발송 결과 대기
+      const results = await Promise.all(emailPromises);
+
+      // 성공/실패 카운트
+      const successCount = results.filter(r => r.success).length;
+      const failedCount = results.length - successCount;
+
+      // 결과에 따른 토스트 메시지
+      if (failedCount === 0) {
+        showToast(
+          "success",
+          "이메일 발송 완료",
+          `${successCount}명의 지원자에게 소스테스트 이메일을 발송했습니다.`
+        );
+      } else if (successCount === 0) {
+        showToast(
+          "error",
+          "이메일 발송 실패",
+          "모든 이메일 발송에 실패했습니다. 나중에 다시 시도해주세요."
+        );
+      } else {
+        showToast(
+          "warning",
+          "일부 이메일 발송 실패",
+          `${successCount}명에게 발송 완료, ${failedCount}명 발송 실패`
+        );
+      }
+    } catch (error) {
+      console.error("이메일 발송 중 오류:", error);
+      showToast(
+        "error",
+        "이메일 발송 실패",
+        "이메일 발송 중 오류가 발생했습니다."
+      );
+    }
+  };
+
+  // 이메일 미리보기 버튼 클릭
+  const handlePreviewEmail = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // 클라이언트 측 유효성 검증
+    const validation = groupForm.validateForm(
+      applicantManager.applicants.length
+    );
+
+    if (!validation.isValid) {
+      showToast("warning", "입력 오류", validation.error!);
+      return;
+    }
+
+    // 이메일 미리보기 표시
+    setShowEmailPreview(true);
   };
 
   // 폼 제출
@@ -159,6 +252,14 @@ export const CreateGroupPage = () => {
               취소
             </Button>
             <Button
+              type="button"
+              variant="outline"
+              onClick={handlePreviewEmail}
+              disabled={isCreating}
+            >
+              이메일 미리보기
+            </Button>
+            <Button
               type="submit"
               variant="primary"
               disabled={isCreating}
@@ -207,6 +308,19 @@ export const CreateGroupPage = () => {
             </div>
           </div>
         </Modal>
+
+        {/* 이메일 미리보기 모달 */}
+        {showEmailPreview && (
+          <PreviewTestEmail
+            user={user}
+            groupName={groupForm.formData.name}
+            deadline={groupForm.formData.deadline}
+            applicants={applicantManager.applicants}
+            showRealName={showRealName}
+            onToggleRealName={() => setShowRealName(!showRealName)}
+            onClose={() => setShowEmailPreview(false)}
+          />
+        )}
       </div>
     </DashboardLayout>
   );
