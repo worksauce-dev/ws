@@ -31,6 +31,8 @@ import { useGroups } from "../hooks/useGroups";
 import { GroupsErrorDisplay } from "../components/GroupsErrorDisplay";
 import { useMinimumLoadingTime } from "@/shared/hooks/useMinimumLoadingTime";
 import DashboardSkeleton from "../components/DashboardSkeleton";
+import { useDeleteGroup } from "@/features/groups/hooks/useDeleteGroup";
+import { useToast } from "@/shared/components/ui/useToast";
 
 const mockGroups: Group[] = [
   {
@@ -277,6 +279,21 @@ export const DashboardPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { groups, isLoading, error, refetch } = useGroups();
+  const { showToast } = useToast();
+
+  // 그룹 삭제 mutation
+  const { mutate: deleteGroup } = useDeleteGroup({
+    onSuccess: () => {
+      showToast(
+        "success",
+        "그룹 삭제 완료",
+        "그룹이 성공적으로 삭제되었습니다."
+      );
+    },
+    onError: error => {
+      showToast("error", "삭제 실패", error.message);
+    },
+  });
 
   const showLoading = useMinimumLoadingTime(isLoading, 1250);
 
@@ -383,7 +400,6 @@ export const DashboardPage = () => {
 
   const handleGroupMenuAction = (groupId: string, item: DropdownItem) => {
     // TODO: 각 액션에 대한 실제 기능 구현
-    console.log("메뉴 액션:", item.id, "그룹 ID:", groupId);
 
     switch (item.id) {
       case "view":
@@ -406,10 +422,18 @@ export const DashboardPage = () => {
         console.log("마감일 연장:", groupId);
         // 마감일 수정 모달
         break;
-      case "delete":
-        console.log("그룹 삭제:", groupId);
-        // 삭제 확인 모달
+      case "delete": {
+        // 삭제 확인 다이얼로그
+        const groupToDelete = groups.find(g => g.id === groupId);
+        const confirmMessage = groupToDelete
+          ? `"${groupToDelete.name}" 그룹을 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없으며, 그룹 내 모든 지원자 데이터도 함께 삭제됩니다.`
+          : "정말로 이 그룹을 삭제하시겠습니까?";
+
+        if (window.confirm(confirmMessage)) {
+          deleteGroup(groupId);
+        }
         break;
+      }
       default:
         break;
     }
