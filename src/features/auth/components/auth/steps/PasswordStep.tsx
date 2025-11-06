@@ -27,6 +27,12 @@ export const PasswordStep = ({
       newErrors.password = "비밀번호를 입력해주세요";
     } else if (formData.password.length < 8) {
       newErrors.password = "비밀번호는 8자 이상이어야 합니다";
+    } else if (!passwordStrength.checks.uppercase) {
+      newErrors.password = "대문자를 포함해주세요";
+    } else if (!passwordStrength.checks.lowercase) {
+      newErrors.password = "소문자를 포함해주세요";
+    } else if (!passwordStrength.checks.number) {
+      newErrors.password = "숫자를 포함해주세요";
     } else if (passwordStrength.score < 3) {
       newErrors.password = "더 강한 비밀번호를 사용해주세요";
     }
@@ -63,7 +69,7 @@ export const PasswordStep = ({
           <div className="relative">
             <Input
               type={showPassword ? "text" : "password"}
-              placeholder="비밀번호를 입력하세요 (최소 8자)"
+              placeholder="비밀번호 (8자 이상, 대소문자, 숫자 포함)"
               value={formData.password}
               onChange={e => setFormData({ password: e.target.value })}
               error={errors.password}
