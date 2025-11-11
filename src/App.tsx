@@ -70,6 +70,8 @@ function App() {
                   element={<LandingPage />} // PublicRoute 제거로 단순화
                 />
 
+                <Route path="/test/:testId" element={<SauceTestPage />} />
+
                 {/* 인증 페이지들 - 로그인된 사용자는 대시보드로 리다이렉트 */}
                 <Route
                   path="/auth/login"
@@ -88,8 +90,6 @@ function App() {
                     </PublicRoute>
                   }
                 />
-
-                <Route path="/test/:testId" element={<SauceTestPage />} />
 
                 {/* 보호된 페이지들 - 로그인 필요 */}
                 <Route
