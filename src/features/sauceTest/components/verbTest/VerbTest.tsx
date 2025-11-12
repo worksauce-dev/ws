@@ -12,6 +12,8 @@ import {
 } from "../../utils/verbUtils";
 import { PHASE_CONFIG, PHASE_ORDER } from "../../constants/verbTest";
 
+const isDev = import.meta.env.VITE_ENV !== "Production";
+
 const SELECT_COUNT = 2; // 각 단계에서 선택할 동사 개수
 const TOTAL_STEPS = 5; // 전체 단계 수
 
@@ -247,9 +249,11 @@ export const VerbTest = ({ applicant, onComplete }: VerbTestProps) => {
                     </span>
 
                     {/* 타입 코드 (디버깅용 - 나중에 제거 가능) */}
-                    <span className="text-xs text-neutral-400">
-                      {verb.workType}
-                    </span>
+                    {isDev && (
+                      <span className="text-xs text-neutral-400">
+                        {verb.workType}
+                      </span>
+                    )}
                   </button>
                 );
               })}
