@@ -69,7 +69,7 @@ export const VerifyApplicant = ({
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-primary-50 px-4 py-12">
+    <div className="min-h-screen overflow-y-auto flex items-start md:items-center justify-center bg-gradient-to-br from-primary-50 via-white to-primary-50 px-4 py-8 md:py-12">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
