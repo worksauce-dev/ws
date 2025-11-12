@@ -3,11 +3,11 @@ import { MdCheckCircle, MdLightbulb, MdRefresh, MdSave } from "react-icons/md";
 import { Button } from "@/shared/components/ui/Button";
 import { Logo } from "@/shared/components/ui/Logo";
 import {
-  ALL_QUESTIONS,
   ANSWER_OPTIONS,
   TOTAL_QUESTIONS,
+  shuffleQuestions,
 } from "../../constants/testQuestions";
-import type { AnswerValue } from "../../constants/testQuestions";
+import type { AnswerValue, Question } from "../../constants/testQuestions";
 
 const isDev = import.meta.env.VITE_ENV !== "Production";
 
@@ -16,6 +16,8 @@ interface StatementTestProps {
 }
 
 const StatementTest = ({ onReset }: StatementTestProps = {}) => {
+  // 랜덤화된 질문 배열 (로컬스토리지에서 복원 또는 새로 생성)
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<AnswerValue | null>(
     null
@@ -25,15 +27,17 @@ const StatementTest = ({ onReset }: StatementTestProps = {}) => {
   const [showSaveMessage, setShowSaveMessage] = useState(false);
   const [isRestoredFromSave, setIsRestoredFromSave] = useState(false);
 
-  const currentQuestion = ALL_QUESTIONS[currentQuestionIndex];
+  const currentQuestion = questions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / TOTAL_QUESTIONS) * 100;
 
-  // 컴포넌트 마운트 시 로컬스토리지에서 복원
+  // 컴포넌트 마운트 시 로컬스토리지에서 복원 또는 질문 랜덤화
   useEffect(() => {
     const saved = localStorage.getItem("statementTest_progress");
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
+        // 저장된 질문 순서 복원 (없으면 새로 랜덤화)
+        setQuestions(parsed.questions || shuffleQuestions());
         setCurrentQuestionIndex(parsed.currentQuestionIndex || 0);
         setAnswers(parsed.answers || {});
         setAutoAdvance(parsed.autoAdvance ?? true);
@@ -44,7 +48,13 @@ const StatementTest = ({ onReset }: StatementTestProps = {}) => {
         console.log("저장된 진행 상황 복원됨:", parsed);
       } catch (error) {
         console.error("저장된 데이터 복원 실패:", error);
+        // 복원 실패 시 새로 랜덤화
+        setQuestions(shuffleQuestions());
       }
+    } else {
+      // 저장된 데이터가 없으면 새로 랜덤화
+      setQuestions(shuffleQuestions());
+      console.log("질문 순서가 랜덤화되었습니다");
     }
   }, []);
 
@@ -89,6 +99,7 @@ const StatementTest = ({ onReset }: StatementTestProps = {}) => {
   // 로컬스토리지에 저장
   const handleSaveToLocalStorage = () => {
     const saveData = {
+      questions, // 질문 순서 저장
       currentQuestionIndex,
       answers,
       autoAdvance,
@@ -103,6 +114,18 @@ const StatementTest = ({ onReset }: StatementTestProps = {}) => {
       setShowSaveMessage(false);
     }, 2000);
   };
+
+  // 질문이 로드되기 전 로딩 상태
+  if (!currentQuestion) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-primary-50">
+        <div className="text-center">
+          <div className="w-16 h-16 mx-auto mb-4 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
+          <p className="text-neutral-600 text-lg">질문을 준비하는 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-primary-50 px-4 py-6 md:py-12 relative">
