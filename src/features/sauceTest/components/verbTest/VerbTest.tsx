@@ -17,7 +17,9 @@ const TOTAL_STEPS = 5; // 전체 단계 수
 
 interface VerbTestProps {
   applicant: Applicant;
-  onComplete?: (result: { selectionHistory: Record<VerbCategory, string[]> }) => void;
+  onComplete?: (result: {
+    selectionHistory: Record<VerbCategory, string[]>;
+  }) => void;
 }
 
 export const VerbTest = ({ applicant, onComplete }: VerbTestProps) => {
@@ -39,7 +41,6 @@ export const VerbTest = ({ applicant, onComplete }: VerbTestProps) => {
   const [selectedVerbs, setSelectedVerbs] = useState<string[]>([]);
 
   const phaseConfig = PHASE_CONFIG[currentPhase];
-  const StageIcon = phaseConfig.icon;
 
   /**
    * 현재 단계에서 보여줄 동사들을 계산
@@ -135,26 +136,26 @@ export const VerbTest = ({ applicant, onComplete }: VerbTestProps) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-primary-50 px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-primary-50 px-4 py-6 md:py-12">
       <div className="w-full max-w-4xl">
         {/* 상단 로고 및 제목 */}
-        <div className="text-center mb-8">
-          <Logo className="mx-auto mb-6" />
-          <h1 className="text-3xl font-bold text-neutral-800 mb-2">
+        <div className="text-center mb-6 md:mb-8">
+          <Logo className="mx-auto mb-4 md:mb-6" />
+          <h1 className="text-2xl md:text-3xl font-bold text-neutral-800 mb-2">
             직무 실행 유형 검사
           </h1>
-          <p className="text-neutral-600">
+          <p className="text-sm md:text-base text-neutral-600">
             {applicant.name}님의 직무 실행 유형을 파악합니다
           </p>
         </div>
 
         {/* 진행률 표시 */}
-        <div className="mb-6">
+        <div className="mb-4 md:mb-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-neutral-700">
+            <span className="text-xs md:text-sm font-medium text-neutral-700">
               진행률: {phaseConfig.step}/{TOTAL_STEPS} 단계
             </span>
-            <span className="text-sm text-neutral-600">
+            <span className="text-xs md:text-sm text-neutral-600">
               {Math.round((phaseConfig.step / TOTAL_STEPS) * 100)}%
             </span>
           </div>
@@ -167,60 +168,50 @@ export const VerbTest = ({ applicant, onComplete }: VerbTestProps) => {
         </div>
 
         {/* 메인 테스트 카드 */}
-        <div className="bg-white rounded-2xl shadow-xl border border-neutral-200 overflow-hidden">
-          {/* 카드 헤더 */}
-          <div className="bg-gradient-to-r from-primary-500 to-primary-600 px-8 py-6">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                <StageIcon className="w-6 h-6 text-white" />
+        <div className="bg-white rounded-xl md:rounded-2xl shadow-xl border border-neutral-200 overflow-hidden">
+          {/* 카드 헤더 - 2단 구조 */}
+          <div className="bg-gradient-to-r from-primary-500 to-primary-600">
+            {/* 상단: 메타 정보 */}
+            <div className="px-4 md:px-8 pt-4 md:pt-6 pb-3">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                  <MdLightbulb className="w-4 h-4 md:w-5 md:h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-white font-semibold text-sm md:text-base">
+                    {phaseConfig.step}/{TOTAL_STEPS} 단계
+                  </h2>
+                </div>
               </div>
-              <div>
-                <h2 className="text-white font-bold text-xl">
-                  {phaseConfig.title} ({phaseConfig.subtitle})
-                </h2>
-                <p className="text-primary-100 text-sm">
-                  {phaseConfig.context}
-                </p>
-              </div>
+            </div>
+
+            {/* 하단: 질문 텍스트 */}
+            <div className="px-4 md:px-8 py-4 md:py-6">
+              <p className="text-white text-lg md:text-2xl font-medium leading-relaxed">
+                {phaseConfig.instruction}
+              </p>
             </div>
           </div>
 
           {/* 카드 내용 */}
-          <div className="p-8">
-            {/* 질문 영역 */}
-            <div className="mb-8">
-              <div className="bg-primary-50 border border-primary-200 rounded-lg p-6">
-                <div className="flex gap-3">
-                  <MdLightbulb className="w-6 h-6 text-primary-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <h3 className="font-semibold text-neutral-800 mb-2">
-                      질문
-                    </h3>
-                    <p className="text-neutral-700">
-                      {phaseConfig.instruction}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* 선택 안내 */}
-              <div className="mt-4 flex items-center justify-between text-sm">
-                <span className="text-neutral-600">
-                  정확히{" "}
-                  <strong className="text-primary-600">{SELECT_COUNT}개</strong>
-                  를 선택해주세요
-                </span>
-                <span className="text-neutral-600">
-                  선택됨:{" "}
-                  <strong className="text-primary-600">
-                    {selectedVerbs.length}/{SELECT_COUNT}
-                  </strong>
-                </span>
-              </div>
+          <div className="p-4 md:p-8">
+            {/* 선택 안내 */}
+            <div className="mb-4 md:mb-6 flex items-center justify-between text-xs md:text-sm">
+              <span className="text-neutral-600">
+                정확히{" "}
+                <strong className="text-primary-600">{SELECT_COUNT}개</strong>를
+                선택해주세요
+              </span>
+              <span className="text-neutral-600">
+                선택됨:{" "}
+                <strong className="text-primary-600">
+                  {selectedVerbs.length}/{SELECT_COUNT}
+                </strong>
+              </span>
             </div>
 
             {/* 동사 선택 그리드 */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4 mb-6 md:mb-8">
               {availableVerbs.map(verb => {
                 const isSelected = selectedVerbs.includes(verb.id);
                 return (
@@ -229,9 +220,9 @@ export const VerbTest = ({ applicant, onComplete }: VerbTestProps) => {
                     type="button"
                     onClick={() => handleVerbClick(verb.id)}
                     className={`
-                      relative p-6 rounded-xl border-2 transition-all
-                      flex flex-col items-center justify-center gap-3
-                      min-h-[120px]
+                      relative p-4 md:p-6 rounded-lg md:rounded-xl border-2 transition-all
+                      flex flex-col items-center justify-center gap-2 md:gap-3
+                      min-h-[100px] md:min-h-[120px]
                       ${
                         isSelected
                           ? "border-primary-500 bg-primary-50 shadow-md"
@@ -241,14 +232,14 @@ export const VerbTest = ({ applicant, onComplete }: VerbTestProps) => {
                   >
                     {/* 선택 표시 */}
                     {isSelected && (
-                      <div className="absolute top-3 right-3">
-                        <MdCheckCircle className="w-6 h-6 text-primary-600" />
+                      <div className="absolute top-2 right-2 md:top-3 md:right-3">
+                        <MdCheckCircle className="w-5 h-5 md:w-6 md:h-6 text-primary-600" />
                       </div>
                     )}
 
                     {/* 동사 텍스트 */}
                     <span
-                      className={`text-lg font-semibold ${
+                      className={`text-base md:text-lg font-semibold ${
                         isSelected ? "text-primary-700" : "text-neutral-700"
                       }`}
                     >
@@ -265,7 +256,7 @@ export const VerbTest = ({ applicant, onComplete }: VerbTestProps) => {
             </div>
 
             {/* 하단 버튼 영역 */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-4">
               {/* 이전 단계로 버튼 */}
               <Button
                 type="button"
@@ -273,13 +264,13 @@ export const VerbTest = ({ applicant, onComplete }: VerbTestProps) => {
                 size="lg"
                 onClick={handlePrevious}
                 disabled={currentPhase === "start"}
-                className="min-w-[150px]"
+                className="min-w-[120px]"
               >
                 이전 단계로
               </Button>
 
               {/* 선택 상태 메시지 */}
-              <div className="text-sm text-neutral-600">
+              <div className="hidden md:block text-sm text-neutral-600">
                 {selectedVerbs.length === SELECT_COUNT ? (
                   <span className="flex items-center gap-2 text-primary-600 font-medium">
                     <MdCheckCircle className="w-5 h-5" />
@@ -299,7 +290,7 @@ export const VerbTest = ({ applicant, onComplete }: VerbTestProps) => {
                 size="lg"
                 onClick={handleNext}
                 disabled={selectedVerbs.length !== SELECT_COUNT}
-                className="min-w-[200px]"
+                className="min-w-[120px]"
               >
                 {currentPhase === "expert" ? "테스트 완료" : "다음 단계로"}
               </Button>
@@ -308,9 +299,9 @@ export const VerbTest = ({ applicant, onComplete }: VerbTestProps) => {
         </div>
 
         {/* 하단 안내 */}
-        <div className="mt-8 text-center">
-          <div className="bg-white/60 backdrop-blur-sm rounded-lg px-6 py-4 border border-neutral-200">
-            <p className="text-sm text-neutral-600">
+        <div className="mt-6 md:mt-8 text-center">
+          <div className="bg-white/60 backdrop-blur-sm rounded-lg md:rounded-xl px-4 md:px-6 py-3 md:py-4 border border-neutral-200">
+            <p className="text-xs md:text-sm text-neutral-600">
               질문이 있으신가요?{" "}
               <a
                 href="mailto:support@worksauce.kr"
