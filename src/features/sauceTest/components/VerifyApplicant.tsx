@@ -3,12 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion } from "framer-motion";
-import {
-  MdVerifiedUser,
-  MdCheckCircle,
-  MdEmail,
-  MdSecurity,
-} from "react-icons/md";
+import { MdCheckCircle, MdEmail, MdSecurity } from "react-icons/md";
 import { useToast } from "@/shared/components/ui/useToast";
 import { Button } from "@/shared/components/ui/Button";
 import { Input } from "@/shared/components/ui/Input";
@@ -59,9 +54,10 @@ export const VerifyApplicant = ({
     setIsVerifying(false);
 
     if (isNameMatch && isEmailMatch) {
-      showToast("success", "인증 완료", "테스트를 시작할 수 있습니다.");
+      // 성공 시 바로 다음 단계로 이동 (토스트 없음)
       onVerifySuccess();
     } else {
+      // 실패 시에만 토스트로 에러 표시
       if (!isNameMatch && !isEmailMatch) {
         showToast("error", "인증 실패", "이름과 이메일이 일치하지 않습니다.");
       } else if (!isNameMatch) {
@@ -103,19 +99,6 @@ export const VerifyApplicant = ({
             </p>
           </motion.div>
         </div>
-
-        {/* 보안 배지 */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="flex items-center justify-center gap-2 mb-8"
-        >
-          <MdVerifiedUser className="w-5 h-5 text-primary-600" />
-          <span className="text-sm text-neutral-600 font-medium">
-            안전하게 보호되는 테스트 환경
-          </span>
-        </motion.div>
 
         {/* 인증 폼 카드 */}
         <motion.div
@@ -169,7 +152,7 @@ export const VerifyApplicant = ({
                   id="email"
                   type="email"
                   label="이메일"
-                  placeholder="example@company.com"
+                  placeholder="example@worksauce.kr"
                   error={errors.email?.message}
                   isRequired
                   {...register("email")}
@@ -186,11 +169,11 @@ export const VerifyApplicant = ({
                 <div className="flex gap-3">
                   <MdEmail className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" />
                   <p className="text-sm text-neutral-700">
-                    채용 담당자가 보낸 이메일에 기재된{" "}
+                    테스트 링크를 받으신{" "}
                     <strong className="font-semibold text-neutral-800">
-                      이름과 이메일 주소
+                      이메일 주소와 이름을{" "}
                     </strong>
-                    를 정확히 입력해주세요.
+                    정확히 입력해주세요.
                   </p>
                 </div>
               </motion.div>
@@ -244,19 +227,6 @@ export const VerifyApplicant = ({
                 <span className="text-xs">↗</span>
               </a>
             </p>
-          </div>
-
-          {/* 테스트 정보 */}
-          <div className="flex items-center justify-center gap-6 text-xs text-neutral-500">
-            <span className="flex items-center gap-1">
-              <MdSecurity className="w-4 h-4" />
-              보안 연결
-            </span>
-            <span>•</span>
-            <span className="flex items-center gap-1">
-              <MdVerifiedUser className="w-4 h-4" />
-              검증된 테스트
-            </span>
           </div>
         </motion.div>
       </motion.div>
