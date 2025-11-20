@@ -1,7 +1,8 @@
-import { useState, useMemo } from "react";
-import { MdCheckCircle, MdLightbulb } from "react-icons/md";
+import { useState, useMemo, useEffect } from "react";
+import { MdCheckCircle } from "react-icons/md";
 import { Button } from "@/shared/components/ui/Button";
 import { Logo } from "@/shared/components/ui/Logo";
+import { TestCardHeader } from "../shared/TestCardHeader";
 import type { VerbCategory, Verb } from "../../types/verbTest.types";
 import type { Applicant } from "../../types/test";
 import {
@@ -15,34 +16,75 @@ import { PHASE_CONFIG, PHASE_ORDER } from "../../constants/verbTest";
 const isDev = import.meta.env.VITE_ENV !== "Production";
 
 const SELECT_COUNT = 2; // 각 단계에서 선택할 동사 개수
-const TOTAL_STEPS = 5; // 전체 단계 수
+const TOTAL_STEPS = PHASE_ORDER.length; // 전체 단계 수 (자동 계산)
+
+// 초기 선택 히스토리 상수
+const INITIAL_SELECTION_HISTORY: Record<VerbCategory, string[]> = {
+  start: [],
+  advance: [],
+  utility: [],
+  communicate: [],
+  expert: [],
+};
 
 interface VerbTestProps {
   applicant: Applicant;
+  testId: string;
   onComplete?: (result: {
     selectionHistory: Record<VerbCategory, string[]>;
   }) => void;
+  onSave?: () => void;
+  onReset?: () => void;
 }
 
-export const VerbTest = ({ applicant, onComplete }: VerbTestProps) => {
+export const VerbTest = ({
+  applicant,
+  testId,
+  onComplete,
+  onSave,
+  onReset,
+}: VerbTestProps) => {
   // 현재 단계
   const [currentPhase, setCurrentPhase] = useState<VerbCategory>("start");
 
   // 각 단계별 선택 히스토리
   const [selectionHistory, setSelectionHistory] = useState<
     Record<VerbCategory, string[]>
-  >({
-    start: [],
-    advance: [],
-    utility: [],
-    communicate: [],
-    expert: [],
-  });
+  >(INITIAL_SELECTION_HISTORY);
 
   // 현재 선택 중인 동사들
   const [selectedVerbs, setSelectedVerbs] = useState<string[]>([]);
 
   const phaseConfig = PHASE_CONFIG[currentPhase];
+
+  // 로컬스토리지 키
+  const storageKey = `verbTest_${testId}`;
+
+  // 컴포넌트 마운트 시 로컬스토리지에서 상태 복원 (개발 모드 전용)
+  useEffect(() => {
+    if (isDev) {
+      const savedData = localStorage.getItem(storageKey);
+
+      if (savedData) {
+        try {
+          const parsed = JSON.parse(savedData);
+          console.log("✅ VerbTest 저장된 상태 복원:", parsed);
+
+          // testId 검증
+          if (parsed.testId === testId) {
+            setCurrentPhase(parsed.currentPhase || "start");
+            setSelectionHistory(parsed.selectionHistory || INITIAL_SELECTION_HISTORY);
+            setSelectedVerbs(parsed.selectedVerbs || []);
+          } else {
+            console.log("⚠️ 다른 테스트의 VerbTest 데이터이므로 무시");
+            localStorage.removeItem(storageKey);
+          }
+        } catch (error) {
+          console.error("VerbTest 상태 복원 실패:", error);
+        }
+      }
+    }
+  }, [testId, storageKey]);
 
   /**
    * 현재 단계에서 보여줄 동사들을 계산
@@ -171,29 +213,12 @@ export const VerbTest = ({ applicant, onComplete }: VerbTestProps) => {
 
         {/* 메인 테스트 카드 */}
         <div className="bg-white rounded-xl md:rounded-2xl shadow-xl border border-neutral-200 overflow-hidden">
-          {/* 카드 헤더 - 2단 구조 */}
-          <div className="bg-gradient-to-r from-primary-500 to-primary-600">
-            {/* 상단: 메타 정보 */}
-            <div className="px-4 md:px-8 pt-4 md:pt-6 pb-3">
-              <div className="flex items-center gap-2 md:gap-3">
-                <div className="w-8 h-8 md:w-10 md:h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                  <MdLightbulb className="w-4 h-4 md:w-5 md:h-5 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-white font-semibold text-sm md:text-base">
-                    {phaseConfig.step}/{TOTAL_STEPS} 단계
-                  </h2>
-                </div>
-              </div>
-            </div>
-
-            {/* 하단: 질문 텍스트 */}
-            <div className="px-4 md:px-8 py-4 md:py-6">
-              <p className="text-white text-lg md:text-2xl font-medium leading-relaxed">
-                {phaseConfig.instruction}
-              </p>
-            </div>
-          </div>
+          <TestCardHeader
+            title={`${phaseConfig.step}/${TOTAL_STEPS} 단계`}
+            questionText={phaseConfig.instruction}
+            onSave={onSave}
+            onReset={onReset}
+          />
 
           {/* 카드 내용 */}
           <div className="p-4 md:p-8">
