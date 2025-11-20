@@ -9,6 +9,7 @@ import { Button } from "@/shared/components/ui/Button";
 import { Input } from "@/shared/components/ui/Input";
 import { Logo } from "@/shared/components/ui/Logo";
 import { type Applicant } from "../types/test";
+import { updateEmailOpenedAt } from "../api/testApi";
 
 // 폼 검증 스키마
 const verifySchema = z.object({
@@ -54,6 +55,9 @@ export const VerifyApplicant = ({
     setIsVerifying(false);
 
     if (isNameMatch && isEmailMatch) {
+      // 이메일 열람 시간 기록
+      await updateEmailOpenedAt(applicant.id);
+
       // 성공 시 바로 다음 단계로 이동 (토스트 없음)
       onVerifySuccess();
     } else {
@@ -199,7 +203,7 @@ export const VerifyApplicant = ({
                   ) : (
                     <span className="flex items-center justify-center gap-2">
                       <MdCheckCircle className="w-5 h-5" />
-                      본인 인증 후 테스트 시작
+                      인증 후 테스트 시작
                     </span>
                   )}
                 </Button>
