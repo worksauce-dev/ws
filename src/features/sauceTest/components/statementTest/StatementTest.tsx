@@ -97,6 +97,22 @@ const StatementTest = ({ onSave, onReset }: StatementTestProps = {}) => {
     }
   };
 
+  // 로컬스토리지에 저장 (임시저장 버튼용)
+  const handleSaveToLocalStorage = () => {
+    const saveData = {
+      questions, // 랜덤화된 질문 순서 저장 (중요!)
+      currentQuestionIndex,
+      answers,
+      autoAdvance,
+      timestamp: new Date().toISOString(),
+    };
+    localStorage.setItem("statementTest_progress", JSON.stringify(saveData));
+    console.log("StatementTest 진행 상황 저장됨:", saveData);
+
+    // 부모 컴포넌트의 onSave 콜백도 실행 (저장 메시지 표시용)
+    onSave?.();
+  };
+
   // 질문이 로드되기 전 로딩 상태
   if (!currentQuestion) {
     return (
@@ -153,7 +169,7 @@ const StatementTest = ({ onSave, onReset }: StatementTestProps = {}) => {
           <TestCardHeader
             title={`문항 ${currentQuestionIndex + 1}`}
             questionText={currentQuestion.text}
-            onSave={onSave}
+            onSave={handleSaveToLocalStorage}
             onReset={onReset}
             extraButtons={
               <button
