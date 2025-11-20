@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { MdCheckCircle, MdLightbulb, MdRefresh, MdSave } from "react-icons/md";
+import { MdCheckCircle } from "react-icons/md";
 import { Button } from "@/shared/components/ui/Button";
 import { Logo } from "@/shared/components/ui/Logo";
+import { TestCardHeader } from "../shared/TestCardHeader";
 import {
   ANSWER_OPTIONS,
   TOTAL_QUESTIONS,
@@ -9,13 +10,14 @@ import {
 } from "../../constants/testQuestions";
 import type { AnswerValue, Question } from "../../constants/testQuestions";
 
-const isDev = import.meta.env.VITE_ENV !== "Production";
+const AUTO_ADVANCE_DELAY = 600; // 자동 진행 딜레이 (ms)
 
 interface StatementTestProps {
+  onSave?: () => void;
   onReset?: () => void;
 }
 
-const StatementTest = ({ onReset }: StatementTestProps = {}) => {
+const StatementTest = ({ onSave, onReset }: StatementTestProps = {}) => {
   // 랜덤화된 질문 배열 (로컬스토리지에서 복원 또는 새로 생성)
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -24,7 +26,6 @@ const StatementTest = ({ onReset }: StatementTestProps = {}) => {
   );
   const [autoAdvance, setAutoAdvance] = useState(true); // 자동 진행 기본값: true
   const [answers, setAnswers] = useState<Record<number, AnswerValue>>({}); // 전체 답변 기록
-  const [showSaveMessage, setShowSaveMessage] = useState(false);
   const [isRestoredFromSave, setIsRestoredFromSave] = useState(false);
 
   const currentQuestion = questions[currentQuestionIndex];
@@ -72,7 +73,7 @@ const StatementTest = ({ onReset }: StatementTestProps = {}) => {
       setTimeout(() => {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
         setSelectedAnswer(null);
-      }, 300); // 0.3초 후 자동 진행
+      }, AUTO_ADVANCE_DELAY);
     }
   };
 
@@ -96,25 +97,6 @@ const StatementTest = ({ onReset }: StatementTestProps = {}) => {
     }
   };
 
-  // 로컬스토리지에 저장
-  const handleSaveToLocalStorage = () => {
-    const saveData = {
-      questions, // 질문 순서 저장
-      currentQuestionIndex,
-      answers,
-      autoAdvance,
-      timestamp: new Date().toISOString(),
-    };
-    localStorage.setItem("statementTest_progress", JSON.stringify(saveData));
-    console.log("StatementTest 진행 상황 저장됨:", saveData);
-
-    // 저장 메시지 표시
-    setShowSaveMessage(true);
-    setTimeout(() => {
-      setShowSaveMessage(false);
-    }, 2000);
-  };
-
   // 질문이 로드되기 전 로딩 상태
   if (!currentQuestion) {
     return (
@@ -129,18 +111,6 @@ const StatementTest = ({ onReset }: StatementTestProps = {}) => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-primary-50 px-4 py-6 md:py-12 relative">
-      {/* 저장 완료 메시지 */}
-      {showSaveMessage && (
-        <div className="fixed top-4 md:top-8 left-1/2 -translate-x-1/2 z-50 animate-fade-in px-4">
-          <div className="bg-success-600 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg shadow-lg flex items-center gap-2">
-            <MdCheckCircle className="w-5 h-5" />
-            <span className="text-sm md:text-base font-medium">
-              진행 상황이 저장되었습니다
-            </span>
-          </div>
-        </div>
-      )}
-
       <div className="w-full max-w-4xl">
         {/* 상단 로고 및 제목 */}
         <div className="text-center mb-6 md:mb-8">
@@ -180,68 +150,23 @@ const StatementTest = ({ onReset }: StatementTestProps = {}) => {
 
         {/* 메인 테스트 카드 */}
         <div className="bg-white rounded-xl md:rounded-2xl shadow-xl border border-neutral-200 overflow-hidden">
-          {/* 카드 헤더 - 2단 구조 */}
-          <div className="bg-gradient-to-r from-primary-500 to-primary-600">
-            {/* 상단: 메타 정보 */}
-            <div className="px-4 md:px-8 pt-4 md:pt-6 pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 md:gap-3">
-                  <div className="w-8 h-8 md:w-10 md:h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                    <MdLightbulb className="w-4 h-4 md:w-5 md:h-5 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-white font-semibold text-sm md:text-base">
-                      문항 {currentQuestionIndex + 1}
-                    </h2>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-1 md:gap-2">
-                  {/* 자동 진행 토글 */}
-                  <button
-                    onClick={() => setAutoAdvance(!autoAdvance)}
-                    className="text-xs md:text-sm text-white/90 hover:text-white transition-colors px-2 md:px-3 py-1 rounded-md hover:bg-white/10 border border-white/30"
-                  >
-                    <span className="hidden sm:inline">
-                      {autoAdvance ? "✓ 자동 진행" : "수동 진행"}
-                    </span>
-                    <span className="sm:hidden">
-                      {autoAdvance ? "✓" : "수동"}
-                    </span>
-                  </button>
-
-                  {/* 임시저장 버튼 */}
-                  <button
-                    onClick={handleSaveToLocalStorage}
-                    className="flex items-center gap-1 text-xs md:text-sm text-white/90 hover:text-white transition-colors px-2 md:px-3 py-1 rounded-md hover:bg-white/10 border border-white/30"
-                    title="현재까지의 진행 상황을 임시 저장합니다"
-                  >
-                    <MdSave className="w-4 h-4" />
-                    <span className="hidden sm:inline">임시저장</span>
-                  </button>
-
-                  {/* 개발 모드 전용: 리셋 버튼 */}
-                  {isDev && onReset && (
-                    <button
-                      onClick={onReset}
-                      className="flex items-center gap-1 text-xs md:text-sm text-white/60 hover:text-white transition-colors px-2 md:px-3 py-1 rounded-md hover:bg-white/10 border border-white/20"
-                      title="전체 테스트 리셋 (개발 모드)"
-                    >
-                      <MdRefresh className="w-4 h-4" />
-                      <span className="hidden sm:inline">리셋 (DEV)</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* 하단: 질문 텍스트 */}
-            <div className="px-4 md:px-8 py-4 md:py-6">
-              <p className="text-white text-lg md:text-2xl font-medium leading-relaxed">
-                {currentQuestion.text}
-              </p>
-            </div>
-          </div>
+          <TestCardHeader
+            title={`문항 ${currentQuestionIndex + 1}`}
+            questionText={currentQuestion.text}
+            onSave={onSave}
+            onReset={onReset}
+            extraButtons={
+              <button
+                onClick={() => setAutoAdvance(!autoAdvance)}
+                className="text-xs md:text-sm text-white/90 hover:text-white transition-colors px-2 md:px-3 py-1 rounded-md hover:bg-white/10 border border-white/30"
+              >
+                <span className="hidden sm:inline">
+                  {autoAdvance ? "✓ 자동 진행" : "수동 진행"}
+                </span>
+                <span className="sm:hidden">{autoAdvance ? "✓" : "수동"}</span>
+              </button>
+            }
+          />
 
           {/* 카드 내용 */}
           <div className="p-4 md:p-8">
