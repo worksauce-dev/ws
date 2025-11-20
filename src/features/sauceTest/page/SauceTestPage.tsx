@@ -107,9 +107,7 @@ export const SauceTestPage = () => {
 
   // 테스트 세션 시작
   if (showTestSession) {
-    return (
-      <TestSession applicant={applicant} testId={testId} />
-    );
+    return <TestSession applicant={applicant} testId={testId} />;
   }
 
   // 검증 완료 후 로딩 화면

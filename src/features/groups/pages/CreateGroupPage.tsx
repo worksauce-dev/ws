@@ -99,12 +99,16 @@ export const CreateGroupPage = () => {
    */
   const handleSendSauceTest = async (
     group: Pick<Group, "id" | "deadline">,
-    applicants: Array<{ id: string; name: string; email: string; test_token: string }>
+    applicants: Array<{
+      id: string;
+      name: string;
+      email: string;
+    }>
   ) => {
     try {
       // 사용자 이름 가져오기 (showRealName 설정에 따라)
       const userName = showRealName
-        ? (user?.user_metadata?.name || user?.email?.split("@")[0] || "관리자")
+        ? user?.user_metadata?.name || user?.email?.split("@")[0] || "관리자"
         : "담당자";
 
       // 모든 지원자에게 이메일 발송
@@ -113,7 +117,7 @@ export const CreateGroupPage = () => {
           applicantEmail: applicant.email,
           userName: userName,
           applicantName: applicant.name,
-          testId: applicant.test_token,
+          testId: applicant.id,
           dashboardId: group.id,
           deadline: group.deadline,
         })
@@ -203,8 +207,6 @@ export const CreateGroupPage = () => {
         email: app.email,
       })),
     };
-
-    console.log(request);
 
     // API 호출
     createGroup(request);

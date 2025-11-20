@@ -9,7 +9,6 @@ import type {
   CreateGroupRequest,
   UpdateGroupRequest,
 } from "../types/group.types";
-import { nanoid } from "nanoid";
 
 /**
  * 그룹 생성 API
@@ -17,7 +16,6 @@ import { nanoid } from "nanoid";
  * 플로우:
  * 1. groups 테이블에 그룹 정보 INSERT
  * 2. applicants 테이블에 지원자들 일괄 INSERT
- * 3. 각 지원자마다 고유 test_token 생성
  *
  * @param request 그룹 생성 요청 데이터
  * @returns 생성된 그룹 + 지원자 목록
@@ -44,19 +42,13 @@ export const createGroup = async (data: CreateGroupRequest) => {
   if (groupError) throw groupError;
 
   // Step 2: applicants 테이블에 각 지원자 INSERT
-  const applicantsToInsert = data.applicants.map(applicant => {
-    const token = nanoid(32); // 고유 토큰 생성
-
-    return {
-      group_id: newGroup.id, // 방금 생성된 그룹 ID
-      name: applicant.name,
-      email: applicant.email,
-      test_token: token,
-      test_url: `${import.meta.env.VITE_APP_URL}/test/${token}`,
-      test_status: "pending",
-      is_starred: false,
-    };
-  });
+  const applicantsToInsert = data.applicants.map(applicant => ({
+    group_id: newGroup.id, // 방금 생성된 그룹 ID
+    name: applicant.name,
+    email: applicant.email,
+    test_status: "pending",
+    is_starred: false,
+  }));
 
   const { data: insertedApplicants, error: applicantsError } = await supabase
     .from("applicants")

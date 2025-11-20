@@ -39,16 +39,13 @@ export interface Applicant {
   group_id: string;
   name: string;
   email: string;
-  test_token: string;
   test_status: TestStatus;
   test_result: TestResult | null;
-  test_url: string | null;
-  email_sent_at: string | null;
   email_opened_at: string | null;
-  test_started_at: string | null;
   test_submitted_at: string | null;
   created_at: string;
   updated_at: string;
+  is_starred: boolean;
 }
 
 export interface ApplicantSummary {
@@ -86,13 +83,11 @@ export interface CreateApplicantResponse {
   id: string;
   name: string;
   email: string;
-  test_token: string;
-  test_url: string;
 }
 
 // 검사 제출 요청 타입
 export interface SubmitTestRequest {
-  test_token: string;
+  applicant_id: string;
   answers: Record<string, unknown>; // 검사 답변 데이터
 }
 

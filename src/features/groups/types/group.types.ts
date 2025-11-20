@@ -86,7 +86,6 @@ export interface CreateGroupResponse {
     id: string;
     name: string;
     email: string;
-    test_token: string;
   }>;
 }
 

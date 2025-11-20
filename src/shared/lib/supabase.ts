@@ -38,7 +38,6 @@ export type Candidate = {
   test_sent_at?: string | null;
   test_completed_at?: string | null;
   status: "pending" | "test_sent" | "completed" | "expired";
-  test_token?: string | null;
   expires_at?: string | null;
   created_at: string;
   updated_at: string;
@@ -75,16 +74,13 @@ export type Database = {
           group_id: string;
           name: string;
           email: string;
-          test_token: string;
           test_status: string;
           test_result: unknown | null;
-          test_url: string | null;
-          email_sent_at: string | null;
           email_opened_at: string | null;
-          test_started_at: string | null;
           test_submitted_at: string | null;
           created_at: string;
           updated_at: string;
+          is_starred: boolean;
         };
         Insert: Omit<
           Database["public"]["Tables"]["applicants"]["Row"],
