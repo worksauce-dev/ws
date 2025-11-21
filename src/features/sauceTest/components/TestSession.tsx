@@ -4,6 +4,7 @@ import { VerbTest } from "./verbTest/VerbTest";
 import StatementTest, { type StatementTestResult } from "./statementTest/StatementTest";
 import type { Applicant } from "../types/test";
 import type { VerbCategory } from "../types/verbTest.types";
+import type { WorkTypeCode, Question, AnswerValue } from "../constants/testQuestions";
 
 interface TestSessionProps {
   applicant: Applicant;
@@ -15,7 +16,34 @@ export interface VerbTestResult {
   selectionHistory: Record<VerbCategory, string[]>;
 }
 
+// 답변이 포함된 질문 타입
+export interface QuestionWithAnswer extends Question {
+  applicant_answer: AnswerValue;
+}
+
+// WorkType별로 그룹화된 답변 결과 타입 (QUESTIONS_BY_TYPE 구조)
+export type AnswersByWorkType = Record<WorkTypeCode, QuestionWithAnswer[]>;
+
 const isDev = import.meta.env.VITE_ENV !== "Production";
+
+// StatementTest 결과를 WorkType별로 그룹화하는 함수
+const groupAnswersByWorkType = (
+  statementResult: StatementTestResult
+): AnswersByWorkType => {
+  const grouped: Partial<AnswersByWorkType> = {};
+
+  statementResult.results.forEach((questionWithAnswer) => {
+    const { workType } = questionWithAnswer;
+
+    if (!grouped[workType]) {
+      grouped[workType] = [];
+    }
+
+    grouped[workType]!.push(questionWithAnswer);
+  });
+
+  return grouped as AnswersByWorkType;
+};
 
 export const TestSession = ({ applicant, testId }: TestSessionProps) => {
   const [currentTest, setCurrentTest] = useState<"verb" | "statement" | "completed">("verb");
@@ -157,7 +185,11 @@ export const TestSession = ({ applicant, testId }: TestSessionProps) => {
     );
   }
 
-  // 테스트 완료
+  // 테스트 완료 - WorkType별로 그룹화된 답변 생성
+  const answersByWorkType = statementTestResult
+    ? groupAnswersByWorkType(statementTestResult)
+    : null;
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-primary-50 px-4">
       <div className="text-center">
@@ -171,11 +203,23 @@ export const TestSession = ({ applicant, testId }: TestSessionProps) => {
           모든 테스트 결과가 저장되었습니다.
         </p>
         {isDev && (
-          <div className="bg-white rounded-lg p-6 max-w-md mx-auto text-left">
-            <h3 className="font-semibold text-neutral-800 mb-2">개발 모드 - 저장된 결과:</h3>
-            <pre className="text-xs bg-neutral-50 p-4 rounded overflow-auto max-h-60">
-              {JSON.stringify({ verbTestResult, statementTestResult }, null, 2)}
-            </pre>
+          <div className="bg-white rounded-lg p-6 max-w-4xl mx-auto text-left space-y-4">
+            <div>
+              <h3 className="font-semibold text-neutral-800 mb-2">
+                개발 모드 - VerbTest 결과:
+              </h3>
+              <pre className="text-xs bg-neutral-50 p-4 rounded overflow-auto max-h-60">
+                {JSON.stringify(verbTestResult, null, 2)}
+              </pre>
+            </div>
+            <div>
+              <h3 className="font-semibold text-neutral-800 mb-2">
+                개발 모드 - WorkType별 답변 (QUESTIONS_BY_TYPE 구조):
+              </h3>
+              <pre className="text-xs bg-neutral-50 p-4 rounded overflow-auto max-h-96">
+                {JSON.stringify(answersByWorkType, null, 2)}
+              </pre>
+            </div>
           </div>
         )}
       </div>

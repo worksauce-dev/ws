@@ -14,7 +14,7 @@ const AUTO_ADVANCE_DELAY = 600; // 자동 진행 딜레이 (ms)
 
 // StatementTest 결과 타입 - 각 질문에 답변 포함
 export interface QuestionWithAnswer extends Question {
-  answer: AnswerValue;
+  applicant_answer: AnswerValue;
 }
 
 export interface StatementTestResult {
@@ -105,7 +105,7 @@ const StatementTest = ({ onSave, onReset, onComplete }: StatementTestProps = {})
     // 각 질문에 답변을 포함한 결과 생성
     const results: QuestionWithAnswer[] = questions.map((question, index) => ({
       ...question,
-      answer: answers[index],
+      applicant_answer: answers[index],
     }));
 
     onComplete?.({ results });
