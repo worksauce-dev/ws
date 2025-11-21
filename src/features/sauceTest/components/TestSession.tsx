@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { MdSave } from "react-icons/md";
 import { VerbTest } from "./verbTest/VerbTest";
-import StatementTest from "./statementTest/StatementTest";
+import StatementTest, { type StatementTestResult } from "./statementTest/StatementTest";
 import type { Applicant } from "../types/test";
 import type { VerbCategory } from "../types/verbTest.types";
 
@@ -18,8 +18,11 @@ export interface VerbTestResult {
 const isDev = import.meta.env.VITE_ENV !== "Production";
 
 export const TestSession = ({ applicant, testId }: TestSessionProps) => {
-  const [currentTest, setCurrentTest] = useState<"verb" | "statement">("verb");
+  const [currentTest, setCurrentTest] = useState<"verb" | "statement" | "completed">("verb");
   const [verbTestResult, setVerbTestResult] = useState<VerbTestResult | null>(
+    null
+  );
+  const [statementTestResult, setStatementTestResult] = useState<StatementTestResult | null>(
     null
   );
   const [showSaveMessage, setShowSaveMessage] = useState(false);
@@ -37,6 +40,7 @@ export const TestSession = ({ applicant, testId }: TestSessionProps) => {
           if (parsed.testId === testId) {
             setCurrentTest(parsed.currentTest);
             setVerbTestResult(parsed.verbTestResult);
+            setStatementTestResult(parsed.statementTestResult);
             console.log("✅ 같은 테스트 세션 복원됨:", testId);
           } else {
             console.log("⚠️ 다른 테스트 세션이므로 복원하지 않음:", {
@@ -58,18 +62,16 @@ export const TestSession = ({ applicant, testId }: TestSessionProps) => {
     console.log("VerbTest completed with result:", result);
     setVerbTestResult(result);
     setCurrentTest("statement");
+  };
 
-    // 개발 모드: VerbTest 결과 자동 저장
-    if (import.meta.env.VITE_ENV !== "Production") {
-      const sessionData = {
-        testId: testId, // testId 추가
-        currentTest: "statement",
-        verbTestResult: result,
-        timestamp: new Date().toISOString(),
-      };
-      localStorage.setItem("testSession_full", JSON.stringify(sessionData));
-      console.log("VerbTest 결과 자동 저장됨:", sessionData);
-    }
+  // 문항 테스트 완료 핸들러
+  const handleStatementTestComplete = (result: StatementTestResult) => {
+    console.log("StatementTest completed with result:", result);
+    setStatementTestResult(result);
+    setCurrentTest("completed");
+
+    // TODO: 서버에 전체 결과 제출
+    // submitTestResults({ verbTestResult, statementTestResult: result });
   };
 
   // 통합 임시 저장 핸들러
@@ -80,6 +82,7 @@ export const TestSession = ({ applicant, testId }: TestSessionProps) => {
       testId,
       currentTest,
       verbTestResult,
+      statementTestResult,
       timestamp: new Date().toISOString(),
     };
 
@@ -97,6 +100,7 @@ export const TestSession = ({ applicant, testId }: TestSessionProps) => {
   const handleReset = () => {
     setCurrentTest("verb");
     setVerbTestResult(null);
+    setStatementTestResult(null);
     localStorage.removeItem("testSession_full");
     localStorage.removeItem("statementTest_progress");
     localStorage.removeItem(`verbTest_${testId}`);
@@ -130,23 +134,51 @@ export const TestSession = ({ applicant, testId }: TestSessionProps) => {
   }
 
   // 문항 테스트
-  return (
-    <>
-      {/* 저장 완료 메시지 */}
-      {showSaveMessage && (
-        <div className="fixed top-4 md:top-8 left-1/2 -translate-x-1/2 z-50 animate-fade-in px-4">
-          <div className="bg-success-600 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg shadow-lg flex items-center gap-2">
-            <MdSave className="w-5 h-5" />
-            <span className="text-sm md:text-base font-medium">
-              진행 상황이 저장되었습니다
-            </span>
+  if (currentTest === "statement") {
+    return (
+      <>
+        {/* 저장 완료 메시지 */}
+        {showSaveMessage && (
+          <div className="fixed top-4 md:top-8 left-1/2 -translate-x-1/2 z-50 animate-fade-in px-4">
+            <div className="bg-success-600 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg shadow-lg flex items-center gap-2">
+              <MdSave className="w-5 h-5" />
+              <span className="text-sm md:text-base font-medium">
+                진행 상황이 저장되었습니다
+              </span>
+            </div>
           </div>
+        )}
+        <StatementTest
+          onSave={isDev ? handleSave : undefined}
+          onReset={isDev ? handleReset : undefined}
+          onComplete={handleStatementTestComplete}
+        />
+      </>
+    );
+  }
+
+  // 테스트 완료
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-primary-50 px-4">
+      <div className="text-center">
+        <div className="w-20 h-20 mx-auto mb-6 bg-success-100 rounded-full flex items-center justify-center">
+          <MdSave className="w-10 h-10 text-success-600" />
         </div>
-      )}
-      <StatementTest
-        onSave={isDev ? handleSave : undefined}
-        onReset={isDev ? handleReset : undefined}
-      />
-    </>
+        <h1 className="text-2xl md:text-3xl font-bold text-neutral-800 mb-4">
+          테스트가 완료되었습니다!
+        </h1>
+        <p className="text-neutral-600 mb-8">
+          모든 테스트 결과가 저장되었습니다.
+        </p>
+        {isDev && (
+          <div className="bg-white rounded-lg p-6 max-w-md mx-auto text-left">
+            <h3 className="font-semibold text-neutral-800 mb-2">개발 모드 - 저장된 결과:</h3>
+            <pre className="text-xs bg-neutral-50 p-4 rounded overflow-auto max-h-60">
+              {JSON.stringify({ verbTestResult, statementTestResult }, null, 2)}
+            </pre>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };

@@ -12,12 +12,22 @@ import type { AnswerValue, Question } from "../../constants/testQuestions";
 
 const AUTO_ADVANCE_DELAY = 600; // 자동 진행 딜레이 (ms)
 
+// StatementTest 결과 타입 - 각 질문에 답변 포함
+export interface QuestionWithAnswer extends Question {
+  answer: AnswerValue;
+}
+
+export interface StatementTestResult {
+  results: QuestionWithAnswer[];
+}
+
 interface StatementTestProps {
   onSave?: () => void;
   onReset?: () => void;
+  onComplete?: (result: StatementTestResult) => void;
 }
 
-const StatementTest = ({ onSave, onReset }: StatementTestProps = {}) => {
+const StatementTest = ({ onSave, onReset, onComplete }: StatementTestProps = {}) => {
   // 랜덤화된 질문 배열 (로컬스토리지에서 복원 또는 새로 생성)
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -84,8 +94,21 @@ const StatementTest = ({ onSave, onReset }: StatementTestProps = {}) => {
       setCurrentQuestionIndex(nextIndex);
       setSelectedAnswer(answers[nextIndex] ?? null);
     } else {
-      console.log("Test completed!");
+      handleComplete();
     }
+  };
+
+  // 테스트 완료 핸들러
+  const handleComplete = () => {
+    console.log("StatementTest completed!");
+
+    // 각 질문에 답변을 포함한 결과 생성
+    const results: QuestionWithAnswer[] = questions.map((question, index) => ({
+      ...question,
+      answer: answers[index],
+    }));
+
+    onComplete?.({ results });
   };
 
   // 이전 질문 핸들러
@@ -296,7 +319,7 @@ const StatementTest = ({ onSave, onReset }: StatementTestProps = {}) => {
                     type="button"
                     variant="primary"
                     size="lg"
-                    onClick={() => console.log("Test completed!")}
+                    onClick={handleComplete}
                     className="min-w-[100px] md:min-w-[150px]"
                   >
                     테스트 완료
