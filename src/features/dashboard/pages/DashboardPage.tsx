@@ -849,7 +849,7 @@ export const DashboardPage = () => {
       {/* Calendar View */}
       {viewMode === "calendar" && (
         <CalendarView
-          groups={mockGroups as Group[]}
+          groups={filteredGroups}
           onGroupClick={handleGroupClick}
         />
       )}
