@@ -1,4 +1,5 @@
 import type { Applicant as ValidatorApplicant } from "../utils/applicantValidator";
+import type { Applicant } from "@/shared/types/database.types";
 
 export interface NewApplicantForm {
   name: string;
@@ -31,22 +32,6 @@ export interface UseApplicantManagerReturn {
  */
 
 // 검사 상태
-export type TestStatus = "pending" | "in_progress" | "completed" | "expired";
-
-// 데이터베이스 지원자 타입
-export interface Applicant {
-  id: string;
-  group_id: string;
-  name: string;
-  email: string;
-  test_status: TestStatus;
-  test_result: TestResult | null;
-  email_opened_at: string | null;
-  test_submitted_at: string | null;
-  created_at: string;
-  updated_at: string;
-  is_starred: boolean;
-}
 
 export interface ApplicantSummary {
   id: string;

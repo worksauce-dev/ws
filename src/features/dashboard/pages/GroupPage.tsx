@@ -19,135 +19,41 @@ import {
 } from "react-icons/md";
 import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
 import { TabGroup } from "@/shared/components/ui/TabGroup";
-
-// Types
-interface Applicant {
-  id: string;
-  name: string;
-  email: string;
-  position: string;
-  appliedAt: string;
-  testCompletedAt?: string;
-  status: "pending" | "completed" | "recommended" | "filtered";
-  score?: number;
-  workType?: string;
-  matchScore?: number;
-  strengths?: string[];
-  concerns?: string[];
-  isStarred?: boolean;
-}
-
-interface GroupDetail {
-  id: string;
-  name: string;
-  description: string;
-  createdAt: string;
-  status: "active" | "completed" | "draft";
-  preferredWorkTypes: string[];
-  totalCandidates: number;
-  completedTests: number;
-  recommendedCandidates: number;
-  filteredCandidates: number;
-}
+import {
+  type Applicant,
+  type Group,
+  type TestStatus,
+} from "@/shared/types/database.types";
 
 // Mock data
-const mockGroup: GroupDetail = {
+const mockGroup: Group = {
   id: "1",
   name: "9월 신입 개발자 채용",
-  description: "Frontend/Backend 신입 개발자 공개 채용",
-  createdAt: "2024-09-01",
+  description: "Frontend 신입 개발자 공개 채용",
+  created_at: "2025-11-19 10:23:33.785434+00",
+  updated_at: "2025-11-19 10:23:33.785434+00",
   status: "active",
-  preferredWorkTypes: ["기준형", "예술형", "도전형"],
-  totalCandidates: 24,
-  completedTests: 18,
-  recommendedCandidates: 6,
-  filteredCandidates: 12,
+  user_id: "1",
+  position: "Frontend Developer",
+  experience_level: "junior",
+  auto_reminder: true,
+  preferred_work_types: ["AF", "UR"],
+  deadline: "2025-11-26 00:00:00+00",
 };
 
 const mockApplicants: Applicant[] = [
   {
     id: "1",
-    name: "김철수",
-    email: "kim.cs@email.com",
-    position: "Frontend Developer",
-    appliedAt: "2024-09-15",
-    testCompletedAt: "2024-09-18",
-    status: "recommended",
-    score: 92,
-    workType: "창조형",
-    matchScore: 95,
-    strengths: ["문제해결능력", "창의적 사고", "기술습득력"],
-    concerns: ["팀워크 경험 부족"],
-    isStarred: true,
-  },
-  {
-    id: "2",
+    group_id: "1",
     name: "이영희",
     email: "lee.yh@email.com",
-    position: "Backend Developer",
-    appliedAt: "2024-09-14",
-    testCompletedAt: "2024-09-17",
-    status: "recommended",
-    score: 88,
-    workType: "분석형",
-    matchScore: 92,
-    strengths: ["논리적 사고", "체계적 접근", "꼼꼼함"],
-    concerns: ["커뮤니케이션 스타일"],
-    isStarred: true,
-  },
-  {
-    id: "3",
-    name: "박민수",
-    email: "park.ms@email.com",
-    position: "Full Stack Developer",
-    appliedAt: "2024-09-13",
-    testCompletedAt: "2024-09-16",
-    status: "recommended",
-    score: 85,
-    workType: "협력형",
-    matchScore: 88,
-    strengths: ["팀워크", "적응력", "의사소통"],
-    concerns: ["기술적 깊이"],
-    isStarred: false,
-  },
-  {
-    id: "4",
-    name: "최지원",
-    email: "choi.jw@email.com",
-    position: "Frontend Developer",
-    appliedAt: "2024-09-12",
-    testCompletedAt: "2024-09-15",
-    status: "filtered",
-    score: 72,
-    workType: "실행형",
-    matchScore: 65,
-    strengths: ["실행력", "책임감"],
-    concerns: ["기술적 역량", "학습 의지"],
-    isStarred: false,
-  },
-  {
-    id: "5",
-    name: "정수진",
-    email: "jung.sj@email.com",
-    position: "Backend Developer",
-    appliedAt: "2024-09-11",
-    testCompletedAt: "2024-09-14",
-    status: "filtered",
-    score: 76,
-    workType: "계획형",
-    matchScore: 70,
-    strengths: ["계획수립", "체계성"],
-    concerns: ["유연성 부족", "혁신적 사고"],
-    isStarred: false,
-  },
-  {
-    id: "6",
-    name: "장혜진",
-    email: "jang.hj@email.com",
-    position: "Full Stack Developer",
-    appliedAt: "2024-09-10",
-    status: "pending",
-    isStarred: false,
+    test_status: "in_progress",
+    test_result: null,
+    email_opened_at: null,
+    test_submitted_at: null,
+    created_at: "2025-11-19 10:23:33.785434+00",
+    updated_at: "2025-11-19 10:23:33.785434+00",
+    is_starred: false,
   },
 ];
 
@@ -186,21 +92,21 @@ const workTypeDistribution = [
 
 export const GroupPage = () => {
   const [selectedTab, setSelectedTab] = useState<
-    "recommended" | "all" | "filtered"
-  >("recommended");
+    "in_progress" | "completed" | "expired" | "pending"
+  >("in_progress");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"score" | "matchScore" | "appliedAt">(
     "matchScore"
   );
   const navigate = useNavigate();
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: TestStatus) => {
     switch (status) {
       case "completed":
         return <MdCheckCircle className="w-4 h-4 text-success" />;
-      case "recommended":
+      case "in_progress":
         return <MdStar className="w-4 h-4 text-warning" />;
-      case "filtered":
+      case "expired":
         return <MdCancel className="w-4 h-4 text-error" />;
       case "pending":
         return <MdPending className="w-4 h-4 text-neutral-500" />;
@@ -222,40 +128,17 @@ export const GroupPage = () => {
     }
   };
 
-  const filteredApplicants = mockApplicants
-    .filter(applicant => {
-      const matchesTab =
-        selectedTab === "all" ||
-        (selectedTab === "recommended" && applicant.status === "recommended") ||
-        (selectedTab === "filtered" && applicant.status === "filtered");
-      const matchesSearch =
-        applicant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        applicant.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        applicant.position.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchesTab && matchesSearch;
-    })
-    .sort((a, b) => {
-      if (sortBy === "appliedAt") {
-        return (
-          new Date(b.appliedAt).getTime() - new Date(a.appliedAt).getTime()
-        );
-      }
-      if (sortBy === "score") {
-        return (b.score || 0) - (a.score || 0);
-      }
-      if (sortBy === "matchScore") {
-        return (b.matchScore || 0) - (a.matchScore || 0);
-      }
-      return 0;
-    });
-
-  const getScoreColorClass = (score?: number) => {
-    if (!score) return "text-neutral-500";
-    if (score >= 90) return "text-success";
-    if (score >= 80) return "text-warning";
-    if (score >= 70) return "text-info";
-    return "text-error";
-  };
+  const filteredApplicants = mockApplicants.filter(applicant => {
+    const matchesTab =
+      (selectedTab === "in_progress" &&
+        applicant.test_status === "in_progress") ||
+      (selectedTab === "completed" && applicant.test_status === "completed");
+    const matchesSearch =
+      applicant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      applicant.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      applicant.test_status.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesTab && matchesSearch;
+  });
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("ko-KR", {
@@ -280,7 +163,7 @@ export const GroupPage = () => {
   return (
     <DashboardLayout
       title={currentGroup.name}
-      description={currentGroup.description}
+      description={currentGroup.description || ""}
       showBackButton={true}
       onBackClick={handleBackClick}
       breadcrumbs={[
@@ -315,7 +198,7 @@ export const GroupPage = () => {
             <div>
               <p className="text-sm font-medium text-neutral-600">총 지원자</p>
               <p className="text-2xl font-bold text-neutral-800">
-                {currentGroup.totalCandidates}명
+                {mockApplicants.length}명
               </p>
             </div>
           </div>
@@ -331,13 +214,20 @@ export const GroupPage = () => {
               </p>
               <div className="flex items-baseline gap-2">
                 <p className="text-2xl font-bold text-neutral-800">
-                  {currentGroup.completedTests}명
+                  {
+                    mockApplicants.filter(
+                      applicant => applicant.test_status === "completed"
+                    ).length
+                  }
+                  명
                 </p>
                 <p className="text-sm text-neutral-600">
                   (
                   {Math.round(
-                    (currentGroup.completedTests /
-                      currentGroup.totalCandidates) *
+                    (mockApplicants.filter(
+                      applicant => applicant.test_status === "completed"
+                    ).length /
+                      mockApplicants.length) *
                       100
                   )}
                   %)
@@ -355,13 +245,22 @@ export const GroupPage = () => {
               <p className="text-sm font-medium text-neutral-600">추천 후보</p>
               <div className="flex items-baseline gap-2">
                 <p className="text-2xl font-bold text-neutral-800">
-                  {currentGroup.recommendedCandidates}명
+                  {
+                    mockApplicants.filter(
+                      applicant => applicant.test_status === "in_progress"
+                    ).length
+                  }
+                  명
                 </p>
                 <p className="text-sm text-neutral-600">
                   (
                   {Math.round(
-                    (currentGroup.recommendedCandidates /
-                      currentGroup.completedTests) *
+                    (mockApplicants.filter(
+                      applicant => applicant.test_status === "in_progress"
+                    ).length /
+                      mockApplicants.filter(
+                        applicant => applicant.test_status === "completed"
+                      ).length) *
                       100
                   )}
                   %)
@@ -381,13 +280,22 @@ export const GroupPage = () => {
               </p>
               <div className="flex items-baseline gap-2">
                 <p className="text-2xl font-bold text-neutral-800">
-                  {currentGroup.filteredCandidates}명
+                  {
+                    mockApplicants.filter(
+                      applicant => applicant.test_status === "expired"
+                    ).length
+                  }
+                  명
                 </p>
                 <p className="text-sm text-neutral-600">
                   (
                   {Math.round(
-                    (currentGroup.filteredCandidates /
-                      currentGroup.completedTests) *
+                    (mockApplicants.filter(
+                      applicant => applicant.test_status === "expired"
+                    ).length /
+                      mockApplicants.filter(
+                        applicant => applicant.test_status === "completed"
+                      ).length) *
                       100
                   )}
                   %)
@@ -411,23 +319,33 @@ export const GroupPage = () => {
                     {
                       id: "recommended",
                       label: "추천 후보",
-                      count: currentGroup.recommendedCandidates,
+                      count: mockApplicants.filter(
+                        applicant => applicant.test_status === "in_progress"
+                      ).length,
                     },
                     {
                       id: "all",
                       label: "전체",
-                      count: currentGroup.totalCandidates,
+                      count: mockApplicants.length,
                     },
                     {
                       id: "filtered",
                       label: "필터링",
-                      count: currentGroup.filteredCandidates,
+                      count: mockApplicants.filter(
+                        applicant => applicant.test_status === "expired"
+                      ).length,
                     },
                   ]}
                   activeTab={selectedTab}
                   variant="secondary"
                   onChange={tabId =>
-                    setSelectedTab(tabId as "recommended" | "all" | "filtered")
+                    setSelectedTab(
+                      tabId as
+                        | "in_progress"
+                        | "completed"
+                        | "expired"
+                        | "pending"
+                    )
                   }
                 />
 
@@ -477,7 +395,7 @@ export const GroupPage = () => {
                           onClick={() => toggleStar(applicant.id)}
                           className="p-1 rounded hover:bg-gray-200 transition-colors duration-200"
                         >
-                          {applicant.isStarred ? (
+                          {applicant.is_starred ? (
                             <MdStar className="w-4 h-4 text-warning" />
                           ) : (
                             <MdStarBorder className="w-4 h-4 text-neutral-500" />
@@ -487,34 +405,31 @@ export const GroupPage = () => {
                           {applicant.name}
                         </h3>
                         <span
-                          className={`px-2 py-1 rounded-md text-xs font-medium border ${getStatusColor(applicant.status)}`}
+                          className={`px-2 py-1 rounded-md text-xs font-medium border ${getStatusColor(applicant.test_status)}`}
                         >
-                          {getStatusIcon(applicant.status)}
+                          {getStatusIcon(applicant.test_status)}
                         </span>
-                        {applicant.workType && (
-                          <span className="px-2 py-1 rounded-md text-xs font-medium bg-primary-100 text-primary">
-                            {applicant.workType}
-                          </span>
-                        )}
                       </div>
 
                       <div className="flex items-center gap-4 mb-3 text-sm text-neutral-600">
                         <span>{applicant.email}</span>
                         <span>•</span>
-                        <span>{applicant.position}</span>
-                        <span>•</span>
-                        <span>지원일: {formatDate(applicant.appliedAt)}</span>
-                        {applicant.testCompletedAt && (
+                        <span>
+                          지원일:{" "}
+                          {formatDate(applicant.test_submitted_at || "")}
+                        </span>
+                        {applicant.test_submitted_at && (
                           <>
                             <span>•</span>
                             <span>
-                              완료일: {formatDate(applicant.testCompletedAt)}
+                              완료일:{" "}
+                              {formatDate(applicant.test_submitted_at || "")}
                             </span>
                           </>
                         )}
                       </div>
 
-                      {applicant.score && (
+                      {/* {applicant.test_result && (
                         <div className="flex items-center gap-6 mb-3">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium text-neutral-700">
@@ -562,7 +477,7 @@ export const GroupPage = () => {
                             {applicant.concerns.join(", ")}
                           </span>
                         </div>
-                      )}
+                      )} */}
                     </div>
 
                     <div className="flex items-center gap-2 ml-4">
@@ -598,7 +513,7 @@ export const GroupPage = () => {
               선호 직무 유형
             </h2>
             <div className="flex flex-wrap gap-2">
-              {currentGroup.preferredWorkTypes.map(type => (
+              {currentGroup.preferred_work_types.map(type => (
                 <span
                   key={type}
                   className="px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary"

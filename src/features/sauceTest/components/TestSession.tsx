@@ -1,10 +1,18 @@
 import { useState, useEffect } from "react";
 import { MdSave } from "react-icons/md";
 import { VerbTest } from "./verbTest/VerbTest";
-import StatementTest, { type StatementTestResult } from "./statementTest/StatementTest";
+import StatementTest, {
+  type StatementTestResult,
+} from "./statementTest/StatementTest";
+import { TestResultPage } from "./TestResultPage";
 import type { Applicant } from "../types/test";
 import type { VerbCategory } from "../types/verbTest.types";
-import type { WorkTypeCode, Question, AnswerValue } from "../constants/testQuestions";
+import type {
+  WorkTypeCode,
+  Question,
+  AnswerValue,
+} from "../constants/testQuestions";
+import { calculatePrimaryWorkType } from "../utils/calculatePrimaryWorkType";
 
 interface TestSessionProps {
   applicant: Applicant;
@@ -32,7 +40,7 @@ const groupAnswersByWorkType = (
 ): AnswersByWorkType => {
   const grouped: Partial<AnswersByWorkType> = {};
 
-  statementResult.results.forEach((questionWithAnswer) => {
+  statementResult.results.forEach(questionWithAnswer => {
     const { workType } = questionWithAnswer;
 
     if (!grouped[workType]) {
@@ -46,13 +54,14 @@ const groupAnswersByWorkType = (
 };
 
 export const TestSession = ({ applicant, testId }: TestSessionProps) => {
-  const [currentTest, setCurrentTest] = useState<"verb" | "statement" | "completed">("verb");
+  const [currentTest, setCurrentTest] = useState<
+    "verb" | "statement" | "completed"
+  >("verb");
   const [verbTestResult, setVerbTestResult] = useState<VerbTestResult | null>(
     null
   );
-  const [statementTestResult, setStatementTestResult] = useState<StatementTestResult | null>(
-    null
-  );
+  const [statementTestResult, setStatementTestResult] =
+    useState<StatementTestResult | null>(null);
   const [showSaveMessage, setShowSaveMessage] = useState(false);
 
   // 컴포넌트 마운트 시 로컬스토리지에서 전체 상태 복원 (개발 모드 전용)
@@ -185,44 +194,30 @@ export const TestSession = ({ applicant, testId }: TestSessionProps) => {
     );
   }
 
-  // 테스트 완료 - WorkType별로 그룹화된 답변 생성
+  // 테스트 완료 - WorkType별로 그룹화된 답변 생성 및 Primary WorkType 계산
   const answersByWorkType = statementTestResult
     ? groupAnswersByWorkType(statementTestResult)
     : null;
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-primary-50 px-4">
-      <div className="text-center">
-        <div className="w-20 h-20 mx-auto mb-6 bg-success-100 rounded-full flex items-center justify-center">
-          <MdSave className="w-10 h-10 text-success-600" />
+  const primaryWorkType = answersByWorkType && verbTestResult
+    ? calculatePrimaryWorkType(answersByWorkType, verbTestResult)
+    : null;
+
+  // 프로덕션 모드: 지원자용 결과 페이지 표시
+  if (!primaryWorkType) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-primary-50 px-4">
+        <div className="text-center">
+          <p className="text-neutral-600">결과를 처리하는 중입니다...</p>
         </div>
-        <h1 className="text-2xl md:text-3xl font-bold text-neutral-800 mb-4">
-          테스트가 완료되었습니다!
-        </h1>
-        <p className="text-neutral-600 mb-8">
-          모든 테스트 결과가 저장되었습니다.
-        </p>
-        {isDev && (
-          <div className="bg-white rounded-lg p-6 max-w-4xl mx-auto text-left space-y-4">
-            <div>
-              <h3 className="font-semibold text-neutral-800 mb-2">
-                개발 모드 - VerbTest 결과:
-              </h3>
-              <pre className="text-xs bg-neutral-50 p-4 rounded overflow-auto max-h-60">
-                {JSON.stringify(verbTestResult, null, 2)}
-              </pre>
-            </div>
-            <div>
-              <h3 className="font-semibold text-neutral-800 mb-2">
-                개발 모드 - WorkType별 답변 (QUESTIONS_BY_TYPE 구조):
-              </h3>
-              <pre className="text-xs bg-neutral-50 p-4 rounded overflow-auto max-h-96">
-                {JSON.stringify(answersByWorkType, null, 2)}
-              </pre>
-            </div>
-          </div>
-        )}
       </div>
-    </div>
+    );
+  }
+
+  return (
+    <TestResultPage
+      applicantName={applicant.name}
+      primaryWorkType={primaryWorkType}
+    />
   );
 };

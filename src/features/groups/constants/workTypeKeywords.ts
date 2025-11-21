@@ -1,4 +1,35 @@
-export const WORK_TYPE_KEYWORDS = [
+type WorkTypeName =
+  | "기준윤리형"
+  | "기준심미형"
+  | "예술느낌형"
+  | "예술융합형"
+  | "이해관리형"
+  | "이해연구형"
+  | "소통도움형"
+  | "소통조화형"
+  | "도전확장형"
+  | "도전목표형";
+
+export type WorkTypeCode =
+  | "SE"
+  | "SA"
+  | "AS"
+  | "AF"
+  | "UM"
+  | "UR"
+  | "CA"
+  | "CH"
+  | "EE"
+  | "EG";
+
+interface WorkTypeKeyword {
+  type: WorkTypeName;
+  code: WorkTypeCode;
+  keywords: string[];
+  description: string;
+}
+
+export const WORK_TYPE_KEYWORDS: WorkTypeKeyword[] = [
   {
     type: "기준윤리형",
     code: "SE",
