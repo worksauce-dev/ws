@@ -20,9 +20,10 @@ import { SignUpPage } from "@/features/auth/pages/SignUpPage";
 
 // Dashboard Pages
 import { DashboardPage } from "@/features/dashboard/pages/DashboardPage";
-import { GroupPage } from "@/features/dashboard/pages/GroupPage";
+import { GroupPage } from "@/features/groups/pages/GroupPage";
 import { CreateGroupPage } from "@/features/groups/pages/CreateGroupPage";
-import { ApplicantDetail } from "@/features/dashboard/pages/ApplicantDetail";
+import { ApplicantDetailPage } from "@/features/groups/pages/ApplicantDetailPage";
+import { ApplicantDetail } from "@/features/applicant/pages/ApplicantDetail";
 
 // React Query 클라이언트 설정
 const queryClient = new QueryClient({
@@ -113,6 +114,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <GroupPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard/groups/:groupId/applicants/:applicantId"
+                  element={
+                    <ProtectedRoute>
+                      <ApplicantDetailPage />
                     </ProtectedRoute>
                   }
                 />
