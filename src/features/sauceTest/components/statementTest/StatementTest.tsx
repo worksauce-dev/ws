@@ -11,6 +11,7 @@ import {
 import type { AnswerValue, Question } from "../../constants/testQuestions";
 
 const AUTO_ADVANCE_DELAY = 600; // 자동 진행 딜레이 (ms)
+const isDev = import.meta.env.VITE_ENV !== "Production";
 
 // StatementTest 결과 타입 - 각 질문에 답변 포함
 export interface QuestionWithAnswer extends Question {
@@ -136,6 +137,31 @@ const StatementTest = ({ onSave, onReset, onComplete }: StatementTestProps = {})
     onSave?.();
   };
 
+  // 랜덤 완성 핸들러 (DEV 전용)
+  const handleRandomComplete = () => {
+    console.log("🎲 StatementTest 랜덤 완성 시작 (마지막 문항 제외)...");
+
+    // 마지막 문항을 제외한 모든 질문에 대해 랜덤 답변 생성 (1-5)
+    const randomAnswers: Record<number, AnswerValue> = { ...answers };
+    questions.forEach((_, index) => {
+      // 마지막 문항(49번째)은 건너뛰기
+      if (index < TOTAL_QUESTIONS - 1) {
+        randomAnswers[index] = (Math.floor(Math.random() * 5) + 1) as AnswerValue;
+      }
+    });
+
+    console.log("✅ 랜덤 답변 생성 완료 (49개):", randomAnswers);
+
+    // 답변 상태 업데이트
+    setAnswers(randomAnswers);
+
+    // 마지막 문항으로 이동
+    setCurrentQuestionIndex(TOTAL_QUESTIONS - 1);
+    setSelectedAnswer(randomAnswers[TOTAL_QUESTIONS - 1] ?? null);
+
+    console.log("📍 마지막 문항으로 이동됨. 직접 답변 후 '테스트 완료' 버튼을 눌러주세요.");
+  };
+
   // 질문이 로드되기 전 로딩 상태
   if (!currentQuestion) {
     return (
@@ -194,6 +220,7 @@ const StatementTest = ({ onSave, onReset, onComplete }: StatementTestProps = {})
             questionText={currentQuestion.text}
             onSave={handleSaveToLocalStorage}
             onReset={onReset}
+            onRandomComplete={isDev ? handleRandomComplete : undefined}
             extraButtons={
               <button
                 onClick={() => setAutoAdvance(!autoAdvance)}

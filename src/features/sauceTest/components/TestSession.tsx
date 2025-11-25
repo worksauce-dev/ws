@@ -13,6 +13,8 @@ import type {
   AnswerValue,
 } from "../constants/testQuestions";
 import { calculatePrimaryWorkType } from "../utils/calculatePrimaryWorkType";
+import { submitTestResults } from "../api/testApi";
+import type { TestRawData } from "@/shared/types/database.types";
 
 interface TestSessionProps {
   applicant: Applicant;
@@ -102,13 +104,52 @@ export const TestSession = ({ applicant, testId }: TestSessionProps) => {
   };
 
   // 문항 테스트 완료 핸들러
-  const handleStatementTestComplete = (result: StatementTestResult) => {
+  const handleStatementTestComplete = async (result: StatementTestResult) => {
     console.log("StatementTest completed with result:", result);
     setStatementTestResult(result);
     setCurrentTest("completed");
 
-    // TODO: 서버에 전체 결과 제출
-    // submitTestResults({ verbTestResult, statementTestResult: result });
+    // 서버에 전체 결과 제출
+    if (verbTestResult) {
+      // 1. 원본 데이터 구성
+      const testRawData: TestRawData = {
+        verbTest: {
+          selectionHistory: verbTestResult.selectionHistory,
+        },
+        statementTest: {
+          answers: result.results.map(q => ({
+            questionId: String(q.id),
+            workType: q.workType,
+            question: q.text,
+            answer: q.applicant_answer,
+          })),
+        },
+      };
+
+      // 2. WorkType별 그룹화 및 점수 계산
+      const answersByWorkType = groupAnswersByWorkType(result);
+      const testResult = calculatePrimaryWorkType(
+        answersByWorkType,
+        verbTestResult
+      );
+
+      // 3. 데이터베이스에 저장
+      const success = await submitTestResults(
+        applicant.id,
+        testRawData,
+        testResult
+      );
+
+      if (success) {
+        console.log("✅ 테스트 결과 제출 성공");
+        // 로컬스토리지 임시 저장 데이터 삭제
+        localStorage.removeItem("testSession_full");
+        localStorage.removeItem("statementTest_progress");
+        localStorage.removeItem(`verbTest_${testId}`);
+      } else {
+        console.error("❌ 테스트 결과 제출 실패");
+      }
+    }
   };
 
   // 통합 임시 저장 핸들러
@@ -199,12 +240,12 @@ export const TestSession = ({ applicant, testId }: TestSessionProps) => {
     ? groupAnswersByWorkType(statementTestResult)
     : null;
 
-  const primaryWorkType = answersByWorkType && verbTestResult
+  const testScores = answersByWorkType && verbTestResult
     ? calculatePrimaryWorkType(answersByWorkType, verbTestResult)
     : null;
 
   // 프로덕션 모드: 지원자용 결과 페이지 표시
-  if (!primaryWorkType) {
+  if (!testScores) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-primary-50 px-4">
         <div className="text-center">
@@ -217,7 +258,7 @@ export const TestSession = ({ applicant, testId }: TestSessionProps) => {
   return (
     <TestResultPage
       applicantName={applicant.name}
-      primaryWorkType={primaryWorkType}
+      primaryWorkType={testScores.primaryWorkType}
     />
   );
 };

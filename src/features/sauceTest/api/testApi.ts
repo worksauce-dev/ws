@@ -1,5 +1,6 @@
 import { supabase } from "@/shared/lib/supabase";
 import { type Applicant } from "../types/test";
+import type { TestRawData, TestResult } from "@/shared/types/database.types";
 
 /**
  * 지원자 ID로 지원자 정보를 조회합니다.
@@ -45,6 +46,37 @@ export async function updateEmailOpenedAt(
     return true;
   } catch (error) {
     console.error("Update email_opened_at error:", error);
+    return false;
+  }
+}
+
+/**
+ * 테스트 결과를 제출하고 저장합니다.
+ */
+export async function submitTestResults(
+  applicantId: string,
+  testRawData: TestRawData,
+  testResult: TestResult
+): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from("applicants")
+      .update({
+        test_raw_data: testRawData,
+        test_result: testResult,
+        test_status: "completed",
+        test_submitted_at: new Date().toISOString(),
+      })
+      .eq("id", applicantId);
+
+    if (error) {
+      console.error("Submit test results error:", error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Submit test results error:", error);
     return false;
   }
 }

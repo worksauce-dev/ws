@@ -1,17 +1,24 @@
 import type { WorkTypeCode } from "../constants/testQuestions";
+import type { VerbCategory } from "../types/verbTest.types";
 import type {
   AnswersByWorkType,
   VerbTestResult,
 } from "../components/TestSession";
 
+export interface TestScores {
+  primaryWorkType: WorkTypeCode;
+  verbTestSelections: Record<VerbCategory, string[]>;
+  statementScores: Record<WorkTypeCode, number>;
+}
+
 /**
  * VerbTest와 StatementTest 결과를 50:50 비중으로 반영하여
- * 주 업무 유형(Primary WorkType)을 계산합니다.
+ * 주 업무 유형(Primary WorkType)과 전체 점수를 계산합니다.
  */
 export const calculatePrimaryWorkType = (
   answersByWorkType: AnswersByWorkType,
   verbTestResult: VerbTestResult
-): WorkTypeCode => {
+): TestScores => {
   // 1. StatementTest 점수 계산 (50% 비중)
   const statementScores: Record<WorkTypeCode, number> = {} as Record<
     WorkTypeCode,
@@ -84,5 +91,9 @@ export const calculatePrimaryWorkType = (
     }
   });
 
-  return primaryWorkType;
+  return {
+    primaryWorkType,
+    verbTestSelections: verbTestResult.selectionHistory,
+    statementScores,
+  };
 };

@@ -13,6 +13,7 @@ interface TestCardHeaderProps {
   // 버튼들
   onSave?: () => void;
   onReset?: () => void;
+  onRandomComplete?: () => void;
   extraButtons?: React.ReactNode;
 
   // 스타일링
@@ -25,6 +26,7 @@ export const TestCardHeader = ({
   questionText,
   onSave,
   onReset,
+  onRandomComplete,
   extraButtons,
   icon = <MdLightbulb className="w-4 h-4 md:w-5 md:h-5 text-white" />,
 }: TestCardHeaderProps) => {
@@ -72,6 +74,17 @@ export const TestCardHeader = ({
               >
                 <MdRefresh className="w-4 h-4" />
                 <span className="hidden sm:inline">리셋 (DEV)</span>
+              </button>
+            )}
+
+            {isDev && onRandomComplete && (
+              <button
+                onClick={onRandomComplete}
+                className="flex items-center gap-1 text-xs md:text-sm text-warning-100 hover:text-white transition-colors px-2 md:px-3 py-1 rounded-md hover:bg-white/10 border border-warning-200/50"
+                title="랜덤 답변으로 즉시 완성 (개발 모드)"
+              >
+                <span>🎲</span>
+                <span className="hidden sm:inline">랜덤 완성</span>
               </button>
             )}
           </div>

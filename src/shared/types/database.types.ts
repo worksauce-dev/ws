@@ -1,6 +1,36 @@
 import type { WorkTypeCode } from "@/features/groups/constants/workTypeKeywords";
+import type { VerbCategory } from "@/features/sauceTest/types/verbTest.types";
+import type { AnswerValue } from "@/features/sauceTest/constants/testQuestions";
 
 export type TestStatus = "pending" | "in_progress" | "completed" | "expired";
+
+// VerbTest 원본 데이터 타입
+export interface VerbTestRawData {
+  selectionHistory: Record<VerbCategory, string[]>;
+}
+
+// StatementTest 원본 데이터 타입
+export interface StatementTestRawData {
+  answers: Array<{
+    questionId: string;
+    workType: WorkTypeCode;
+    question: string;
+    answer: AnswerValue;
+  }>;
+}
+
+// 전체 테스트 원본 데이터 타입
+export interface TestRawData {
+  verbTest: VerbTestRawData;
+  statementTest: StatementTestRawData;
+}
+
+// 계산된 테스트 결과 타입
+export interface TestResult {
+  primaryWorkType: WorkTypeCode;
+  verbTestSelections: Record<VerbCategory, string[]>;
+  statementScores: Record<WorkTypeCode, number>;
+}
 
 export interface Applicant {
   id: string;
@@ -8,7 +38,8 @@ export interface Applicant {
   name: string;
   email: string;
   test_status: TestStatus;
-  test_result: any | null; // 차후 수정
+  test_raw_data: TestRawData | null;
+  test_result: TestResult | null;
   email_opened_at: string | null;
   test_submitted_at: string | null;
   created_at: string;

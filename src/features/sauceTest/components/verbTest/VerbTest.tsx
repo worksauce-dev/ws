@@ -179,6 +179,44 @@ export const VerbTest = ({
     }
   };
 
+  // 랜덤 완성 핸들러 (DEV 전용)
+  const handleRandomComplete = () => {
+    console.log("🎲 랜덤 완성 시작...");
+
+    const randomHistory: Record<VerbCategory, string[]> = {
+      start: [],
+      advance: [],
+      utility: [],
+      communicate: [],
+      expert: [],
+    };
+
+    // Start 단계: 모든 start 동사 중 랜덤 2개 선택
+    const startVerbs = getVerbsByCategory("start");
+    const shuffledStart = [...startVerbs].sort(() => Math.random() - 0.5);
+    randomHistory.start = shuffledStart.slice(0, SELECT_COUNT).map(v => v.id);
+
+    // Start에서 선택한 동사들의 WorkType 추출
+    const selectedTypes = getWorkTypesFromVerbIds(randomHistory.start);
+    const relatedTypes = getRelatedTypes(selectedTypes);
+
+    // 나머지 단계들도 랜덤 선택
+    PHASE_ORDER.forEach(phase => {
+      if (phase === "start") return; // start는 이미 처리함
+
+      const phaseVerbs = getVerbsByTypesAndCategory(relatedTypes, phase);
+      const shuffled = [...phaseVerbs].sort(() => Math.random() - 0.5);
+      randomHistory[phase] = shuffled.slice(0, SELECT_COUNT).map(v => v.id);
+    });
+
+    console.log("✅ 랜덤 선택 완료:", randomHistory);
+
+    // 완료 콜백 호출
+    if (onComplete) {
+      onComplete({ selectionHistory: randomHistory });
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-primary-50 px-4 py-6 md:py-12">
       <div className="w-full max-w-4xl">
@@ -218,6 +256,7 @@ export const VerbTest = ({
             questionText={phaseConfig.instruction}
             onSave={onSave}
             onReset={onReset}
+            onRandomComplete={isDev ? handleRandomComplete : undefined}
           />
 
           {/* 카드 내용 */}
