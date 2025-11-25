@@ -202,6 +202,7 @@ export const CreateGroupPage = () => {
       preferred_work_types: groupForm.formData.preferredWorkTypes,
       deadline: groupForm.formData.deadline,
       auto_reminder: groupForm.formData.autoReminder === "yes",
+      status: "active",
       applicants: applicantManager.applicants.map(app => ({
         name: app.name,
         email: app.email,

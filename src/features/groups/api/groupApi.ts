@@ -34,7 +34,8 @@ export const createGroup = async (data: CreateGroupRequest) => {
       preferred_work_types: data.preferred_work_types,
       deadline: data.deadline,
       auto_reminder: data.auto_reminder,
-      status: "active", // 기본값
+      status: data.status || "active", // 기본값
+      applicants: data.applicants, // JSONB 필드에 지원자 배열 저장
     })
     .select()
     .single();
@@ -89,6 +90,43 @@ export const getGroups = async (): Promise<Group[]> => {
 };
 
 /**
+ * 그룹 상세 조회 (지원자 목록 포함)
+ *
+ * @param groupId 그룹 ID
+ * @returns 그룹 정보 + 지원자 목록
+ */
+export const getGroupWithApplicants = async (groupId: string) => {
+  // 1. 그룹 정보 조회
+  const { data: group, error: groupError } = await supabase
+    .from("groups")
+    .select("*")
+    .eq("id", groupId)
+    .single();
+
+  if (groupError) {
+    console.error("그룹 조회 실패:", groupError);
+    throw new Error(groupError.message);
+  }
+
+  // 2. 해당 그룹의 지원자 목록 조회
+  const { data: applicants, error: applicantsError } = await supabase
+    .from("applicants")
+    .select("*")
+    .eq("group_id", groupId)
+    .order("created_at", { ascending: false });
+
+  if (applicantsError) {
+    console.error("지원자 조회 실패:", applicantsError);
+    throw new Error(applicantsError.message);
+  }
+
+  return {
+    group,
+    applicants: applicants || [],
+  };
+};
+
+/**
  * 그룹 수정
  *
  * @param groupId 그룹 ID
@@ -133,6 +171,7 @@ export const deleteGroup = async (groupId: string): Promise<void> => {
 export const groupApi = {
   createGroup,
   getGroups,
+  getGroupWithApplicants,
   updateGroup,
   deleteGroup,
 };

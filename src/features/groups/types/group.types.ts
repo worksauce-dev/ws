@@ -73,6 +73,7 @@ export interface CreateGroupRequest {
   preferred_work_types: string[];
   deadline: string;
   auto_reminder: boolean;
+  status?: GroupStatus; // 선택적 필드 (기본값: 'active')
   applicants: {
     name: string;
     email: string;
