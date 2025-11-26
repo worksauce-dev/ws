@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   MdEmail,
@@ -8,12 +8,13 @@ import {
   MdCancel,
   MdPending,
   MdTrendingUp,
-  MdMoreVert,
   MdAssignment,
   MdSearch,
   MdStar,
   MdStarBorder,
-  MdVisibility,
+  MdCalendarToday,
+  MdWork,
+  MdNotifications,
 } from "react-icons/md";
 import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
 import { TabGroup } from "@/shared/components/ui/TabGroup";
@@ -23,6 +24,8 @@ import {
   WORK_TYPE_KEYWORDS,
   type WorkTypeCode,
 } from "@/features/groups/constants/workTypeKeywords";
+import { POSITION_OPTIONS } from "@/features/groups/constants/positionOptions";
+import { useDdayCalculator } from "@/features/dashboard/hooks/useDdayCalculator";
 
 export const GroupPage = () => {
   const { groupId } = useParams<{ groupId: string }>();
@@ -30,6 +33,9 @@ export const GroupPage = () => {
 
   // 그룹 상세 정보 조회
   const { data, isLoading, isError, error } = useGroupDetail(groupId || "");
+
+  // D-day 계산 훅
+  const { calculateDday, getDdayColor } = useDdayCalculator();
 
   const [selectedTab, setSelectedTab] = useState<"all" | "completed">("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -49,22 +55,39 @@ export const GroupPage = () => {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusLabel = (status: TestStatus): string => {
     switch (status) {
-      case "recommended":
-        return "bg-amber-50 text-amber-700 border-amber-200";
-      case "filtered":
-        return "bg-red-50 text-red-700 border-red-200";
+      case "completed":
+        return "완료";
+      case "in_progress":
+        return "진행중";
+      case "expired":
+        return "만료";
       case "pending":
-        return "bg-gray-50 text-gray-700 border-gray-200";
+        return "대기중";
       default:
-        return "bg-gray-50 text-gray-700 border-gray-200";
+        return "대기중";
+    }
+  };
+
+  const getStatusColor = (status: TestStatus) => {
+    switch (status) {
+      case "completed":
+        return "bg-success-50 text-success-700 border-success-200";
+      case "in_progress":
+        return "bg-warning-50 text-warning-700 border-warning-200";
+      case "expired":
+        return "bg-error-50 text-error-700 border-error-200";
+      case "pending":
+        return "bg-neutral-50 text-neutral-700 border-neutral-200";
+      default:
+        return "bg-neutral-50 text-neutral-700 border-neutral-200";
     }
   };
 
   // 데이터 추출
   const currentGroup = data?.group;
-  const applicants = data?.applicants || [];
+  const applicants = useMemo(() => data?.applicants || [], [data?.applicants]);
 
   const filteredApplicants = applicants.filter(applicant => {
     // 탭 필터링
@@ -86,6 +109,22 @@ export const GroupPage = () => {
       month: "short",
       day: "numeric",
     });
+  };
+
+  // 포지션 라벨 표시 헬퍼 함수
+  const getPositionLabel = (positionValue: string): string => {
+    const position = POSITION_OPTIONS.find(p => p.value === positionValue);
+    return position?.label || positionValue;
+  };
+
+  // 경력 수준 표시 헬퍼 함수
+  const getExperienceLevelLabel = (level: string): string => {
+    const levelMap: Record<string, string> = {
+      junior: "신입",
+      mid: "경력 3-5년",
+      senior: "경력 5년+",
+    };
+    return levelMap[level] || level;
   };
 
   const toggleStar = (candidateId: string) => {
@@ -190,6 +229,42 @@ export const GroupPage = () => {
 
   const workTypeDistribution = calculateWorkTypeDistribution();
 
+  // 평균 적합도 계산 (useMemo로 최적화)
+  const averageJobMatchScore = useMemo(() => {
+    const completedWithScores = applicants.filter(
+      a => a.test_status === "completed" && a.test_result?.statementScores
+    );
+    if (completedWithScores.length === 0) return 0;
+
+    const totalScore = completedWithScores.reduce(
+      (sum, a) =>
+        sum +
+        calculateJobMatchScore(
+          a.test_result!.statementScores,
+          currentGroup?.preferred_work_types || []
+        ),
+      0
+    );
+    return Math.round(totalScore / completedWithScores.length);
+  }, [applicants, currentGroup?.preferred_work_types]);
+
+  // 추천 후보 수 계산
+  const recommendedCount = useMemo(() => {
+    return applicants.filter(
+      applicant =>
+        applicant.test_status === "completed" &&
+        applicant.test_result?.primaryWorkType &&
+        currentGroup?.preferred_work_types.includes(
+          applicant.test_result.primaryWorkType
+        )
+    ).length;
+  }, [applicants, currentGroup?.preferred_work_types]);
+
+  // 완료된 지원자 수
+  const completedCount = useMemo(() => {
+    return applicants.filter(a => a.test_status === "completed").length;
+  }, [applicants]);
+
   // 로딩 상태
   if (isLoading) {
     return (
@@ -238,17 +313,21 @@ export const GroupPage = () => {
         { label: currentGroup.name },
       ]}
       statusBadge={
-        <span className="px-2 py-1 rounded-md text-xs font-medium border bg-blue-50 text-blue-700 border-blue-200">
-          진행중
+        <span className="px-2 py-1 rounded-md text-xs font-medium border bg-info-50 text-info-700 border-info-200">
+          {currentGroup.status === "active"
+            ? "진행중"
+            : currentGroup.status === "completed"
+              ? "완료"
+              : "임시저장"}
         </span>
       }
       actions={
         <>
-          <button className="inline-flex items-center px-4 py-2 rounded-lg font-medium border border-neutral-200 text-neutral-700 transition-colors duration-200 hover:bg-gray-50">
+          <button className="inline-flex items-center px-4 py-2 rounded-lg font-medium border border-neutral-200 text-neutral-700 transition-colors duration-200 hover:bg-neutral-50">
             <MdEmail className="w-4 h-4 mr-2" />
-            지원자 추가 하기
+            지원자 추가하기
           </button>
-          <button className="inline-flex items-center px-4 py-2 rounded-lg font-medium border border-neutral-200 text-neutral-700 transition-colors duration-200 hover:bg-gray-50">
+          <button className="inline-flex items-center px-4 py-2 rounded-lg font-medium border border-neutral-200 text-neutral-700 transition-colors duration-200 hover:bg-neutral-50">
             <MdFileDownload className="w-4 h-4 mr-2" />
             결과 내보내기
           </button>
@@ -256,11 +335,11 @@ export const GroupPage = () => {
       }
     >
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-xl p-6 border border-neutral-200">
-          <div className="flex items-center">
-            <div className="p-3 rounded-lg mr-4 bg-primary-100">
-              <MdPerson className="w-6 h-6 text-primary" />
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div className="h-full bg-white rounded-xl p-6 border border-neutral-200">
+          <div className="flex items-center h-full">
+            <div className="p-3 rounded-lg mr-4 bg-info-100">
+              <MdPerson className="w-6 h-6 text-info" />
             </div>
             <div>
               <p className="text-sm font-medium text-neutral-600">총 지원자</p>
@@ -270,8 +349,8 @@ export const GroupPage = () => {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-6 border border-neutral-200">
-          <div className="flex items-center">
+        <div className="h-full bg-white rounded-xl p-6 border border-neutral-200">
+          <div className="flex items-center h-full">
             <div className="p-3 rounded-lg mr-4 bg-success-100">
               <MdCheckCircle className="w-6 h-6 text-success" />
             </div>
@@ -281,23 +360,12 @@ export const GroupPage = () => {
               </p>
               <div className="flex items-baseline gap-2">
                 <p className="text-2xl font-bold text-neutral-800">
-                  {
-                    applicants.filter(
-                      applicant => applicant.test_status === "completed"
-                    ).length
-                  }
-                  명
+                  {completedCount}명
                 </p>
                 <p className="text-sm text-neutral-600">
                   (
                   {applicants.length > 0
-                    ? Math.round(
-                        (applicants.filter(
-                          applicant => applicant.test_status === "completed"
-                        ).length /
-                          applicants.length) *
-                          100
-                      )
+                    ? Math.round((completedCount / applicants.length) * 100)
                     : 0}
                   %)
                 </p>
@@ -305,8 +373,8 @@ export const GroupPage = () => {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-6 border border-neutral-200">
-          <div className="flex items-center">
+        <div className="h-full bg-white rounded-xl p-6 border border-neutral-200">
+          <div className="flex items-center h-full">
             <div className="p-3 rounded-lg mr-4 bg-warning-100">
               <MdTrendingUp className="w-6 h-6 text-warning" />
             </div>
@@ -314,36 +382,12 @@ export const GroupPage = () => {
               <p className="text-sm font-medium text-neutral-600">추천 후보</p>
               <div className="flex items-baseline gap-2">
                 <p className="text-2xl font-bold text-neutral-800">
-                  {
-                    applicants.filter(
-                      applicant =>
-                        applicant.test_status === "completed" &&
-                        applicant.test_result?.primaryWorkType &&
-                        currentGroup.preferred_work_types.includes(
-                          applicant.test_result.primaryWorkType
-                        )
-                    ).length
-                  }
-                  명
+                  {recommendedCount}명
                 </p>
                 <p className="text-sm text-neutral-600">
                   (
-                  {applicants.filter(a => a.test_status === "completed")
-                    .length > 0
-                    ? Math.round(
-                        (applicants.filter(
-                          applicant =>
-                            applicant.test_status === "completed" &&
-                            applicant.test_result?.primaryWorkType &&
-                            currentGroup.preferred_work_types.includes(
-                              applicant.test_result.primaryWorkType
-                            )
-                        ).length /
-                          applicants.filter(
-                            applicant => applicant.test_status === "completed"
-                          ).length) *
-                          100
-                      )
+                  {completedCount > 0
+                    ? Math.round((recommendedCount / completedCount) * 100)
                     : 0}
                   %)
                 </p>
@@ -351,8 +395,8 @@ export const GroupPage = () => {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-6 border border-neutral-200">
-          <div className="flex items-center">
+        <div className="h-full bg-white rounded-xl p-6 border border-neutral-200">
+          <div className="flex items-center h-full">
             <div className="p-3 rounded-lg mr-4 bg-primary-100">
               <MdTrendingUp className="w-6 h-6 text-primary" />
             </div>
@@ -362,50 +406,9 @@ export const GroupPage = () => {
               </p>
               <div className="flex items-baseline gap-2">
                 <p
-                  className={`text-2xl font-bold ${getScoreColorClass(
-                    (() => {
-                      const completedWithScores = applicants.filter(
-                        a =>
-                          a.test_status === "completed" &&
-                          a.test_result?.statementScores
-                      );
-                      if (completedWithScores.length === 0) return 0;
-
-                      const totalScore = completedWithScores.reduce(
-                        (sum, a) =>
-                          sum +
-                          calculateJobMatchScore(
-                            a.test_result!.statementScores,
-                            currentGroup.preferred_work_types
-                          ),
-                        0
-                      );
-                      return Math.round(
-                        totalScore / completedWithScores.length
-                      );
-                    })()
-                  )}`}
+                  className={`text-2xl font-bold ${getScoreColorClass(averageJobMatchScore)}`}
                 >
-                  {(() => {
-                    const completedWithScores = applicants.filter(
-                      a =>
-                        a.test_status === "completed" &&
-                        a.test_result?.statementScores
-                    );
-                    if (completedWithScores.length === 0) return 0;
-
-                    const totalScore = completedWithScores.reduce(
-                      (sum, a) =>
-                        sum +
-                        calculateJobMatchScore(
-                          a.test_result!.statementScores,
-                          currentGroup.preferred_work_types
-                        ),
-                      0
-                    );
-                    return Math.round(totalScore / completedWithScores.length);
-                  })()}
-                  점
+                  {averageJobMatchScore}점
                 </p>
               </div>
               <p className="text-xs text-neutral-500 mt-1">
@@ -416,7 +419,7 @@ export const GroupPage = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2">
           {/* Tabs and Controls */}
@@ -488,25 +491,22 @@ export const GroupPage = () => {
                           {applicant.name}
                         </h3>
                         <span
-                          className={`px-2 py-1 rounded-md text-xs font-medium border ${getStatusColor(applicant.test_status)}`}
+                          className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border ${getStatusColor(applicant.test_status)}`}
                         >
                           {getStatusIcon(applicant.test_status)}
+                          <span>{getStatusLabel(applicant.test_status)}</span>
                         </span>
                       </div>
 
                       <div className="flex items-center gap-4 mb-3 text-sm text-neutral-600">
                         <span>{applicant.email}</span>
                         <span>•</span>
-                        <span>
-                          지원일:{" "}
-                          {formatDate(applicant.test_submitted_at || "")}
-                        </span>
+                        <span>지원일: {formatDate(applicant.created_at)}</span>
                         {applicant.test_submitted_at && (
                           <>
                             <span>•</span>
                             <span>
-                              완료일:{" "}
-                              {formatDate(applicant.test_submitted_at || "")}
+                              완료일: {formatDate(applicant.test_submitted_at)}
                             </span>
                           </>
                         )}
@@ -563,26 +563,6 @@ export const GroupPage = () => {
                         </div>
                       )}
                     </div>
-
-                    <div className="flex items-center gap-2 ml-4">
-                      <button
-                        onClick={e => {
-                          e.stopPropagation();
-                          handleApplicantClick(applicant.id);
-                        }}
-                        className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
-                        title="상세보기"
-                      >
-                        <MdVisibility className="w-4 h-4 text-primary" />
-                      </button>
-                      <button
-                        onClick={e => e.stopPropagation()}
-                        className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
-                        title="더보기"
-                      >
-                        <MdMoreVert className="w-4 h-4 text-neutral-500" />
-                      </button>
-                    </div>
                   </div>
                 </div>
               ))}
@@ -590,32 +570,103 @@ export const GroupPage = () => {
 
             {filteredApplicants.length === 0 && (
               <div className="text-center py-12">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-neutral-100 flex items-center justify-center">
                   <MdAssignment className="w-8 h-8 text-neutral-500" />
                 </div>
                 <p className="text-sm text-neutral-600">
-                  조건에 맞는 지원자가 없습니다.
+                  조건에 맞는 지원자가 없습니다
                 </p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Sidebar - Work Type Distribution */}
+        {/* Sidebar - Group Info & Work Type Distribution */}
         <div className="lg:col-span-1">
+          {/* 그룹 정보 */}
           <div className="bg-white rounded-xl border border-neutral-200 p-6 mb-6">
             <h2 className="text-lg font-semibold mb-4 text-neutral-800">
-              선호 직무 유형
+              그룹 정보
             </h2>
-            <div className="flex flex-wrap gap-2">
-              {currentGroup.preferred_work_types.map((type: WorkTypeCode) => (
-                <span
-                  key={type}
-                  className="px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary"
-                >
-                  {getWorkTypeName(type as WorkTypeCode)}
-                </span>
-              ))}
+            <div className="space-y-4">
+              {/* 모집 포지션 */}
+              <div className="flex items-start gap-3">
+                <MdWork className="w-5 h-5 text-neutral-500 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-xs text-neutral-500 mb-1">모집 포지션</p>
+                  <p className="text-sm font-medium text-neutral-800">
+                    {getPositionLabel(currentGroup.position)}
+                  </p>
+                </div>
+              </div>
+
+              {/* 경력 수준 */}
+              <div className="flex items-start gap-3">
+                <MdPerson className="w-5 h-5 text-neutral-500 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-xs text-neutral-500 mb-1">경력 수준</p>
+                  <p className="text-sm font-medium text-neutral-800">
+                    {getExperienceLevelLabel(currentGroup.experience_level)}
+                  </p>
+                </div>
+              </div>
+
+              {/* 마감일 */}
+              <div className="flex items-start gap-3">
+                <MdCalendarToday className="w-5 h-5 text-neutral-500 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-xs text-neutral-500 mb-1">마감일</p>
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-sm font-medium text-neutral-800">
+                      {new Date(currentGroup.deadline).toLocaleDateString(
+                        "ko-KR",
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        }
+                      )}
+                    </p>
+                    <span
+                      className={`text-xs font-semibold ${getDdayColor(currentGroup.deadline, currentGroup.status)}`}
+                    >
+                      {calculateDday(currentGroup.deadline)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 자동 리마인더 */}
+              {currentGroup.auto_reminder && (
+                <div className="flex items-start gap-3">
+                  <MdNotifications className="w-5 h-5 text-neutral-500 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-xs text-neutral-500 mb-1">
+                      자동 리마인더
+                    </p>
+                    <p className="text-sm font-medium text-success-600">
+                      활성화됨
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* 선호 직무 유형 */}
+              <div className="pt-2 border-t border-neutral-100">
+                <p className="text-xs text-neutral-500 mb-2">선호 직무 유형</p>
+                <div className="flex flex-wrap gap-2">
+                  {currentGroup.preferred_work_types.map(
+                    (type: WorkTypeCode) => (
+                      <span
+                        key={type}
+                        className="px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary"
+                      >
+                        {getWorkTypeName(type as WorkTypeCode)}
+                      </span>
+                    )
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -635,7 +686,7 @@ export const GroupPage = () => {
                         {item.count}명 ({item.percentage}%)
                       </span>
                     </div>
-                    <div className="w-full h-2 rounded-full bg-gray-100 overflow-hidden">
+                    <div className="w-full h-2 rounded-full bg-neutral-100 overflow-hidden">
                       <div
                         className={`h-2 rounded-full transition-all duration-300 ${item.colorClass}`}
                         style={{
