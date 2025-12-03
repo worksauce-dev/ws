@@ -118,29 +118,39 @@ export const DashboardPage = () => {
     setCurrentPage(1);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "bg-blue-100 text-blue-800 border-blue-200";
-      case "completed":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "draft":
-        return "bg-gray-100 text-gray-800 border-gray-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
+  const getStatusColor = (group: Group) => {
+    // draft 상태는 그대로 유지
+    if (group.status === "draft") {
+      return "bg-gray-100 text-gray-800 border-gray-200";
+    }
+
+    // 마감일 기준으로 판단
+    const now = new Date();
+    const deadline = new Date(group.deadline);
+
+    if (deadline < now) {
+      // 마감됨
+      return "bg-red-100 text-red-800 border-red-200";
+    } else {
+      // 진행중
+      return "bg-blue-100 text-blue-800 border-blue-200";
     }
   };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "active":
-        return "진행중";
-      case "completed":
-        return "완료";
-      case "draft":
-        return "준비중";
-      default:
-        return "알수없음";
+  const getStatusText = (group: Group) => {
+    // draft 상태는 그대로 유지
+    if (group.status === "draft") {
+      return "준비중";
+    }
+
+    // 마감일 기준으로 판단
+    const now = new Date();
+    const deadline = new Date(group.deadline);
+
+    if (deadline < now) {
+      return "마감";
+    } else {
+      return "진행중";
     }
   };
 
@@ -358,9 +368,9 @@ export const DashboardPage = () => {
                         {group.name}
                       </h3>
                       <span
-                        className={`px-2 py-1 rounded-md text-xs font-medium border ${getStatusColor(group.status)}`}
+                        className={`px-2 py-1 rounded-md text-xs font-medium border ${getStatusColor(group)}`}
                       >
-                        {getStatusText(group.status)}
+                        {getStatusText(group)}
                       </span>
                     </div>
                     <p className="text-sm line-clamp-2 mb-3 text-neutral-600">
