@@ -6,7 +6,6 @@ import {
   MdStar,
   MdStarBorder,
   MdFileDownload,
-  MdShare,
   MdCheckCircle,
   MdTrendingUp,
   MdGroups,
@@ -27,6 +26,7 @@ import {
 } from "../utils/analyzeTestResult";
 import WORK_TYPE_DATA from "../constants/workTypes";
 import { POSITION_OPTIONS } from "../constants/positionOptions";
+import type { WorkTypeCode } from "../types/workType.types";
 
 export const ApplicantDetailPage = () => {
   const { groupId, applicantId } = useParams<{
@@ -212,16 +212,10 @@ export const ApplicantDetailPage = () => {
         { label: currentApplicant.name },
       ]}
       actions={
-        <>
-          <button className="inline-flex items-center px-4 py-2 rounded-lg font-medium border border-neutral-200 text-neutral-700 transition-colors duration-200 hover:bg-gray-50">
-            <MdShare className="w-4 h-4 mr-2" />
-            공유하기
-          </button>
-          <button className="inline-flex items-center px-4 py-2 rounded-lg font-medium border border-neutral-200 text-neutral-700 transition-colors duration-200 hover:bg-gray-50">
-            <MdFileDownload className="w-4 h-4 mr-2" />
-            리포트 다운로드
-          </button>
-        </>
+        <button className="inline-flex items-center px-4 py-2 rounded-lg font-medium border border-neutral-200 text-neutral-700 transition-colors duration-200 hover:bg-gray-50">
+          <MdFileDownload className="w-4 h-4 mr-2" />
+          리포트 다운로드
+        </button>
       }
     >
       <div className="space-y-6">
@@ -311,7 +305,7 @@ export const ApplicantDetailPage = () => {
                 <p className="text-xs text-neutral-500">
                   선호 유형:{" "}
                   {data.group.preferred_work_types
-                    .map(code => WORK_TYPE_DATA[code].name)
+                    .map((code: WorkTypeCode) => WORK_TYPE_DATA[code].name)
                     .join(", ")}
                 </p>
               </div>
