@@ -17,6 +17,7 @@ import {
   MdThumbUp,
   MdThumbDown,
   MdSchedule,
+  MdWork,
 } from "react-icons/md";
 import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
 import { useGroupDetail } from "../hooks/useGroupDetail";
@@ -231,100 +232,101 @@ export const ApplicantDetailPage = () => {
       }
     >
       <div className="space-y-6">
-        {/* 종합 평가 헤더 */}
+        {/* 종합 평가 헤더 - 통합형 */}
         <div className="bg-white rounded-xl border border-neutral-200 p-8">
-          <div className="flex flex-col lg:flex-row items-start lg:justify-between gap-6">
-            {/* 기본 정보 */}
-            <div className="flex-1 w-full">
-              <div className="flex items-center gap-3 mb-3">
-                <h2 className="text-3xl font-bold text-neutral-800">
-                  {currentApplicant.name}
-                </h2>
-                <button
-                  onClick={() => setIsStarred(!isStarred)}
-                  className="p-1 rounded hover:bg-gray-200 transition-colors duration-200"
-                  aria-label={isStarred ? "즐겨찾기 해제" : "즐겨찾기 추가"}
-                >
-                  {isStarred ? (
-                    <MdStar className="w-6 h-6 text-warning" />
-                  ) : (
-                    <MdStarBorder className="w-6 h-6 text-neutral-500" />
-                  )}
-                </button>
-                {getStatusBadge(currentApplicant.test_status)}
-              </div>
+          {/* 기본 정보 */}
+          <div className="flex items-center gap-3 mb-3">
+            <h2 className="text-3xl font-bold text-neutral-800">
+              {currentApplicant.name}
+            </h2>
+            <button
+              onClick={() => setIsStarred(!isStarred)}
+              className="p-1 rounded hover:bg-gray-200 transition-colors duration-200"
+              aria-label={isStarred ? "즐겨찾기 해제" : "즐겨찾기 추가"}
+            >
+              {isStarred ? (
+                <MdStar className="w-6 h-6 text-warning" />
+              ) : (
+                <MdStarBorder className="w-6 h-6 text-neutral-500" />
+              )}
+            </button>
+            {getStatusBadge(currentApplicant.test_status)}
+          </div>
 
-              <div className="flex flex-wrap items-center gap-4 text-neutral-600 mb-5">
-                <div className="flex items-center gap-2">
-                  <MdEmail className="w-4 h-4" />
-                  <span>{currentApplicant.email}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <MdCalendarToday className="w-4 h-4" />
-                  <span>
-                    검사 완료일:{" "}
-                    {new Date(currentApplicant.created_at).toLocaleDateString()}
-                  </span>
-                </div>
-              </div>
-
-              {/* 포지션 정보 */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-neutral-500">모집 포지션</span>
-                <span className="px-3 py-1 rounded-full bg-primary-100 text-primary font-semibold text-sm">
-                  {positionLabel}
-                </span>
-              </div>
+          <div className="flex flex-wrap items-center gap-4 text-neutral-600 mb-6">
+            <div className="flex items-center gap-2">
+              <MdEmail className="w-4 h-4" />
+              <span>{currentApplicant.email}</span>
             </div>
-
-            {/* 유형 매칭도 */}
-            <div className="flex w-full lg:w-auto justify-center lg:justify-end">
-              <div className="text-center">
-                <div
-                  className={`w-28 h-28 rounded-2xl ${getScoreBgColor(matchScore)} flex flex-col items-center justify-center mb-2 shadow-md ${matchScore >= 90 ? "ring-2 ring-success ring-offset-2" : ""}`}
-                  aria-label={`유형 매칭도 ${matchScore}퍼센트`}
-                >
-                  <span
-                    className={`text-4xl font-bold ${getScoreColor(matchScore)}`}
-                  >
-                    {matchScore}
-                  </span>
-                  <span className="text-sm text-neutral-500 mt-1">%</span>
-                </div>
-                <p className="text-base font-semibold text-neutral-700">
-                  유형 매칭도
-                </p>
-                <p className="text-sm text-neutral-500">
-                  {matchScore >= 90
-                    ? "매우 일치"
-                    : matchScore >= 70
-                      ? "일치"
-                      : "보통"}
-                </p>
-              </div>
+            <div className="flex items-center gap-2">
+              <MdCalendarToday className="w-4 h-4" />
+              <span>
+                {currentApplicant.test_submitted_at
+                  ? `검사 완료일: ${new Date(currentApplicant.test_submitted_at).toLocaleDateString()}`
+                  : `지원일: ${new Date(currentApplicant.created_at).toLocaleDateString()}`}
+              </span>
             </div>
           </div>
 
-          {/* 유형 요약 */}
-          <div className="mt-6 p-4 bg-gradient-to-r from-info-50 to-primary-50 rounded-xl border border-primary-100">
-            <div className="flex items-start gap-3">
-              <MdPsychology className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+          {/* 구분선 */}
+          <div className="border-t border-neutral-200 mb-6"></div>
+
+          {/* 유형 정보 */}
+          <div className="mb-5">
+            <div className="flex items-center gap-2 mb-3 flex-wrap">
+              <span className="text-2xl font-bold text-primary">
+                {workTypeData.name}
+              </span>
+              <span className="px-3 py-1 rounded-full bg-primary-50 border border-primary-200 text-primary text-sm font-medium">
+                {workTypeData.keywords.join(" · ")}
+              </span>
+              {matchScore >= 90 && (
+                <span className="px-3 py-1 rounded-full bg-success-100 text-success text-sm font-semibold">
+                  높은 매칭도
+                </span>
+              )}
+            </div>
+            <p className="text-neutral-700 text-base leading-relaxed">
+              {workTypeData.shortDescription}
+            </p>
+          </div>
+
+          {/* 매칭도 & 포지션 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+            {/* 유형 매칭도 */}
+            <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-primary-50 to-info-50 rounded-lg border border-primary-100">
+              <MdTrendingUp className="w-6 h-6 text-primary flex-shrink-0" />
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2 flex-wrap">
-                  <span className="font-semibold text-primary text-base">
-                    {workTypeData.name}
+                <p className="text-sm font-medium text-neutral-600 mb-1">
+                  유형 매칭도
+                </p>
+                <div className="flex items-baseline gap-2">
+                  <span
+                    className={`text-3xl font-bold ${getScoreColor(matchScore)}`}
+                    aria-label={`유형 매칭도 ${matchScore}퍼센트`}
+                  >
+                    {matchScore}%
                   </span>
-                  <span className="px-2.5 py-0.5 rounded-full bg-white/80 border border-primary-200 text-primary text-xs font-medium">
-                    {workTypeData.keywords.join(" · ")}
+                  <span className="text-sm text-neutral-600">
+                    {matchScore >= 90
+                      ? "매우 일치"
+                      : matchScore >= 70
+                        ? "일치"
+                        : "보통"}
                   </span>
-                  {matchScore >= 90 && (
-                    <span className="px-2 py-0.5 rounded-full bg-success-100 text-success text-xs font-medium">
-                      높은 매칭도
-                    </span>
-                  )}
                 </div>
-                <p className="text-neutral-700 text-sm leading-relaxed">
-                  {workTypeData.shortDescription}
+              </div>
+            </div>
+
+            {/* 모집 포지션 */}
+            <div className="flex items-center gap-3 p-4 bg-neutral-50 rounded-lg border border-neutral-200">
+              <MdWork className="w-6 h-6 text-neutral-600 flex-shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-neutral-600 mb-1">
+                  모집 포지션
+                </p>
+                <p className="text-lg font-bold text-neutral-800">
+                  {positionLabel}
                 </p>
               </div>
             </div>
