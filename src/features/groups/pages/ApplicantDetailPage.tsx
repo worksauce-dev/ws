@@ -59,13 +59,6 @@ export const ApplicantDetailPage = () => {
     return "text-error";
   };
 
-  const getScoreBgColor = (score: number) => {
-    if (score >= 80) return "bg-success-100";
-    if (score >= 60) return "bg-primary-100";
-    if (score >= 40) return "bg-warning-100";
-    return "bg-error-100";
-  };
-
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
@@ -300,7 +293,7 @@ export const ApplicantDetailPage = () => {
                 <p className="text-sm font-medium text-neutral-600 mb-1">
                   유형 매칭도
                 </p>
-                <div className="flex items-baseline gap-2">
+                <div className="flex items-baseline gap-2 mb-2">
                   <span
                     className={`text-3xl font-bold ${getScoreColor(matchScore)}`}
                     aria-label={`유형 매칭도 ${matchScore}퍼센트`}
@@ -315,6 +308,12 @@ export const ApplicantDetailPage = () => {
                         : "보통"}
                   </span>
                 </div>
+                <p className="text-xs text-neutral-500">
+                  선호 유형:{" "}
+                  {data.group.preferred_work_types
+                    .map(code => WORK_TYPE_DATA[code].name)
+                    .join(", ")}
+                </p>
               </div>
             </div>
 
