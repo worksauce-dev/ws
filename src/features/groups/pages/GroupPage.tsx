@@ -26,6 +26,7 @@ import {
 } from "@/features/groups/constants/workTypeKeywords";
 import { POSITION_OPTIONS } from "@/features/groups/constants/positionOptions";
 import { useDdayCalculator } from "@/features/dashboard/hooks/useDdayCalculator";
+import { calculateJobFitScore } from "../utils/analyzeTestResult";
 
 export const GroupPage = () => {
   const { groupId } = useParams<{ groupId: string }>();
@@ -173,21 +174,17 @@ export const GroupPage = () => {
     return sorted.length > 1 ? (sorted[1][0] as WorkTypeCode) : null;
   };
 
-  // 직무 적합도 계산 (선호 유형들의 평균 점수)
-  const calculateJobMatchScore = (
-    statementScores: Record<WorkTypeCode, number>,
-    preferredTypes: string[]
-  ): number => {
-    if (!preferredTypes.length) return 0;
-
-    const matchingScores = preferredTypes.map(
-      type => statementScores[type as WorkTypeCode] || 0
-    );
-
-    const average =
-      matchingScores.reduce((sum, score) => sum + score, 0) /
-      matchingScores.length;
-    return Math.round(average);
+  // statementScores를 scoreDistribution 형태로 변환하는 헬퍼
+  const convertToScoreDistribution = (
+    statementScores: Record<WorkTypeCode, number>
+  ) => {
+    return Object.entries(statementScores).map(([code, score]) => ({
+      code: code as WorkTypeCode,
+      name: getWorkTypeName(code as WorkTypeCode),
+      score,
+      level: "high" as const, // 실제로는 사용하지 않음
+      rank: 0, // 실제로는 사용하지 않음
+    }));
   };
 
   // 점수 색상 클래스
@@ -229,7 +226,7 @@ export const GroupPage = () => {
 
   const workTypeDistribution = calculateWorkTypeDistribution();
 
-  // 평균 적합도 계산 (useMemo로 최적화)
+  // 평균 매칭도 계산 (useMemo로 최적화)
   const averageJobMatchScore = useMemo(() => {
     const completedWithScores = applicants.filter(
       a => a.test_status === "completed" && a.test_result?.statementScores
@@ -239,9 +236,11 @@ export const GroupPage = () => {
     const totalScore = completedWithScores.reduce(
       (sum, a) =>
         sum +
-        calculateJobMatchScore(
-          a.test_result!.statementScores,
-          currentGroup?.preferred_work_types || []
+        Math.round(
+          calculateJobFitScore(
+            convertToScoreDistribution(a.test_result!.statementScores),
+            currentGroup?.preferred_work_types || []
+          )
         ),
       0
     );
@@ -402,13 +401,13 @@ export const GroupPage = () => {
             </div>
             <div>
               <p className="text-sm font-medium text-neutral-600">
-                평균 적합도
+                평균 매칭도
               </p>
               <div className="flex items-baseline gap-2">
                 <p
                   className={`text-2xl font-bold ${getScoreColorClass(averageJobMatchScore)}`}
                 >
-                  {averageJobMatchScore}점
+                  {averageJobMatchScore}%
                 </p>
               </div>
               <p className="text-xs text-neutral-500 mt-1">
@@ -540,22 +539,30 @@ export const GroupPage = () => {
 
                           <span className="text-neutral-300">|</span>
 
-                          {/* 직무 적합도 */}
+                          {/* 유형 매칭도 */}
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium text-neutral-700">
-                              직무 적합도
+                              유형 매칭도
                             </span>
                             <span
                               className={`text-lg font-bold ${getScoreColorClass(
-                                calculateJobMatchScore(
-                                  applicant.test_result.statementScores,
-                                  currentGroup.preferred_work_types
+                                Math.round(
+                                  calculateJobFitScore(
+                                    convertToScoreDistribution(
+                                      applicant.test_result.statementScores
+                                    ),
+                                    currentGroup.preferred_work_types
+                                  )
                                 )
                               )}`}
                             >
-                              {calculateJobMatchScore(
-                                applicant.test_result.statementScores,
-                                currentGroup.preferred_work_types
+                              {Math.round(
+                                calculateJobFitScore(
+                                  convertToScoreDistribution(
+                                    applicant.test_result.statementScores
+                                  ),
+                                  currentGroup.preferred_work_types
+                                )
                               )}
                               %
                             </span>
