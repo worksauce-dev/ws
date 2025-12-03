@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   MdAdd,
@@ -82,14 +82,24 @@ export const DashboardPage = () => {
     return null; // 또는 로딩 스피너
   }
 
-  const userProfile: UserProfile = {
-    id: user.id,
-    created_at: user.created_at,
-    updated_at: user.updated_at ?? user.created_at,
-    email_verified: Boolean(user.user_metadata?.email_verified),
-    name: (user.user_metadata?.name as string | undefined) ?? "사용자",
-    email: user.email ?? "",
-  };
+  // userProfile 메모이제이션 (user가 변경될 때만 재계산)
+  const userProfile: UserProfile = useMemo(
+    () => ({
+      id: user.id,
+      created_at: user.created_at,
+      updated_at: user.updated_at ?? user.created_at,
+      email_verified: Boolean(user.user_metadata?.email_verified),
+      name: (user.user_metadata?.name as string | undefined) ?? "사용자",
+      email: user.email ?? "",
+    }),
+    [user]
+  );
+
+  // greeting 메모이제이션 (userProfile이 변경될 때만 재계산)
+  const greeting = useMemo(
+    () => generateGreeting(userProfile),
+    [userProfile]
+  );
 
   const filteredGroups: Group[] = groups.filter(group => {
     const matchesSearch = group.name
@@ -219,11 +229,7 @@ export const DashboardPage = () => {
   return (
     <DashboardLayout
       title={`안녕하세요, ${userProfile?.name}님!`}
-      description={
-        userProfile
-          ? generateGreeting(userProfile)
-          : "워크소스에 오신 것을 환영합니다!"
-      }
+      description={greeting}
       breadcrumbs={[{ label: "워크소스", href: "/" }, { label: "대시보드" }]}
       actions={
         <button
