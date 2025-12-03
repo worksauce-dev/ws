@@ -159,3 +159,49 @@ export const analyzeTestResult = (result: TestResult): AnalyzedResult => {
     insights,
   };
 };
+
+/**
+ * 직무 적합도 계산
+ * 선호 유형들의 점수를 종합적으로 고려하여 계산
+ *
+ * @param scoreDistribution - 전체 유형별 점수 분포
+ * @param preferredWorkTypes - 모집 포지션의 선호 유형들
+ * @returns 직무 적합도 점수 (0-100)
+ */
+export const calculateJobFitScore = (
+  scoreDistribution: AnalyzedResult["scoreDistribution"],
+  preferredWorkTypes?: WorkTypeCode[]
+): number => {
+  // 선호 유형이 지정되지 않은 경우, primary type 점수 반환
+  if (!preferredWorkTypes || preferredWorkTypes.length === 0) {
+    return scoreDistribution[0].score;
+  }
+
+  // 선호 유형들의 점수 추출
+  const preferredScores = preferredWorkTypes
+    .map(code => {
+      const dist = scoreDistribution.find(d => d.code === code);
+      return dist ? dist.score : 0;
+    })
+    .filter(score => score > 0);
+
+  // 선호 유형 점수가 없는 경우, primary type 점수 반환
+  if (preferredScores.length === 0) {
+    return scoreDistribution[0].score;
+  }
+
+  // 선호 유형이 1개인 경우
+  if (preferredScores.length === 1) {
+    return preferredScores[0];
+  }
+
+  // 선호 유형이 여러 개인 경우, 가중 평균 계산
+  // 가장 높은 점수에 60% 가중치, 나머지에 40% 가중치
+  const sortedScores = [...preferredScores].sort((a, b) => b - a);
+  const topScore = sortedScores[0];
+  const otherScoresAvg =
+    sortedScores.slice(1).reduce((sum, score) => sum + score, 0) /
+    (sortedScores.length - 1);
+
+  return topScore * 0.6 + otherScoresAvg * 0.4;
+};

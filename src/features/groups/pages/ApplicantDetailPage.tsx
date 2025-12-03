@@ -20,7 +20,10 @@ import {
 } from "react-icons/md";
 import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
 import { useGroupDetail } from "../hooks/useGroupDetail";
-import { analyzeTestResult } from "../utils/analyzeTestResult";
+import {
+  analyzeTestResult,
+  calculateJobFitScore,
+} from "../utils/analyzeTestResult";
 import WORK_TYPE_DATA from "../constants/workTypes";
 import { POSITION_OPTIONS } from "../constants/positionOptions";
 
@@ -184,13 +187,12 @@ export const ApplicantDetailPage = () => {
   const analyzedResult = analyzeTestResult(currentApplicant.test_result);
   const workTypeData = WORK_TYPE_DATA[analyzedResult.primaryType.code];
 
-  // 종합 점수 계산 (반올림)
-  const overallScore = Math.round(analyzedResult.primaryType.score);
-  // 직무 적합도: 선호 유형과의 매칭 점수 (반올림)
+  // 유형 매칭도: 선호 유형들과의 종합 매칭 점수 (반올림)
   const matchScore = Math.round(
-    data.group.preferred_work_types?.includes(analyzedResult.primaryType.code)
-      ? Math.min(95, analyzedResult.primaryType.score + 5)
-      : analyzedResult.primaryType.score
+    calculateJobFitScore(
+      analyzedResult.scoreDistribution,
+      data.group.preferred_work_types
+    )
   );
 
   // TODO: 팀 시너지 분석 로직 구현 필요
@@ -275,53 +277,28 @@ export const ApplicantDetailPage = () => {
               </div>
             </div>
 
-            {/* 점수 영역 */}
-            <div className="flex gap-4 w-full lg:w-auto justify-center lg:justify-end">
+            {/* 유형 매칭도 */}
+            <div className="flex w-full lg:w-auto justify-center lg:justify-end">
               <div className="text-center">
                 <div
-                  className={`w-24 h-24 rounded-2xl ${getScoreBgColor(overallScore)} flex flex-col items-center justify-center mb-2 shadow-sm`}
-                  aria-label={`유형 점수 ${overallScore}점, 100점 만점`}
+                  className={`w-28 h-28 rounded-2xl ${getScoreBgColor(matchScore)} flex flex-col items-center justify-center mb-2 shadow-md ${matchScore >= 90 ? "ring-2 ring-success ring-offset-2" : ""}`}
+                  aria-label={`유형 매칭도 ${matchScore}퍼센트`}
                 >
                   <span
-                    className={`text-3xl font-bold ${getScoreColor(overallScore)}`}
-                  >
-                    {overallScore}
-                  </span>
-                  <span className="text-xs text-neutral-500 mt-0.5">/ 100</span>
-                </div>
-                <p className="text-sm font-semibold text-neutral-700">
-                  유형 점수
-                </p>
-                <p className="text-xs text-neutral-500">
-                  {analyzedResult.primaryType.level === "high"
-                    ? "우수"
-                    : analyzedResult.primaryType.level === "mediumHigh"
-                      ? "양호"
-                      : analyzedResult.primaryType.level === "mediumLow"
-                        ? "보통"
-                        : "미흡"}
-                </p>
-              </div>
-              <div className="text-center">
-                <div
-                  className={`w-24 h-24 rounded-2xl ${getScoreBgColor(matchScore)} flex flex-col items-center justify-center mb-2 shadow-sm ${matchScore >= 90 ? "ring-2 ring-success ring-offset-2" : ""}`}
-                  aria-label={`직무 적합도 ${matchScore}퍼센트`}
-                >
-                  <span
-                    className={`text-3xl font-bold ${getScoreColor(matchScore)}`}
+                    className={`text-4xl font-bold ${getScoreColor(matchScore)}`}
                   >
                     {matchScore}
                   </span>
-                  <span className="text-xs text-neutral-500 mt-0.5">%</span>
+                  <span className="text-sm text-neutral-500 mt-1">%</span>
                 </div>
-                <p className="text-sm font-semibold text-neutral-700">
-                  직무 적합도
+                <p className="text-base font-semibold text-neutral-700">
+                  유형 매칭도
                 </p>
-                <p className="text-xs text-neutral-500">
+                <p className="text-sm text-neutral-500">
                   {matchScore >= 90
-                    ? "매우 적합"
+                    ? "매우 일치"
                     : matchScore >= 70
-                      ? "적합"
+                      ? "일치"
                       : "보통"}
                 </p>
               </div>
@@ -342,7 +319,7 @@ export const ApplicantDetailPage = () => {
                   </span>
                   {matchScore >= 90 && (
                     <span className="px-2 py-0.5 rounded-full bg-success-100 text-success text-xs font-medium">
-                      높은 적합도
+                      높은 매칭도
                     </span>
                   )}
                 </div>
