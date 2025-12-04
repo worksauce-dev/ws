@@ -121,9 +121,12 @@ export const GroupPage = () => {
   // 경력 수준 표시 헬퍼 함수
   const getExperienceLevelLabel = (level: string): string => {
     const levelMap: Record<string, string> = {
-      junior: "신입",
-      mid: "경력 3-5년",
-      senior: "경력 5년+",
+      entry: "신입 (0-1년)",
+      junior: "주니어 (1-3년)",
+      mid: "중급 (3-5년)",
+      senior: "시니어 (5년 이상)",
+      lead: "리드/매니저급",
+      any: "경력 무관",
     };
     return levelMap[level] || level;
   };
