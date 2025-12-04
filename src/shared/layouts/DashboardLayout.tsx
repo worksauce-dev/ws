@@ -20,6 +20,9 @@ interface DashboardLayoutProps {
   statusBadge?: ReactNode;
   maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl" | "7xl";
   padding?: "sm" | "md" | "lg";
+  credits?: number;
+  onCreditClick?: () => void;
+  creditsLoading?: boolean;
 }
 
 export const DashboardLayout = ({
@@ -33,6 +36,9 @@ export const DashboardLayout = ({
   statusBadge,
   maxWidth = "7xl",
   padding = "lg",
+  credits,
+  onCreditClick,
+  creditsLoading = false,
 }: DashboardLayoutProps) => {
   const getMaxWidthClass = () => {
     switch (maxWidth) {
@@ -93,6 +99,9 @@ export const DashboardLayout = ({
         actions={actions}
         statusBadge={statusBadge}
         userProfile={userProfile}
+        credits={credits}
+        onCreditClick={onCreditClick}
+        creditsLoading={creditsLoading}
       />
 
       {/* Main Content */}

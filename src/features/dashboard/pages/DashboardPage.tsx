@@ -33,6 +33,7 @@ import { useMinimumLoadingTime } from "@/shared/hooks/useMinimumLoadingTime";
 import DashboardSkeleton from "../components/DashboardSkeleton";
 import { useDeleteGroup } from "@/features/groups/hooks/useDeleteGroup";
 import { useToast } from "@/shared/components/ui/useToast";
+import { useUserCredits } from "@/shared/hooks/useUserProfile";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -47,6 +48,9 @@ export const DashboardPage = () => {
   const navigate = useNavigate();
   const { groups, isLoading, error, refetch } = useGroups();
   const { showToast } = useToast();
+
+  // 사용자 크레딧 조회
+  const { data: userCredits } = useUserCredits(user?.id);
 
   // 그룹 삭제 mutation
   const { mutate: deleteGroup } = useDeleteGroup({
@@ -228,15 +232,25 @@ export const DashboardPage = () => {
     }
   };
 
+  const handleCreditClick = () => {
+    showToast(
+      "info",
+      "크레딧 충전",
+      "크레딧 충전 기능은 곧 제공될 예정입니다."
+    );
+  };
+
   return (
     <DashboardLayout
       title={`안녕하세요, ${userProfile?.name}님!`}
       description={greeting}
       breadcrumbs={[{ label: "워크소스", href: "/" }, { label: "대시보드" }]}
+      credits={userCredits}
+      onCreditClick={handleCreditClick}
       actions={
         <button
           onClick={handleCreateGroup}
-          className="inline-flex items-center px-6 py-3 rounded-lg font-medium text-white text-sm bg-primary-500 hover:bg-primary-dark transition-all duration-200 hover:shadow-md"
+          className="inline-flex items-center h-[52px] px-6 rounded-lg font-medium text-white text-sm bg-primary-500 hover:bg-primary-dark transition-all duration-200 hover:shadow-md"
         >
           <MdAdd className="w-4 h-4 mr-2" />새 그룹 생성
         </button>

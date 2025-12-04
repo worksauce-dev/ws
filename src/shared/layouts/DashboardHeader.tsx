@@ -1,11 +1,13 @@
 import { type ReactNode, useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   MdArrowBack,
   MdChevronRight,
   MdSettings,
   MdLogout,
   MdKeyboardArrowDown,
+  MdAccountBalanceWallet,
+  MdAdd,
 } from "react-icons/md";
 import { useAuth } from "@/shared/contexts/useAuth";
 
@@ -29,6 +31,9 @@ interface DashboardHeaderProps {
   actions?: ReactNode;
   statusBadge?: ReactNode;
   userProfile?: UserProfile;
+  credits?: number;
+  onCreditClick?: () => void;
+  creditsLoading?: boolean;
 }
 
 export const DashboardHeader = ({
@@ -40,10 +45,14 @@ export const DashboardHeader = ({
   actions,
   statusBadge,
   userProfile,
+  credits,
+  onCreditClick,
+  creditsLoading = false,
 }: DashboardHeaderProps) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { signOut } = useAuth();
+  const navigate = useNavigate();
 
   // 공통 스타일 클래스
   const linkClassName =
@@ -133,11 +142,46 @@ export const DashboardHeader = ({
             </div>
           </div>
 
-          {/* Right Section: Actions + User Profile */}
+          {/* Right Section: Actions + Credits + User Profile */}
           <div className="flex items-center gap-4 flex-shrink-0">
             {/* Actions */}
             {actions && (
               <div className="flex items-center gap-3">{actions}</div>
+            )}
+
+            {/* Credits Display */}
+            {(credits !== undefined || creditsLoading) && (
+              <div className="pl-4 border-l border-gray-200">
+                {creditsLoading ? (
+                  <div className="flex items-center gap-2 h-[52px] px-3">
+                    <div className="w-4 h-4 bg-neutral-200 rounded animate-pulse" />
+                    <div className="flex items-baseline gap-1">
+                      <div className="h-3 w-10 bg-neutral-200 rounded animate-pulse" />
+                      <div className="h-4 w-12 bg-neutral-200 rounded animate-pulse" />
+                    </div>
+                    <div className="w-4 h-4 bg-neutral-200 rounded animate-pulse" />
+                  </div>
+                ) : (
+                  <button
+                    onClick={onCreditClick}
+                    className="flex items-center gap-2 h-[52px] px-3 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                    disabled={!onCreditClick}
+                  >
+                    <MdAccountBalanceWallet className="w-4 h-4 text-neutral-600" />
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-xs text-neutral-600 font-medium">
+                        크레딧
+                      </span>
+                      <span className="text-sm font-semibold text-neutral-800">
+                        {credits?.toLocaleString()}
+                      </span>
+                    </div>
+                    {onCreditClick && (
+                      <MdAdd className="w-4 h-4 text-neutral-500" />
+                    )}
+                  </button>
+                )}
+              </div>
             )}
 
             {/* User Profile Dropdown */}
@@ -148,7 +192,7 @@ export const DashboardHeader = ({
               >
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                  className="flex items-center gap-2 h-[52px] px-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
                 >
                   {/* User Info */}
                   <div className="text-left">
@@ -173,8 +217,7 @@ export const DashboardHeader = ({
                       <button
                         onClick={() => {
                           setIsDropdownOpen(false);
-                          // TODO: 설정 페이지로 이동 로직 추가
-                          console.log("설정 페이지로 이동");
+                          navigate("/dashboard/settings");
                         }}
                         className="w-full px-4 py-2 text-left text-sm text-neutral-700 hover:bg-gray-100 transition-colors duration-200 flex items-center gap-2"
                       >

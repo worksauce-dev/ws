@@ -6,8 +6,9 @@ const DashboardSkeleton = () => {
       title="대시보드"
       description="데이터를 불러오는 중입니다..."
       breadcrumbs={[{ label: "워크소스", href: "/" }, { label: "대시보드" }]}
+      creditsLoading={true}
       actions={
-        <div className="h-11 w-32 bg-neutral-200 rounded-lg animate-pulse" />
+        <div className="h-[52px] w-32 bg-neutral-200 rounded-lg animate-pulse" />
       }
     >
       {/* Search and Filter Bar Skeleton */}

@@ -27,6 +27,7 @@ export type UserProfile = {
   created_at: string;
   updated_at: string;
   email_verified: boolean;
+  credits?: number;
 };
 
 export type Candidate = {
