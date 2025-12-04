@@ -245,7 +245,7 @@ export const DashboardPage = () => {
       title={`안녕하세요, ${userProfile?.name}님!`}
       description={greeting}
       breadcrumbs={[{ label: "워크소스", href: "/" }, { label: "대시보드" }]}
-      credits={userCredits}
+      credits={userCredits ?? undefined}
       onCreditClick={handleCreditClick}
       actions={
         <button
