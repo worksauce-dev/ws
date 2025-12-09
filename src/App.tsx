@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -9,21 +10,55 @@ import ToastProvider from "@/shared/components/ui/Toast";
 import { AuthProvider } from "@/shared/contexts/AuthContext";
 import { useAuth } from "@/shared/contexts/useAuth";
 import { ProtectedRoute } from "@/shared/components/ProtectedRoute";
-import { SauceTestPage } from "@/features/sauceTest/page/SauceTestPage";
+import { SpeedInsights } from "@vercel/speed-insights/react";
+import { Analytics } from "@vercel/analytics/react";
 
-// Landing Pages
-import { LandingPage } from "@/features/landing/pages/LandingPage";
-
-// Auth Pages
-import { LoginPage } from "@/features/auth/pages/LoginPage";
-import { SignUpPage } from "@/features/auth/pages/SignUpPage";
-
-// Dashboard Pages
-import { DashboardPage } from "@/features/dashboard/pages/DashboardPage";
-import { GroupPage } from "@/features/groups/pages/GroupPage";
-import { CreateGroupPage } from "@/features/groups/pages/CreateGroupPage";
-import { ApplicantDetailPage } from "@/features/groups/pages/ApplicantDetailPage";
-import { SettingsPage } from "@/features/settings/pages/SettingsPage";
+// Lazy-loaded Pages
+const LandingPage = lazy(() =>
+  import("@/features/landing/pages/LandingPage").then(module => ({
+    default: module.LandingPage,
+  }))
+);
+const LoginPage = lazy(() =>
+  import("@/features/auth/pages/LoginPage").then(module => ({
+    default: module.LoginPage,
+  }))
+);
+const SignUpPage = lazy(() =>
+  import("@/features/auth/pages/SignUpPage").then(module => ({
+    default: module.SignUpPage,
+  }))
+);
+const DashboardPage = lazy(() =>
+  import("@/features/dashboard/pages/DashboardPage").then(module => ({
+    default: module.DashboardPage,
+  }))
+);
+const GroupPage = lazy(() =>
+  import("@/features/groups/pages/GroupPage").then(module => ({
+    default: module.GroupPage,
+  }))
+);
+const CreateGroupPage = lazy(() =>
+  import("@/features/groups/pages/CreateGroupPage").then(module => ({
+    default: module.CreateGroupPage,
+  }))
+);
+const ApplicantDetailPage = lazy(() =>
+  import("@/features/groups/pages/ApplicantDetailPage").then(module => ({
+    default: module.ApplicantDetailPage,
+  }))
+);
+const SettingsPage = lazy(() =>
+  import("@/features/settings/pages/SettingsPage").then(module => ({
+    default: module.SettingsPage,
+  }))
+);
+const SauceTestPage = lazy(() =>
+  import("@/features/sauceTest/page/SauceTestPage").then(module => ({
+    default: module.SauceTestPage,
+  }))
+);
 
 // React Query 클라이언트 설정
 const queryClient = new QueryClient({
@@ -55,88 +90,99 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// 로딩 스피너 컴포넌트
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="spinner h-8 w-8 text-primary-500" />
+  </div>
+);
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ToastProvider>
+          <SpeedInsights />
+          <Analytics />
           <Router
             future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
           >
             <div className="App">
-              <Routes>
-                {/* 랜딩페이지 - 메인 페이지 */}
-                <Route
-                  path="/"
-                  element={<LandingPage />} // PublicRoute 제거로 단순화
-                />
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  {/* 랜딩페이지 - 메인 페이지 */}
+                  <Route
+                    path="/"
+                    element={<LandingPage />} // PublicRoute 제거로 단순화
+                  />
 
-                <Route path="/test/:testId" element={<SauceTestPage />} />
+                  <Route path="/test/:testId" element={<SauceTestPage />} />
 
-                {/* 인증 페이지들 - 로그인된 사용자는 대시보드로 리다이렉트 */}
-                <Route
-                  path="/auth/login"
-                  element={
-                    <PublicRoute>
-                      <LoginPage />
-                    </PublicRoute>
-                  }
-                />
+                  {/* 인증 페이지들 - 로그인된 사용자는 대시보드로 리다이렉트 */}
+                  <Route
+                    path="/auth/login"
+                    element={
+                      <PublicRoute>
+                        <LoginPage />
+                      </PublicRoute>
+                    }
+                  />
 
-                <Route
-                  path="/auth/signup"
-                  element={
-                    <PublicRoute>
-                      <SignUpPage />
-                    </PublicRoute>
-                  }
-                />
+                  <Route
+                    path="/auth/signup"
+                    element={
+                      <PublicRoute>
+                        <SignUpPage />
+                      </PublicRoute>
+                    }
+                  />
 
-                {/* 보호된 페이지들 - 로그인 필요 */}
-                <Route
-                  path="/dashboard"
-                  element={
-                    <ProtectedRoute>
-                      <DashboardPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/dashboard/create-group"
-                  element={
-                    <ProtectedRoute>
-                      <CreateGroupPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/dashboard/groups/:groupId"
-                  element={
-                    <ProtectedRoute>
-                      <GroupPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/dashboard/groups/:groupId/applicants/:applicantId"
-                  element={
-                    <ProtectedRoute>
-                      <ApplicantDetailPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/dashboard/settings"
-                  element={
-                    <ProtectedRoute>
-                      <SettingsPage />
-                    </ProtectedRoute>
-                  }
-                />
+                  {/* 보호된 페이지들 - 로그인 필요 */}
+                  <Route
+                    path="/dashboard"
+                    element={
+                      <ProtectedRoute>
+                        <DashboardPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/dashboard/create-group"
+                    element={
+                      <ProtectedRoute>
+                        <CreateGroupPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/dashboard/groups/:groupId"
+                    element={
+                      <ProtectedRoute>
+                        <GroupPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/dashboard/groups/:groupId/applicants/:applicantId"
+                    element={
+                      <ProtectedRoute>
+                        <ApplicantDetailPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/dashboard/settings"
+                    element={
+                      <ProtectedRoute>
+                        <SettingsPage />
+                      </ProtectedRoute>
+                    }
+                  />
 
-                {/* 404 페이지 - 모든 잘못된 경로는 랜딩페이지로 리다이렉트 */}
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
+                  {/* 404 페이지 - 모든 잘못된 경로는 랜딩페이지로 리다이렉트 */}
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </Suspense>
             </div>
           </Router>
         </ToastProvider>
