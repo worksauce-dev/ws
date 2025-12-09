@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   MdEmail,
-  MdFileDownload,
   MdPerson,
   MdCheckCircle,
   MdCancel,
@@ -27,6 +26,7 @@ import {
 import { POSITION_OPTIONS } from "@/features/groups/constants/positionOptions";
 import { useDdayCalculator } from "@/features/dashboard/hooks/useDdayCalculator";
 import { calculateJobFitScore } from "../utils/analyzeTestResult";
+import { AddApplicantModal } from "../components/AddApplicantModal";
 
 export const GroupPage = () => {
   const { groupId } = useParams<{ groupId: string }>();
@@ -40,6 +40,7 @@ export const GroupPage = () => {
 
   const [selectedTab, setSelectedTab] = useState<"all" | "completed">("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [isAddApplicantModalOpen, setIsAddApplicantModalOpen] = useState(false);
 
   const getStatusIcon = (status: TestStatus) => {
     switch (status) {
@@ -131,6 +132,48 @@ export const GroupPage = () => {
     return levelMap[level] || level;
   };
 
+  // 그룹 상태 색상 (deadline 기준)
+  const getGroupStatusColor = (group: typeof currentGroup) => {
+    if (!group) return "bg-gray-100 text-gray-800 border-gray-200";
+
+    // draft 상태는 그대로 유지
+    if (group.status === "draft") {
+      return "bg-gray-100 text-gray-800 border-gray-200";
+    }
+
+    // 마감일 기준으로 판단
+    const now = new Date();
+    const deadline = new Date(group.deadline);
+
+    if (deadline < now) {
+      // 마감됨
+      return "bg-red-100 text-red-800 border-red-200";
+    } else {
+      // 진행중
+      return "bg-blue-100 text-blue-800 border-blue-200";
+    }
+  };
+
+  // 그룹 상태 텍스트 (deadline 기준)
+  const getGroupStatusText = (group: typeof currentGroup) => {
+    if (!group) return "상태 없음";
+
+    // draft 상태는 그대로 유지
+    if (group.status === "draft") {
+      return "준비중";
+    }
+
+    // 마감일 기준으로 판단
+    const now = new Date();
+    const deadline = new Date(group.deadline);
+
+    if (deadline < now) {
+      return "마감";
+    } else {
+      return "진행중";
+    }
+  };
+
   const toggleStar = (candidateId: string) => {
     // Mock function - 실제 구현에서는 상태 업데이트 로직 추가
     console.log("Toggle star for candidate:", candidateId);
@@ -142,6 +185,35 @@ export const GroupPage = () => {
 
   const handleApplicantClick = (applicantId: string) => {
     navigate(`/dashboard/groups/${groupId}/applicants/${applicantId}`);
+  };
+
+  // 지원자 추가 버튼 클릭 핸들러
+  const handleAddApplicantClick = () => {
+    if (!currentGroup) return;
+
+    // 마감일 체크
+    const now = new Date();
+    const deadline = new Date(currentGroup.deadline);
+
+    if (deadline < now) {
+      // 마감일이 지난 경우 확인 메시지
+      const confirmed = window.confirm(
+        `⚠️ 이미 마감일이 지난 그룹이에요.\n\n마감일: ${new Date(
+          currentGroup.deadline
+        ).toLocaleDateString("ko-KR", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })}\n\n계속 지원자를 추가하시겠습니까?`
+      );
+
+      if (!confirmed) {
+        return; // 취소하면 모달 열지 않음
+      }
+    }
+
+    // 확인했거나 마감일 전이면 모달 열기
+    setIsAddApplicantModalOpen(true);
   };
 
   // WorkType 코드를 이름으로 변환하는 헬퍼 함수
@@ -315,27 +387,28 @@ export const GroupPage = () => {
         { label: currentGroup.name },
       ]}
       statusBadge={
-        <span className="px-2 py-1 rounded-md text-xs font-medium border bg-info-50 text-info-700 border-info-200">
-          {currentGroup.status === "active"
-            ? "진행중"
-            : currentGroup.status === "completed"
-              ? "완료"
-              : "임시저장"}
+        <span
+          className={`px-2 py-1 rounded-md text-xs font-medium border ${getGroupStatusColor(currentGroup)}`}
+        >
+          {getGroupStatusText(currentGroup)}
         </span>
       }
       actions={
-        <>
-          <button className="inline-flex items-center px-4 py-2 rounded-lg font-medium border border-neutral-200 text-neutral-700 transition-colors duration-200 hover:bg-neutral-50">
-            <MdEmail className="w-4 h-4 mr-2" />
-            지원자 추가하기
-          </button>
-          <button className="inline-flex items-center px-4 py-2 rounded-lg font-medium border border-neutral-200 text-neutral-700 transition-colors duration-200 hover:bg-neutral-50">
-            <MdFileDownload className="w-4 h-4 mr-2" />
-            결과 내보내기
-          </button>
-        </>
+        <button
+          onClick={handleAddApplicantClick}
+          className="inline-flex items-center px-4 py-2 rounded-lg font-medium border border-neutral-200 text-neutral-700 transition-colors duration-200 hover:bg-neutral-50"
+        >
+          <MdEmail className="w-4 h-4 mr-2" />
+          지원자 추가하기
+        </button>
       }
     >
+      {/* 지원자 추가 모달 */}
+      <AddApplicantModal
+        isOpen={isAddApplicantModalOpen}
+        onClose={() => setIsAddApplicantModalOpen(false)}
+        groupId={groupId!}
+      />
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
         <div className="h-full bg-white rounded-xl p-6 border border-neutral-200">

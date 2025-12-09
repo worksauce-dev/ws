@@ -114,6 +114,14 @@ export const useApplicantManager = (): UseApplicantManagerReturn => {
     setSelectedApplicants([]);
   }, [selectedApplicants]);
 
+  // 모든 지원자 초기화
+  const clearApplicants = useCallback(() => {
+    setApplicants([]);
+    setSelectedApplicants([]);
+    setSearchTerm("");
+    setNewApplicant({ name: "", email: "" });
+  }, []);
+
   // 전체선택 체크박스 상태 계산
   const getSelectAllState = useCallback((): {
     checked: boolean;
@@ -154,6 +162,7 @@ export const useApplicantManager = (): UseApplicantManagerReturn => {
     handleToggleSelect,
     handleSelectAllChange,
     handleDeleteSelected,
+    clearApplicants,
     getSelectAllState,
   };
 };

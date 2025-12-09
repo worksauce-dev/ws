@@ -24,6 +24,7 @@ export interface UseApplicantManagerReturn {
   handleToggleSelect: (id: string) => void;
   handleSelectAllChange: (checked: boolean) => void;
   handleDeleteSelected: () => void;
+  clearApplicants: () => void;
   getSelectAllState: () => { checked: boolean; indeterminate: boolean };
 }
 

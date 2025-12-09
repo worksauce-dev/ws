@@ -9,6 +9,7 @@ import type {
   CreateGroupRequest,
   UpdateGroupRequest,
 } from "../types/group.types";
+import { sendSauceTestEmail } from "@/shared/services/sauceTestService";
 
 /**
  * 그룹 생성 API
@@ -167,6 +168,233 @@ export const deleteGroup = async (groupId: string): Promise<void> => {
   }
 };
 
+/**
+ * 그룹에 지원자 추가
+ *
+ * 플로우:
+ * 1. 그룹 정보 조회 (deadline 확인)
+ * 2. 현재 사용자 정보 조회 (이메일 발송에 필요)
+ * 3. 기존 지원자 이메일 조회 (중복 체크)
+ * 4. 중복되지 않은 지원자만 필터링
+ * 5. applicants 테이블에 일괄 INSERT
+ * 6. 각 지원자에게 테스트 이메일 발송
+ *
+ * @param groupId 그룹 ID
+ * @param applicants 추가할 지원자 목록 (이름, 이메일)
+ * @returns 추가된 지원자 수 및 중복 수
+ */
+export const addApplicantsToGroup = async (
+  groupId: string,
+  applicants: Array<{ name: string; email: string }>
+): Promise<{
+  added: number;
+  duplicates: number;
+  emailsSent?: number;
+  emailsFailed?: number;
+}> => {
+  console.log("🔵 [addApplicantsToGroup] 시작:", { groupId, applicants });
+
+  // Step 1: 그룹 정보 조회
+  console.log("📋 [Step 1] 그룹 정보 조회 중...");
+  const { data: group, error: groupError } = await supabase
+    .from("groups")
+    .select("deadline, name")
+    .eq("id", groupId)
+    .single();
+
+  if (groupError) {
+    console.error("❌ 그룹 조회 실패:", groupError);
+    throw new Error(groupError.message);
+  }
+  console.log("✅ [Step 1] 그룹 정보:", group);
+
+  // Step 2: 현재 로그인한 사용자 정보 조회
+  console.log("👤 [Step 2] 사용자 정보 조회 중...");
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    console.error("❌ 사용자 정보 조회 실패:", userError);
+    throw new Error("사용자 정보를 가져올 수 없습니다.");
+  }
+
+  const userName = (user.user_metadata?.name as string) || "담당자";
+  console.log("✅ [Step 2] 사용자 이름:", userName);
+
+  // Step 3: 기존 지원자 이메일 조회
+  console.log("📧 [Step 3] 기존 지원자 조회 중...");
+  const { data: existingApplicants, error: fetchError } = await supabase
+    .from("applicants")
+    .select("email")
+    .eq("group_id", groupId);
+
+  if (fetchError) {
+    console.error("❌ 기존 지원자 조회 실패:", fetchError);
+    throw new Error(fetchError.message);
+  }
+  console.log("✅ [Step 3] 기존 지원자 수:", existingApplicants?.length || 0);
+  console.log(
+    "📧 [Step 3] 기존 지원자 이메일:",
+    existingApplicants?.map(a => a.email) || []
+  );
+
+  // Step 4: 중복 이메일 필터링
+  console.log("🔍 [Step 4] 중복 체크 중...");
+  console.log(
+    "📥 [Step 4] 추가하려는 이메일:",
+    applicants.map(a => a.email)
+  );
+
+  const existingEmails = new Set(
+    (existingApplicants || []).map(a => a.email.toLowerCase())
+  );
+
+  const newApplicants = applicants.filter(
+    a => !existingEmails.has(a.email.toLowerCase())
+  );
+
+  console.log(
+    `✅ [Step 4] 필터링 결과: 신규 ${newApplicants.length}명, 중복 ${applicants.length - newApplicants.length}명`
+  );
+
+  if (applicants.length - newApplicants.length > 0) {
+    console.warn(
+      "⚠️ [Step 4] 중복된 이메일:",
+      applicants
+        .filter(a => existingEmails.has(a.email.toLowerCase()))
+        .map(a => a.email)
+    );
+  }
+
+  if (newApplicants.length === 0) {
+    console.error("❌ [Step 4] 추가할 지원자 없음 - 모두 중복");
+    throw new Error("모든 지원자가 이미 등록되어 있습니다.");
+  }
+
+  // Step 5: 새로운 지원자 INSERT (ID 받아오기)
+  console.log("💾 [Step 5] 데이터베이스에 삽입 중...");
+  const applicantsToInsert = newApplicants.map(applicant => ({
+    group_id: groupId,
+    name: applicant.name,
+    email: applicant.email,
+    test_status: "pending" as const,
+    is_starred: false,
+  }));
+
+  const { data: insertedApplicants, error: insertError } = await supabase
+    .from("applicants")
+    .insert(applicantsToInsert)
+    .select("id, name, email");
+
+  if (insertError) {
+    console.error("❌ 지원자 추가 실패:", insertError);
+    throw new Error(insertError.message);
+  }
+
+  console.log(
+    "✅ [Step 5] 데이터베이스 삽입 완료:",
+    insertedApplicants?.length || 0,
+    "명"
+  );
+
+  // Step 5.5: groups 테이블의 applicants JSONB 필드 업데이트
+  console.log("📝 [Step 5.5] groups.applicants JSONB 필드 업데이트 중...");
+
+  // 현재 그룹의 applicants 배열 조회
+  const { data: currentGroupData, error: fetchGroupError } = await supabase
+    .from("groups")
+    .select("applicants")
+    .eq("id", groupId)
+    .single();
+
+  if (fetchGroupError) {
+    console.error("❌ 그룹 applicants 필드 조회 실패:", fetchGroupError);
+    throw new Error(fetchGroupError.message);
+  }
+
+  // 기존 applicants 배열에 새 지원자 추가
+  const currentApplicants = (currentGroupData?.applicants || []) as Array<{
+    name: string;
+    email: string;
+  }>;
+
+  const newApplicantsData = newApplicants.map(a => ({
+    name: a.name,
+    email: a.email,
+  }));
+
+  const updatedApplicants = [...currentApplicants, ...newApplicantsData];
+
+  // groups 테이블 업데이트
+  const { error: updateGroupError } = await supabase
+    .from("groups")
+    .update({ applicants: updatedApplicants })
+    .eq("id", groupId);
+
+  if (updateGroupError) {
+    console.error("❌ 그룹 applicants 필드 업데이트 실패:", updateGroupError);
+    throw new Error(updateGroupError.message);
+  }
+
+  console.log(
+    `✅ [Step 5.5] groups.applicants 업데이트 완료: ${currentApplicants.length}명 → ${updatedApplicants.length}명`
+  );
+
+  // Step 6: 각 지원자에게 이메일 발송
+  console.log("📧 [Step 6] 이메일 발송 시작...");
+  const emailPromises = (insertedApplicants || []).map(async applicant => {
+    try {
+      const result = await sendSauceTestEmail({
+        applicantEmail: applicant.email,
+        userName: userName,
+        applicantName: applicant.name,
+        testId: applicant.id,
+        dashboardId: groupId,
+        deadline: group.deadline,
+      });
+
+      if (!result.success) {
+        console.error(
+          `이메일 발송 실패 (${applicant.email}):`,
+          result.error
+        );
+      } else {
+        console.log(`이메일 발송 성공: ${applicant.email}`);
+      }
+
+      return result;
+    } catch (error) {
+      console.error(`이메일 발송 오류 (${applicant.email}):`, error);
+      return { success: false, error: String(error) };
+    }
+  });
+
+  // 모든 이메일 발송 완료 대기 (실패해도 지원자 추가는 성공)
+  const emailResults = await Promise.allSettled(emailPromises);
+
+  // 이메일 발송 성공 카운트
+  const emailsSent = emailResults.filter(
+    result => result.status === "fulfilled" && result.value.success
+  ).length;
+
+  console.log(
+    `✅ [Step 6] 이메일 발송 완료: ${emailsSent}/${newApplicants.length}건 성공`
+  );
+
+  const finalResult = {
+    added: newApplicants.length,
+    duplicates: applicants.length - newApplicants.length,
+    emailsSent,
+    emailsFailed: newApplicants.length - emailsSent,
+  };
+
+  console.log("🎉 [addApplicantsToGroup] 최종 결과:", finalResult);
+
+  return finalResult;
+};
+
 // 기본 export (객체로 묶어서 export)
 export const groupApi = {
   createGroup,
@@ -174,4 +402,5 @@ export const groupApi = {
   getGroupWithApplicants,
   updateGroup,
   deleteGroup,
+  addApplicantsToGroup,
 };
