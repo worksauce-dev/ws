@@ -181,11 +181,13 @@ export const deleteGroup = async (groupId: string): Promise<void> => {
  *
  * @param groupId 그룹 ID
  * @param applicants 추가할 지원자 목록 (이름, 이메일)
+ * @param userName 이메일 발송자명 (옵션, 미제공 시 "담당자")
  * @returns 추가된 지원자 수 및 중복 수
  */
 export const addApplicantsToGroup = async (
   groupId: string,
-  applicants: Array<{ name: string; email: string }>
+  applicants: Array<{ name: string; email: string }>,
+  userName?: string
 ): Promise<{
   added: number;
   duplicates: number;
@@ -208,20 +210,23 @@ export const addApplicantsToGroup = async (
   }
   console.log("✅ [Step 1] 그룹 정보:", group);
 
-  // Step 2: 현재 로그인한 사용자 정보 조회
-  console.log("👤 [Step 2] 사용자 정보 조회 중...");
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
+  // Step 2: 이메일 발송자명 결정
+  console.log("👤 [Step 2] 이메일 발송자명 결정 중...");
+  let finalUserName = userName || "담당자";
 
-  if (userError || !user) {
-    console.error("❌ 사용자 정보 조회 실패:", userError);
-    throw new Error("사용자 정보를 가져올 수 없습니다.");
+  // userName이 제공되지 않은 경우, 사용자 정보에서 가져오기
+  if (!userName) {
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (!userError && user) {
+      finalUserName = (user.user_metadata?.name as string) || "담당자";
+    }
   }
 
-  const userName = (user.user_metadata?.name as string) || "담당자";
-  console.log("✅ [Step 2] 사용자 이름:", userName);
+  console.log("✅ [Step 2] 이메일 발송자명:", finalUserName);
 
   // Step 3: 기존 지원자 이메일 조회
   console.log("📧 [Step 3] 기존 지원자 조회 중...");
@@ -348,7 +353,7 @@ export const addApplicantsToGroup = async (
     try {
       const result = await sendSauceTestEmail({
         applicantEmail: applicant.email,
-        userName: userName,
+        userName: finalUserName,
         applicantName: applicant.name,
         testId: applicant.id,
         dashboardId: groupId,

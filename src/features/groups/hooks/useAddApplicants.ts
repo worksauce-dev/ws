@@ -7,6 +7,11 @@ interface UseAddApplicantsOptions {
   onError?: (error: Error) => void;
 }
 
+interface AddApplicantsParams {
+  applicants: Array<{ name: string; email: string }>;
+  userName?: string;
+}
+
 /**
  * 그룹에 지원자 추가 mutation hook
  *
@@ -26,10 +31,14 @@ export const useAddApplicants = (
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (applicants: Array<{ name: string; email: string }>) => {
-      console.log("🔵 [useAddApplicants] 시작:", { groupId, applicants });
+    mutationFn: async ({ applicants, userName }: AddApplicantsParams) => {
+      console.log("🔵 [useAddApplicants] 시작:", {
+        groupId,
+        applicants,
+        userName,
+      });
       try {
-        const result = await addApplicantsToGroup(groupId, applicants);
+        const result = await addApplicantsToGroup(groupId, applicants, userName);
         console.log("✅ [useAddApplicants] 성공:", result);
         return result;
       } catch (error) {

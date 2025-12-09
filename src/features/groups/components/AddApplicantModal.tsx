@@ -6,11 +6,13 @@ import {
   MdClear,
   MdDelete,
   MdAdd,
+  MdHelpOutline,
 } from "react-icons/md";
 import { Modal } from "@/shared/components/ui/Modal";
 import { Button } from "@/shared/components/ui/Button";
 import { Checkbox } from "@/shared/components/ui/Checkbox";
 import { useToast } from "@/shared/components/ui/useToast";
+import { useAuth } from "@/shared/contexts/useAuth";
 import { FileUploadZone } from "./FileUploadZone";
 import { useApplicantManager } from "../hooks/useApplicantManager";
 import { useFileUpload } from "../hooks/useFileUpload";
@@ -43,8 +45,10 @@ export const AddApplicantModal = ({
   groupId,
 }: AddApplicantModalProps) => {
   const { showToast } = useToast();
+  const { user } = useAuth();
   const applicantManager = useApplicantManager();
   const fileUpload = useFileUpload(applicantManager.applicants);
+  const [showRealName, setShowRealName] = React.useState(true);
 
   // 모달이 열릴 때마다 상태 초기화
   React.useEffect(() => {
@@ -213,12 +217,20 @@ export const AddApplicantModal = ({
             "명"
           );
 
-          addApplicantsMutation.mutate(
-            newApplicants.map(a => ({
+          // userName 결정
+          const userName = showRealName
+            ? user?.user_metadata?.name ||
+              user?.email?.split("@")[0] ||
+              undefined
+            : "담당자";
+
+          addApplicantsMutation.mutate({
+            applicants: newApplicants.map(a => ({
               name: a.name,
               email: a.email,
-            }))
-          );
+            })),
+            userName,
+          });
           return;
         }
       }
@@ -230,12 +242,18 @@ export const AddApplicantModal = ({
         "명"
       );
 
-      addApplicantsMutation.mutate(
-        applicantManager.applicants.map(a => ({
+      // userName 결정
+      const userName = showRealName
+        ? user?.user_metadata?.name || user?.email?.split("@")[0] || undefined
+        : "담당자";
+
+      addApplicantsMutation.mutate({
+        applicants: applicantManager.applicants.map(a => ({
           name: a.name,
           email: a.email,
-        }))
-      );
+        })),
+        userName,
+      });
     } catch (error) {
       console.error("중복 체크 오류:", error);
       showToast("error", "오류", "처리 중 오류가 발생했습니다.");
@@ -252,7 +270,12 @@ export const AddApplicantModal = ({
   const selectAllState = applicantManager.getSelectAllState();
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="지원자 추가하기" size="lg">
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="지원자 추가하기"
+      size="lg"
+    >
       <div className="space-y-6">
         {/* Excel 업로드 섹션 */}
         <div>
@@ -317,7 +340,7 @@ export const AddApplicantModal = ({
           <Button
             type="button"
             onClick={handleAddApplicant}
-            variant="secondary"
+            variant="primary"
             size="md"
             className="w-full"
           >
@@ -381,7 +404,9 @@ export const AddApplicantModal = ({
           {applicantManager.applicants.length === 0 ? (
             <div className="text-center py-8 bg-neutral-50 rounded-lg">
               <MdPerson className="w-8 h-8 mx-auto mb-2 text-neutral-400" />
-              <p className="text-sm text-neutral-600">추가할 지원자가 없습니다</p>
+              <p className="text-sm text-neutral-600">
+                추가할 지원자가 없습니다
+              </p>
               <p className="text-xs text-neutral-500 mt-1">
                 Excel 파일을 업로드하거나 개별로 추가해주세요
               </p>
@@ -488,6 +513,47 @@ export const AddApplicantModal = ({
             <li>• 최대 파일 크기: {formatFileSize(MAX_FILE_SIZE)}</li>
             <li>• 중복 이메일은 자동으로 제외됩니다</li>
           </ul>
+        </div>
+
+        {/* 발송인명 선택 */}
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <div className="flex items-start space-x-3">
+            <MdHelpOutline className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-amber-900 mb-2">
+                왜 실명이 노출되나요?
+              </p>
+              <p className="text-sm text-amber-800 mb-3 leading-relaxed">
+                회사 또는 채용 담당자를 사칭하는 피싱 메일을 방지하기 위해
+                <br />
+                이메일에 발송자의 실명이 표시됩니다. 이를 통해 지원자가
+                <br />
+                신뢰할 수 있는 이메일인지 확인할 수 있습니다.
+              </p>
+              <div className="pt-1 border-t border-amber-200">
+                <label className="flex items-center space-x-2 cursor-pointer py-2">
+                  <input
+                    type="checkbox"
+                    checked={showRealName}
+                    onChange={e => setShowRealName(e.target.checked)}
+                    className="w-4 h-4 text-primary-600 border-amber-300 rounded focus:ring-primary-500"
+                  />
+                  <span className="text-sm font-medium text-amber-900">
+                    이메일에 내 실명 "
+                    {user?.user_metadata?.name ||
+                      user?.email?.split("@")[0] ||
+                      "관리자"}
+                    " 표시하기
+                  </span>
+                </label>
+                {!showRealName && (
+                  <p className="text-xs text-amber-700 ml-6">
+                    ⚠️ 체크 해제 시 "담당자"로 표시됩니다.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* 버튼 */}
