@@ -151,4 +151,13 @@ export interface WorkTypeData {
       considerations: string[];
     }
   >;
+
+  // 팀워크 스타일 (협업 특성 설명)
+  teamworkStyle: string[];
+
+  // 발전 가능성 (두 가지 관점)
+  developmentPotential: {
+    career: string[]; // 직무/포지션 중심 성장 경로
+    capability: string[]; // 역량 중심 성장 가능성
+  };
 }

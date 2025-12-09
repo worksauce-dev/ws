@@ -87,31 +87,6 @@ export const ApplicantDetailPage = () => {
     }
   };
 
-  const getSynergyColor = (level: string) => {
-    switch (level) {
-      case "high":
-        return "text-success";
-      case "medium":
-        return "text-warning";
-      case "low":
-        return "text-error";
-      default:
-        return "text-neutral-600";
-    }
-  };
-
-  const getSynergyBgColor = (level: string) => {
-    switch (level) {
-      case "high":
-        return "bg-success-100";
-      case "medium":
-        return "bg-warning-100";
-      case "low":
-        return "bg-error-100";
-      default:
-        return "bg-neutral-100";
-    }
-  };
 
   // 로딩 상태
   if (isLoading) {
@@ -188,12 +163,6 @@ export const ApplicantDetailPage = () => {
       data.group.preferred_work_types
     )
   );
-
-  // TODO: 팀 시너지 분석 로직 구현 필요
-  // 현재는 간단한 버전으로 구현
-  const teamSynergyScore = analyzedResult.scorePattern.isBalanced ? 85 : 75;
-  const teamSynergyLevel: "high" | "medium" | "low" =
-    teamSynergyScore >= 80 ? "high" : teamSynergyScore >= 60 ? "medium" : "low";
 
   // 포지션 라벨 찾기
   const positionLabel =
@@ -364,7 +333,7 @@ export const ApplicantDetailPage = () => {
               >
                 <div className="flex flex-col items-center gap-1">
                   <MdGroups className="w-5 h-5" />
-                  <span className="whitespace-nowrap">팀 시너지 분석</span>
+                  <span className="whitespace-nowrap">팀워크 스타일</span>
                 </div>
               </button>
               <button
@@ -553,121 +522,66 @@ export const ApplicantDetailPage = () => {
                 aria-labelledby="team-tab"
                 className="space-y-6"
               >
-                {/* 팀 시너지 점수 */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="text-center">
+                {/* 팀워크 스타일 소개 */}
+                <div className="bg-gradient-to-r from-primary-50 to-info-50 rounded-xl p-6 border border-primary-100">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                      <MdGroups className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-primary mb-2">
+                        {workTypeData.name}의 팀워크 스타일
+                      </h3>
+                      <p className="text-neutral-700 leading-relaxed">
+                        이 유형은 다음과 같은 방식으로 팀에 기여하며 협업합니다.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 팀워크 스타일 3가지 */}
+                <div className="space-y-4">
+                  {workTypeData.teamworkStyle.map((style, index) => (
                     <div
-                      className={`w-20 h-20 rounded-full ${getSynergyBgColor(teamSynergyLevel)} flex items-center justify-center mb-3 mx-auto`}
+                      key={index}
+                      className="p-6 bg-white rounded-xl border-2 border-primary-100 hover:border-primary-200 hover:shadow-lg transition-all duration-200"
                     >
-                      <span
-                        className={`text-xl font-bold ${getSynergyColor(teamSynergyLevel)}`}
-                      >
-                        {teamSynergyScore}%
-                      </span>
+                      <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
+                          <span className="text-primary font-bold text-lg">
+                            {index + 1}
+                          </span>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-neutral-800 text-lg leading-relaxed">
+                            {style}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    <p className="font-medium text-neutral-800">
-                      팀 시너지 점수
-                    </p>
-                    <p className="text-sm text-neutral-600">
-                      {teamSynergyLevel === "high"
-                        ? "높음"
-                        : teamSynergyLevel === "medium"
-                          ? "보통"
-                          : "낮음"}
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <div className="w-20 h-20 rounded-full bg-info-100 flex items-center justify-center mb-3 mx-auto">
-                      <MdGroups className="w-8 h-8 text-info" />
-                    </div>
-                    <p className="font-medium text-neutral-800">팀 내 역할</p>
-                    <p className="text-sm text-neutral-600">
-                      {workTypeData.keywords.join(", ")} 중심
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <div className="w-20 h-20 rounded-full bg-success-100 flex items-center justify-center mb-3 mx-auto">
-                      <MdTrendingUp className="w-8 h-8 text-success" />
-                    </div>
-                    <p className="font-medium text-neutral-800">점수 분포</p>
-                    <p className="text-sm text-neutral-600">
-                      {analyzedResult.scorePattern.isBalanced
-                        ? "균형 잡힌 역량"
-                        : analyzedResult.scorePattern.isDominant
-                          ? "특화된 역량"
-                          : "다양한 역량"}
-                    </p>
-                  </div>
+                  ))}
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* 시너지 기회 */}
-                  <div>
-                    <h4 className="font-semibold text-success mb-3 flex items-center gap-2">
-                      <MdThumbUp className="w-4 h-4" />
-                      강점 활용 포인트
-                    </h4>
-                    <div className="space-y-3">
-                      {workTypeData.strengths
-                        .slice(0, 3)
-                        .map((strength, index) => (
-                          <div
-                            key={index}
-                            className="p-3 bg-success-50 rounded-lg"
-                          >
-                            <p className="font-medium text-success-700 mb-1">
-                              {strength.title}
-                            </p>
-                            <p className="text-sm text-success-600">
-                              {strength.description}
-                            </p>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-
-                  {/* 잠재적 갈등 */}
-                  <div>
-                    <h4 className="font-semibold text-warning mb-3 flex items-center gap-2">
-                      <MdWarning className="w-4 h-4" />
-                      보완이 필요한 영역
-                    </h4>
-                    <div className="space-y-3">
-                      {workTypeData.weaknesses
-                        .slice(0, 3)
-                        .map((weakness, index) => (
-                          <div
-                            key={index}
-                            className="p-3 bg-warning-50 rounded-lg"
-                          >
-                            <p className="font-medium text-warning-700 mb-1">
-                              {weakness.title}
-                            </p>
-                            <p className="text-sm text-warning-600">
-                              {weakness.description}
-                            </p>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* 추천 사항 */}
+                {/* 관리 팁 */}
                 <div>
-                  <h4 className="font-semibold text-primary mb-3 flex items-center gap-2">
-                    <MdLightbulb className="w-4 h-4" />팀 운영 추천 사항
+                  <h4 className="text-lg font-semibold text-neutral-800 mb-4 flex items-center gap-2">
+                    <MdLightbulb className="w-5 h-5 text-info" />
+                    효과적인 협업을 위한 관리 팁
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {workTypeData.managementTips
-                      .slice(0, 4)
-                      .map((tip, index) => (
-                        <div
-                          key={index}
-                          className="p-3 bg-primary-50 rounded-lg"
-                        >
-                          <span className="text-primary-700">{tip}</span>
+                    {workTypeData.managementTips.map((tip, index) => (
+                      <div
+                        key={index}
+                        className="p-4 bg-info-50 rounded-lg border border-info-100"
+                      >
+                        <div className="flex items-start gap-2">
+                          <MdCheckCircle className="w-5 h-5 text-info flex-shrink-0 mt-0.5" />
+                          <span className="text-info-700 leading-relaxed">
+                            {tip}
+                          </span>
                         </div>
-                      ))}
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -680,69 +594,48 @@ export const ApplicantDetailPage = () => {
                 aria-labelledby="interview-tab"
                 className="space-y-6"
               >
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* 핵심 질문 */}
-                  <div>
-                    <h4 className="font-semibold text-primary mb-4 flex items-center gap-2">
-                      <MdQuestionAnswer className="w-5 h-5" />
-                      추천 면접 질문
-                    </h4>
-                    <div className="space-y-4">
-                      {workTypeData.interview.questions.map((item, index) => (
-                        <div
-                          key={index}
-                          className="p-4 bg-white border-2 border-primary-100 rounded-xl hover:border-primary-200 transition-colors"
-                        >
-                          <div className="flex items-start gap-3 mb-3">
-                            <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary-100 text-primary font-bold text-sm flex items-center justify-center">
-                              {index + 1}
+                {/* 추천 면접 질문 - Full Width */}
+                <div>
+                  <h4 className="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
+                    <MdQuestionAnswer className="w-5 h-5" />
+                    추천 면접 질문
+                  </h4>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {workTypeData.interview.questions.map((item, index) => (
+                      <div
+                        key={index}
+                        className="p-5 bg-white border-2 border-primary-100 rounded-xl hover:border-primary-200 hover:shadow-md transition-all duration-200"
+                      >
+                        <div className="flex items-start gap-3 mb-3">
+                          <span className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-100 text-primary font-bold text-sm flex items-center justify-center">
+                            {index + 1}
+                          </span>
+                          <div className="flex-1">
+                            <span className="inline-block px-2.5 py-1 rounded-md bg-primary-50 text-primary text-xs font-semibold mb-2">
+                              {item.category}
                             </span>
-                            <div className="flex-1">
-                              <span className="inline-block px-2 py-0.5 rounded-md bg-primary-50 text-primary text-xs font-medium mb-2">
-                                {item.category}
-                              </span>
-                              <p className="text-neutral-800 font-medium leading-relaxed">
-                                {item.question}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="ml-10 pl-4 border-l-2 border-primary-100">
-                            <p className="text-sm text-primary-600">
-                              <span className="font-semibold">✓ </span>
-                              {item.lookFor}
+                            <p className="text-neutral-800 font-medium leading-relaxed">
+                              {item.question}
                             </p>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  </div>
 
-                  {/* 집중 영역 */}
-                  <div>
-                    <h4 className="font-semibold text-info mb-3 flex items-center gap-2">
-                      <MdLightbulb className="w-4 h-4" />
-                      질문 카테고리
-                    </h4>
-                    <div className="space-y-2">
-                      {workTypeData.interview.questions.map((item, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center gap-2 p-2 bg-info-50 rounded-lg"
-                        >
-                          <MdCheckCircle className="w-4 h-4 text-info flex-shrink-0" />
-                          <span className="text-info-700">{item.category}</span>
+                        <div className="ml-11 pl-4 border-l-2 border-primary-100">
+                          <p className="text-sm text-primary-600 leading-relaxed">
+                            <span className="font-semibold">✓ </span>
+                            {item.lookFor}
+                          </p>
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
+                {/* 긍정적 신호 & 주의 신호 */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* 긍정 신호 */}
                   <div>
-                    <h4 className="font-semibold text-success mb-3 flex items-center gap-2">
-                      <MdThumbUp className="w-4 h-4" />
+                    <h4 className="text-lg font-semibold text-success mb-4 flex items-center gap-2">
+                      <MdThumbUp className="w-5 h-5" />
                       긍정적 신호
                     </h4>
                     <div className="space-y-2">
@@ -750,25 +643,37 @@ export const ApplicantDetailPage = () => {
                         (signal, index) => (
                           <div
                             key={index}
-                            className="p-3 bg-success-50 rounded-lg"
+                            className="p-3 bg-success-50 rounded-lg border border-success-100"
                           >
-                            <span className="text-success-700">{signal}</span>
+                            <div className="flex items-start gap-2">
+                              <MdThumbUp className="w-4 h-4 text-success flex-shrink-0 mt-0.5" />
+                              <span className="text-success-700 leading-relaxed">
+                                {signal}
+                              </span>
+                            </div>
                           </div>
                         )
                       )}
                     </div>
                   </div>
 
-                  {/* 위험 신호 */}
                   <div>
-                    <h4 className="font-semibold text-error mb-3 flex items-center gap-2">
-                      <MdWarning className="w-4 h-4" />
+                    <h4 className="text-lg font-semibold text-error mb-4 flex items-center gap-2">
+                      <MdWarning className="w-5 h-5" />
                       주의 신호
                     </h4>
                     <div className="space-y-2">
                       {workTypeData.interview.redFlags.map((flag, index) => (
-                        <div key={index} className="p-3 bg-error-50 rounded-lg">
-                          <span className="text-error-700">{flag}</span>
+                        <div
+                          key={index}
+                          className="p-3 bg-error-50 rounded-lg border border-error-100"
+                        >
+                          <div className="flex items-start gap-2">
+                            <MdWarning className="w-4 h-4 text-error flex-shrink-0 mt-0.5" />
+                            <span className="text-error-700 leading-relaxed">
+                              {flag}
+                            </span>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -776,18 +681,24 @@ export const ApplicantDetailPage = () => {
                 </div>
 
                 {/* 면접 체크리스트 */}
-                <div className="bg-neutral-50 rounded-lg p-6">
-                  <h4 className="font-semibold text-neutral-800 mb-4 flex items-center gap-2">
-                    <MdCheckCircle className="w-5 h-5" />
+                <div className="bg-gradient-to-r from-neutral-50 to-primary-50 rounded-xl p-6 border border-neutral-200">
+                  <h4 className="text-lg font-semibold text-neutral-800 mb-4 flex items-center gap-2">
+                    <MdCheckCircle className="w-5 h-5 text-primary" />
                     면접 진행 체크리스트
                   </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {workTypeData.interview.questions
                       .slice(0, 6)
                       .map((item, index) => (
-                        <label key={index} className="flex items-center gap-2">
-                          <input type="checkbox" className="rounded" />
-                          <span className="text-neutral-700">
+                        <label
+                          key={index}
+                          className="flex items-center gap-2 p-2 bg-white rounded-lg hover:bg-primary-50 cursor-pointer transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            className="rounded text-primary-600 focus:ring-primary-500"
+                          />
+                          <span className="text-neutral-700 font-medium">
                             {item.category} 확인
                           </span>
                         </label>
