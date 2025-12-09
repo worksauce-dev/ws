@@ -9,7 +9,10 @@ import { Button } from "@/shared/components/ui/Button";
 import { Input } from "@/shared/components/ui/Input";
 import { Logo } from "@/shared/components/ui/Logo";
 import { type Applicant } from "../types/test";
-import { updateEmailOpenedAt } from "../api/testApi";
+import {
+  updateEmailOpenedAt,
+  updateTestStatusToInProgress,
+} from "../api/testApi";
 
 // 폼 검증 스키마
 const verifySchema = z.object({
@@ -57,6 +60,9 @@ export const VerifyApplicant = ({
     if (isNameMatch && isEmailMatch) {
       // 이메일 열람 시간 기록
       await updateEmailOpenedAt(applicant.id);
+
+      // 테스트 상태를 'in_progress'로 업데이트
+      await updateTestStatusToInProgress(applicant.id);
 
       // 성공 시 바로 다음 단계로 이동 (토스트 없음)
       onVerifySuccess();

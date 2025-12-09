@@ -51,6 +51,31 @@ export async function updateEmailOpenedAt(
 }
 
 /**
+ * 지원자의 테스트 상태를 'in_progress'로 업데이트합니다.
+ * 인증 완료 후 테스트를 시작할 때 호출됩니다.
+ */
+export async function updateTestStatusToInProgress(
+  applicantId: string
+): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from("applicants")
+      .update({ test_status: "in_progress" })
+      .eq("id", applicantId);
+
+    if (error) {
+      console.error("Update test_status to in_progress error:", error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Update test_status to in_progress error:", error);
+    return false;
+  }
+}
+
+/**
  * 테스트 결과를 제출하고 저장합니다.
  */
 export async function submitTestResults(
