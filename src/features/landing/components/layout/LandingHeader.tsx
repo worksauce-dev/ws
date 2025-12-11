@@ -21,6 +21,10 @@ import { clsx } from "clsx";
 // 메뉴 아이템 설정
 const menuItems: MenuItem[] = [
   {
+    href: "/mini-test",
+    label: "미니 테스트",
+  },
+  {
     href: "https://worksauce.gitbook.io/infomation",
     label: "도움말",
     isExternal: true,
@@ -124,6 +128,14 @@ export const LandingHeader = () => {
           ) : (
             // 로그인 상태: 사용자 메뉴
             <>
+              <MenuLink
+                item={{
+                  href: "/mini-test",
+                  label: "미니 테스트",
+                }}
+                isMobile={false}
+                onClose={closeMenu}
+              />
               <MenuLink
                 item={{
                   href: "https://worksauce.gitbook.io/infomation",
@@ -253,6 +265,14 @@ export const LandingHeader = () => {
                     >
                       <MdDashboard className="w-5 h-5" />
                       <span>대시보드</span>
+                    </Link>
+
+                    <Link
+                      to="/mini-test"
+                      onClick={closeMenu}
+                      className="flex items-center space-x-2 px-4 py-3 text-neutral-700 hover:bg-neutral-50"
+                    >
+                      <span>미니 테스트</span>
                     </Link>
 
                     <a

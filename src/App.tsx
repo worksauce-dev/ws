@@ -59,6 +59,11 @@ const SauceTestPage = lazy(() =>
     default: module.SauceTestPage,
   }))
 );
+const MiniTestPage = lazy(() =>
+  import("@/features/miniTest/pages/MiniTestPage").then(module => ({
+    default: module.MiniTestPage,
+  }))
+);
 
 // React Query 클라이언트 설정
 const queryClient = new QueryClient({
@@ -115,6 +120,9 @@ function App() {
                     path="/"
                     element={<LandingPage />} // PublicRoute 제거로 단순화
                   />
+
+                  {/* 미니 테스트 - 누구나 접근 가능 */}
+                  <Route path="/mini-test" element={<MiniTestPage />} />
 
                   <Route path="/test/:testId" element={<SauceTestPage />} />
 
