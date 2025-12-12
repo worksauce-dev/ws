@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { useMiniTest } from "./useMiniTest";
 import { useAIResult } from "./useAIResult";
+import { submitSurvey as submitSurveyApi } from "../api/miniTestApi";
 import type { SurveyData } from "../components/SurveySection";
 
 type TestStep = "intro" | "verb" | "mini" | "result";
@@ -38,12 +39,23 @@ export const useTestFlow = (verbScores: Record<string, number>) => {
     setStep("intro");
   }, [miniTest]);
 
-  // 설문조사 제출 (향후 API 통합)
+  // 설문조사 제출
   const submitSurvey = useCallback(
     async (data: SurveyData): Promise<{ success: boolean }> => {
-      console.log("Survey submitted:", data);
-      // TODO: Implement API call
-      return { success: true };
+      try {
+        const result = await submitSurveyApi(data);
+
+        if (result.success) {
+          console.log("✅ Survey submitted successfully");
+        } else {
+          console.error("❌ Survey submission failed:", result.error);
+        }
+
+        return { success: result.success };
+      } catch (error) {
+        console.error("❌ Unexpected error during survey submission:", error);
+        return { success: false };
+      }
     },
     []
   );

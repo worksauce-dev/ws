@@ -1,4 +1,37 @@
 import { supabase } from "@/shared/lib/supabase";
+import type { SurveyData } from "../components/SurveySection";
+
+/**
+ * 설문조사 데이터를 Supabase에 저장
+ */
+export async function submitSurvey(
+  data: SurveyData
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { error } = await supabase.from("mini_test_surveys").insert({
+      email: data.email,
+      age_range: data.ageRange,
+      q1: data.q1,
+      q2: data.q2,
+      q3: data.q3,
+      feedback: data.feedback || null,
+      created_at: data.createdAt,
+    });
+
+    if (error) {
+      console.error("Error submitting survey:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Unexpected error submitting survey:", error);
+    return {
+      success: false,
+      error: "설문 제출 중 오류가 발생했습니다.",
+    };
+  }
+}
 
 /**
  * minitest_answers 테이블에서 한글 유형명으로 AI 결과 조회
