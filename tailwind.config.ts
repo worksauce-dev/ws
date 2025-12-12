@@ -198,10 +198,19 @@ export default {
             opacity: "0",
           },
         },
+        gradientMove: {
+          "0%, 100%": {
+            "background-position": "0% 50%",
+          },
+          "50%": {
+            "background-position": "100% 50%",
+          },
+        },
       },
       animation: {
         "slide-in-right": "slide-in-right 0.3s ease-out",
         "slide-out-right": "slide-out-right 0.3s ease-in",
+        gradientMove: "gradientMove 2.5s linear infinite",
       },
     },
   },
