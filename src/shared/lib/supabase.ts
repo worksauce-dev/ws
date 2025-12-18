@@ -27,6 +27,8 @@ export type UserProfile = {
   created_at: string;
   updated_at: string;
   email_verified: boolean;
+  is_admin: boolean;
+  last_login_at?: string | null;
   credits?: number;
 };
 
