@@ -5,7 +5,6 @@ import {
   MdCalendarToday,
   MdStar,
   MdStarBorder,
-  MdFileDownload,
   MdCheckCircle,
   MdTrendingUp,
   MdGroups,
@@ -89,7 +88,6 @@ export const ApplicantDetailPage = () => {
         return null;
     }
   };
-
 
   // 로딩 상태
   if (isLoading) {
@@ -183,12 +181,6 @@ export const ApplicantDetailPage = () => {
         { label: data.group.name, href: `/dashboard/groups/${groupId}` },
         { label: currentApplicant.name },
       ]}
-      actions={
-        <button className="inline-flex items-center px-4 py-2 rounded-lg font-medium border border-neutral-200 text-neutral-700 transition-colors duration-200 hover:bg-gray-50">
-          <MdFileDownload className="w-4 h-4 mr-2" />
-          리포트 다운로드
-        </button>
-      }
     >
       <div className="space-y-6">
         {/* 종합 평가 헤더 - 통합형 */}
@@ -200,7 +192,7 @@ export const ApplicantDetailPage = () => {
             </h2>
             <button
               onClick={() => setIsStarred(!isStarred)}
-              className="p-1 rounded hover:bg-gray-200 transition-colors duration-200"
+              className="p-1 rounded hover:bg-gray-200 transition-colors duration-200 no-pdf"
               aria-label={isStarred ? "즐겨찾기 해제" : "즐겨찾기 추가"}
             >
               {isStarred ? (
@@ -553,13 +545,19 @@ export const ApplicantDetailPage = () => {
                     <p className="text-sm text-success-700 leading-relaxed">
                       {potentialView === "career" ? (
                         <>
-                          <strong className="font-semibold">직무/포지션 중심 관점:</strong>{" "}
-                          이 유형이 성장할 수 있는 구체적인 직무와 포지션 경로를 제시합니다.
+                          <strong className="font-semibold">
+                            직무/포지션 중심 관점:
+                          </strong>{" "}
+                          이 유형이 성장할 수 있는 구체적인 직무와 포지션 경로를
+                          제시합니다.
                         </>
                       ) : (
                         <>
-                          <strong className="font-semibold">역량 중심 관점:</strong>{" "}
-                          이 유형이 개발할 수 있는 핵심 역량과 성장 방향을 제시합니다.
+                          <strong className="font-semibold">
+                            역량 중심 관점:
+                          </strong>{" "}
+                          이 유형이 개발할 수 있는 핵심 역량과 성장 방향을
+                          제시합니다.
                         </>
                       )}
                     </p>
@@ -759,7 +757,7 @@ export const ApplicantDetailPage = () => {
                 </div>
 
                 {/* 면접 체크리스트 */}
-                <div className="bg-gradient-to-r from-neutral-50 to-primary-50 rounded-xl p-6 border border-neutral-200">
+                <div className="bg-gradient-to-r from-neutral-50 to-primary-50 rounded-xl p-6 border border-neutral-200 no-pdf">
                   <h4 className="text-lg font-semibold text-neutral-800 mb-4 flex items-center gap-2">
                     <MdCheckCircle className="w-5 h-5 text-primary" />
                     면접 진행 체크리스트
@@ -789,7 +787,7 @@ export const ApplicantDetailPage = () => {
         </div>
 
         {/* 액션 버튼 */}
-        <div className="bg-white rounded-xl border border-neutral-200 p-6">
+        <div className="bg-white rounded-xl border border-neutral-200 p-6 no-pdf">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold text-neutral-800 mb-1">
