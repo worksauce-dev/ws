@@ -74,8 +74,7 @@ export const IntroSection = ({ onStart }: IntroSectionProps) => {
             10가지 직무 유형
           </h3>
           <p className="text-neutral-600 text-sm">
-            기준윤리형부터 성장확장형까지, 다양한 직무 유형 중 당신의 유형을
-            찾아보세요
+            다양한 직무 유형 중 당신의 유형을 찾아보세요
           </p>
         </div>
 
@@ -87,7 +86,7 @@ export const IntroSection = ({ onStart }: IntroSectionProps) => {
             맞춤 커리어 가이드
           </h3>
           <p className="text-neutral-600 text-sm">
-            당신의 강점, 발전 가능성, 추천 직무까지 상세한 분석을 제공합니다
+            발전 가능성, 추천 직무까지 상세한 분석을 제공해요
           </p>
         </div>
 
