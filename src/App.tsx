@@ -64,6 +64,11 @@ const MiniTestPage = lazy(() =>
     default: module.MiniTestPage,
   }))
 );
+const AdminPage = lazy(() =>
+  import("@/features/admin/pages/AdminPage").then(module => ({
+    default: module.AdminPage,
+  }))
+);
 
 // React Query 클라이언트 설정
 const queryClient = new QueryClient({
@@ -183,6 +188,14 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <SettingsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/dashboard/admin"
+                    element={
+                      <ProtectedRoute>
+                        <AdminPage />
                       </ProtectedRoute>
                     }
                   />
