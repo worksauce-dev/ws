@@ -8,14 +8,14 @@ export async function submitSurvey(
   data: SurveyData
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const { error } = await supabase.from("mini_test_surveys").insert({
+    const { error } = await supabase.from("minitest_surveys").insert({
       email: data.email,
       age_range: data.ageRange,
       q1: data.q1,
       q2: data.q2,
       q3: data.q3,
       feedback: data.feedback || null,
-      created_at: data.createdAt,
+      // created_at은 DB에서 DEFAULT NOW()로 자동 설정됨
     });
 
     if (error) {
