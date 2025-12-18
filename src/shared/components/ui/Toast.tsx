@@ -69,7 +69,7 @@ interface ToastContainerProps {
 
 const ToastContainer = ({ toasts, onRemove }: ToastContainerProps) => {
   return (
-    <div className="fixed top-4 right-4 z-50 flex flex-col gap-3 max-w-md w-full pointer-events-none">
+    <div className="fixed top-4 right-4 z-[9999] flex flex-col gap-3 max-w-md w-full pointer-events-none">
       {toasts.map(toast => (
         <ToastItem key={toast.id} toast={toast} onRemove={onRemove} />
       ))}
