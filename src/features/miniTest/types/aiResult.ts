@@ -16,7 +16,7 @@ export interface AIResult {
   summary_card: {
     title?: string;
     description?: string;
-    [key: string]: any;
+    [key: string]: string | undefined;
   };
   specific_behaviors: string[];
 }

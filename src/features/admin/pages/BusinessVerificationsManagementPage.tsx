@@ -132,7 +132,7 @@ export const BusinessVerificationsManagementPage = () => {
     );
   };
 
-  const handleViewDocument = async (filePath: string, docType: string) => {
+  const handleViewDocument = async (filePath: string) => {
     try {
       const { url, error } = await getSignedUrl(filePath, 3600); // 1시간 유효
 
@@ -370,8 +370,7 @@ export const BusinessVerificationsManagementPage = () => {
                             <button
                               onClick={() =>
                                 handleViewDocument(
-                                  verification.business_registration_doc_url!,
-                                  "사업자등록증"
+                                  verification.business_registration_doc_url!
                                 )
                               }
                               className="inline-flex items-center gap-1 text-xs text-primary-600 hover:text-primary-700 hover:underline"
@@ -384,8 +383,7 @@ export const BusinessVerificationsManagementPage = () => {
                             <button
                               onClick={() =>
                                 handleViewDocument(
-                                  verification.employment_certificate_url!,
-                                  "재직증명서"
+                                  verification.employment_certificate_url!
                                 )
                               }
                               className="inline-flex items-center gap-1 text-xs text-primary-600 hover:text-primary-700 hover:underline"

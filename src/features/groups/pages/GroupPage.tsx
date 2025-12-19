@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   MdEmail,
@@ -250,17 +250,18 @@ export const GroupPage = () => {
   };
 
   // statementScores를 scoreDistribution 형태로 변환하는 헬퍼
-  const convertToScoreDistribution = (
-    statementScores: Record<WorkTypeCode, number>
-  ) => {
-    return Object.entries(statementScores).map(([code, score]) => ({
-      code: code as WorkTypeCode,
-      name: getWorkTypeName(code as WorkTypeCode),
-      score,
-      level: "high" as const, // 실제로는 사용하지 않음
-      rank: 0, // 실제로는 사용하지 않음
-    }));
-  };
+  const convertToScoreDistribution = useCallback(
+    (statementScores: Record<WorkTypeCode, number>) => {
+      return Object.entries(statementScores).map(([code, score]) => ({
+        code: code as WorkTypeCode,
+        name: getWorkTypeName(code as WorkTypeCode),
+        score,
+        level: "high" as const, // 실제로는 사용하지 않음
+        rank: 0, // 실제로는 사용하지 않음
+      }));
+    },
+    []
+  );
 
   // 점수 색상 클래스
   const getScoreColorClass = (score: number): string => {
@@ -320,7 +321,7 @@ export const GroupPage = () => {
       0
     );
     return Math.round(totalScore / completedWithScores.length);
-  }, [applicants, currentGroup?.preferred_work_types]);
+  }, [applicants, currentGroup?.preferred_work_types, convertToScoreDistribution]);
 
   // 추천 후보 수 계산
   const recommendedCount = useMemo(() => {

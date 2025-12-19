@@ -59,12 +59,6 @@ export const createGroup = async (data: CreateGroupRequest) => {
 
   if (applicantsError) throw applicantsError;
 
-  // Step 3: 이메일 발송 (auto_reminder가 true인 경우)
-  if (data.auto_reminder) {
-    // TODO: 이메일 발송 로직
-    // await sendTestInviteEmails(applicantsToInsert);
-  }
-
   return {
     group: newGroup,
     applicants: insertedApplicants || [],
