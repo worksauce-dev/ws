@@ -1,7 +1,6 @@
 import {
   MdPerson,
   MdNotifications,
-  MdSecurity,
   MdBusiness,
 } from "react-icons/md";
 import type {
@@ -30,12 +29,6 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     title: "알림",
     icon: <MdNotifications className="w-5 h-5" />,
     description: "이메일 및 푸시 알림 설정",
-  },
-  {
-    id: "security",
-    title: "보안",
-    icon: <MdSecurity className="w-5 h-5" />,
-    description: "비밀번호 및 보안 설정",
   },
 ];
 

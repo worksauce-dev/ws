@@ -5,7 +5,6 @@ import { SettingsSidebar } from "../components/SettingsSidebar";
 import { ProfileSection } from "../components/ProfileSection";
 import { BusinessSection } from "../components/BusinessSection";
 import { NotificationsSection } from "../components/NotificationsSection";
-import { SecuritySection } from "../components/SecuritySection";
 import type { SettingsTab } from "../types/settings.types";
 
 export const SettingsPage = () => {
@@ -24,8 +23,6 @@ export const SettingsPage = () => {
         return <BusinessSection />;
       case "notifications":
         return <NotificationsSection />;
-      case "security":
-        return <SecuritySection />;
       default:
         return <ProfileSection />;
     }

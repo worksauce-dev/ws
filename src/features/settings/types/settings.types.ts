@@ -5,8 +5,6 @@
 export type SettingsTab =
   | "profile"
   | "notifications"
-  | "security"
-  | "preferences"
   | "business";
 
 export interface SettingsSection {
