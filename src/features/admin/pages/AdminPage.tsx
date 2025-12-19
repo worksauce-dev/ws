@@ -1,10 +1,21 @@
 import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
 import { useAuth } from "@/shared/contexts/useAuth";
+import { useUserProfile } from "@/shared/hooks/useUserProfile";
 import { Navigate } from "react-router-dom";
 import { MdPeople, MdAssessment, MdSettings, MdSecurity } from "react-icons/md";
 
 export const AdminPage = () => {
-  const { userProfile } = useAuth();
+  const { user } = useAuth();
+  const { data: userProfile, isLoading } = useUserProfile(user?.id);
+
+  // 로딩 중
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="spinner h-8 w-8 text-primary-500" />
+      </div>
+    );
+  }
 
   // 관리자가 아닌 경우 대시보드로 리다이렉트
   if (!userProfile?.is_admin) {

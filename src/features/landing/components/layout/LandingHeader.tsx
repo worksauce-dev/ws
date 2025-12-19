@@ -7,6 +7,7 @@ import {
   MdLogout,
   MdBugReport,
   MdPersonRemove,
+  MdAdminPanelSettings,
 } from "react-icons/md";
 import { Link, useNavigate } from "react-router-dom";
 import { Logo } from "@/shared/components/ui";
@@ -15,6 +16,7 @@ import { MobileMenu } from "@/features/landing/components/ui/MobileMenu";
 import { useOutsideClick } from "@/features/landing/hooks/useOutsideClick";
 import { useAuth } from "@/shared/contexts/useAuth";
 import { useToast } from "@/shared/components/ui/useToast";
+import { useUserProfile } from "@/shared/hooks/useUserProfile";
 import type { MenuItem } from "@/features/landing/types/landing.types";
 import { clsx } from "clsx";
 
@@ -42,6 +44,9 @@ export const LandingHeader = () => {
   const { showToast } = useToast();
   const navigate = useNavigate();
   const isDevelopment = import.meta.env.VITE_ENV === "Dev";
+
+  // user_profile에서 is_admin 조회
+  const { data: userProfile } = useUserProfile(user?.id);
 
   // 메뉴 외부 클릭 시 닫기
   const menuRef = useOutsideClick(() => setIsMenuOpen(false));
@@ -86,7 +91,11 @@ export const LandingHeader = () => {
   };
 
   const handleDeleteAccount = async () => {
-    if (!window.confirm("정말로 회원탈퇴 하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) {
+    if (
+      !window.confirm(
+        "정말로 회원탈퇴 하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+      )
+    ) {
       return;
     }
 
@@ -136,6 +145,16 @@ export const LandingHeader = () => {
                 isMobile={false}
                 onClose={closeMenu}
               />
+              {userProfile?.is_admin && (
+                <MenuLink
+                  item={{
+                    href: "/admin",
+                    label: "관리자",
+                  }}
+                  isMobile={false}
+                  onClose={closeMenu}
+                />
+              )}
               <MenuLink
                 item={{
                   href: "https://worksauce.gitbook.io/infomation",
@@ -274,6 +293,17 @@ export const LandingHeader = () => {
                     >
                       <span>미니 테스트</span>
                     </Link>
+
+                    {userProfile?.is_admin && (
+                      <Link
+                        to="/dashboard/admin"
+                        onClick={closeMenu}
+                        className="flex items-center space-x-2 px-4 py-3 text-primary-600 hover:bg-primary-50"
+                      >
+                        <MdAdminPanelSettings className="w-5 h-5" />
+                        <span>관리자</span>
+                      </Link>
+                    )}
 
                     <a
                       href="https://worksauce.gitbook.io/infomation"

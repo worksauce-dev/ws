@@ -172,10 +172,10 @@ export const Dropdown = ({
 interface SelectDropdownProps {
   value?: string;
   placeholder?: string;
-  options: Array<{
-    value: string;
-    label: string;
-    disabled?: boolean;
+  options: ReadonlyArray<{
+    readonly value: string;
+    readonly label: string;
+    readonly disabled?: boolean;
   }>;
   onChange?: (value: string) => void;
   className?: string;
@@ -243,10 +243,10 @@ export const SelectDropdown = ({
 interface SearchableSelectDropdownProps {
   value?: string;
   placeholder?: string;
-  options: Array<{
-    value: string;
-    label: string;
-    disabled?: boolean;
+  options: ReadonlyArray<{
+    readonly value: string;
+    readonly label: string;
+    readonly disabled?: boolean;
   }>;
   onChange?: (value: string) => void;
   className?: string;
