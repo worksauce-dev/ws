@@ -69,6 +69,11 @@ const AdminPage = lazy(() =>
     default: module.AdminPage,
   }))
 );
+const SurveysManagementPage = lazy(() =>
+  import("@/features/admin/pages/SurveysManagementPage").then(module => ({
+    default: module.SurveysManagementPage,
+  }))
+);
 
 // React Query 클라이언트 설정
 const queryClient = new QueryClient({
@@ -196,6 +201,14 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <AdminPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/surveys"
+                    element={
+                      <ProtectedRoute>
+                        <SurveysManagementPage />
                       </ProtectedRoute>
                     }
                   />

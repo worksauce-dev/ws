@@ -80,3 +80,42 @@ export async function checkAIResultExists(typeName: string): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * 관리자용: 모든 설문조사 데이터 조회
+ */
+export interface MiniTestSurvey {
+  id: string;
+  email: string;
+  age_range: string;
+  q1: number;
+  q2: number;
+  q3: number;
+  feedback: string | null;
+  created_at: string;
+}
+
+export async function getAllSurveys(): Promise<{
+  data: MiniTestSurvey[] | null;
+  error: string | null;
+}> {
+  try {
+    const { data, error } = await supabase
+      .from("minitest_surveys")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching surveys:", error);
+      return { data: null, error: error.message };
+    }
+
+    return { data, error: null };
+  } catch (error) {
+    console.error("Unexpected error fetching surveys:", error);
+    return {
+      data: null,
+      error: "설문조사 데이터 조회 중 오류가 발생했습니다.",
+    };
+  }
+}
