@@ -74,6 +74,13 @@ const SurveysManagementPage = lazy(() =>
     default: module.SurveysManagementPage,
   }))
 );
+const BusinessVerificationsManagementPage = lazy(() =>
+  import(
+    "@/features/admin/pages/BusinessVerificationsManagementPage"
+  ).then(module => ({
+    default: module.BusinessVerificationsManagementPage,
+  }))
+);
 
 // React Query 클라이언트 설정
 const queryClient = new QueryClient({
@@ -209,6 +216,14 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <SurveysManagementPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/business-verifications"
+                    element={
+                      <ProtectedRoute>
+                        <BusinessVerificationsManagementPage />
                       </ProtectedRoute>
                     }
                   />

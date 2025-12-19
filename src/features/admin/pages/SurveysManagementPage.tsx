@@ -369,7 +369,7 @@ export const SurveysManagementPage = () => {
                         >
                           {avgRating.toFixed(1)}
                         </td>
-                        <td className="px-6 py-4 text-sm text-neutral-700">
+                        <td className="px-6 py-4 text-sm text-neutral-700 max-w-[200px]">
                           {survey.feedback ? (
                             <button
                               onClick={() =>
@@ -378,7 +378,7 @@ export const SurveysManagementPage = () => {
                                   feedback: survey.feedback!,
                                 })
                               }
-                              className="text-left max-w-md truncate hover:text-primary-600 transition-colors cursor-pointer block"
+                              className="text-left w-full truncate hover:text-primary-600 transition-colors cursor-pointer block"
                               title="클릭하여 전체 내용 보기"
                             >
                               {survey.feedback}

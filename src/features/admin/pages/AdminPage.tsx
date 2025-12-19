@@ -9,8 +9,10 @@ import {
   MdSettings,
   MdSecurity,
   MdChevronRight,
+  MdBusiness,
 } from "react-icons/md";
 import { useSurveys } from "../hooks/useSurveys";
+import { useAllBusinessVerifications } from "../hooks/useBusinessVerifications";
 
 export const AdminPage = () => {
   const { user } = useAuth();
@@ -18,6 +20,7 @@ export const AdminPage = () => {
     user?.id
   );
   const { data: surveys } = useSurveys();
+  const { data: verifications } = useAllBusinessVerifications();
   const navigate = useNavigate();
 
   // 관리자가 아닌 경우 대시보드로 리다이렉트
@@ -41,6 +44,10 @@ export const AdminPage = () => {
       (surveysCount || 1)
     : 0;
 
+  const verificationsCount = verifications?.length || 0;
+  const pendingVerifications =
+    verifications?.filter(v => v.status === "pending").length || 0;
+
   const adminCards = [
     {
       id: "surveys",
@@ -54,6 +61,19 @@ export const AdminPage = () => {
       ],
       enabled: true,
       path: "/admin/surveys",
+    },
+    {
+      id: "business-verifications",
+      title: "기업 인증 관리",
+      description: "기업 회원 인증 신청 검토 및 승인/거부",
+      icon: MdBusiness,
+      color: "bg-emerald-500",
+      stats: [
+        { label: "총 신청", value: verificationsCount },
+        { label: "대기 중", value: pendingVerifications },
+      ],
+      enabled: true,
+      path: "/admin/business-verifications",
     },
     {
       id: "users",
@@ -188,8 +208,8 @@ export const AdminPage = () => {
               <span>설문조사 관리 시스템 구축 완료</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-neutral-400 mt-0.5">○</span>
-              <span>기업 회원 관리 시스템 (예정)</span>
+              <span className="text-green-600 mt-0.5">✓</span>
+              <span>기업 인증 관리 시스템 구축 완료</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-neutral-400 mt-0.5">○</span>
