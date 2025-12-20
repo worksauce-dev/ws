@@ -19,12 +19,14 @@ import { useFileUpload } from "../hooks/useFileUpload";
 import { useCreateGroup } from "../hooks/useCreateGroup";
 import type { CreateGroupRequest, Group } from "../types/group.types";
 import { useAuth } from "@/shared/contexts/useAuth";
+import { useUserProfile } from "@/shared/hooks/useUserProfile";
 import { sendSauceTestEmail } from "@/shared/services/sauceTestService";
 
 export const CreateGroupPage = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { user } = useAuth();
+  const { data: userProfile } = useUserProfile(user?.id);
 
   // State
   const [showEmailPreview, setShowEmailPreview] = useState(false);
@@ -106,10 +108,21 @@ export const CreateGroupPage = () => {
     }>
   ) => {
     try {
-      // 사용자 이름 가져오기 (showRealName 설정에 따라)
-      const userName = showRealName
-        ? user?.user_metadata?.name || user?.email?.split("@")[0] || "관리자"
-        : "담당자";
+      // 발신자 이름 결정 로직:
+      // 1. showRealName이 false면 "담당자"
+      // 2. 기업 회원(is_business_verified)이면 기업 이름
+      // 3. 그 외는 개인 이름 또는 이메일 앞부분
+      let userName = "담당자";
+
+      if (showRealName) {
+        if (userProfile?.is_business_verified && userProfile?.business_name) {
+          // 기업 회원인 경우 기업 이름 사용
+          userName = userProfile.business_name;
+        } else {
+          // 개인 회원인 경우 개인 이름 사용
+          userName = user?.user_metadata?.name || user?.email?.split("@")[0] || "관리자";
+        }
+      }
 
       // 모든 지원자에게 이메일 발송
       const emailPromises = applicants.map(applicant =>
