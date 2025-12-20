@@ -80,31 +80,13 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       setLoading(true);
 
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
         return { error };
-      }
-
-      // 마지막 로그인 시간 업데이트 (에러 무시)
-      if (data.user) {
-        (async () => {
-          try {
-            await supabase
-              .from("user_profile")
-              .update({
-                last_login_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-              })
-              .eq("id", data.user.id);
-            console.log("Login time updated");
-          } catch {
-            console.warn("Failed to update login time");
-          }
-        })();
       }
 
       return { error: null };

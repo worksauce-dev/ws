@@ -92,17 +92,21 @@ export const DashboardPage = () => {
     );
   }
 
-  // 사용자 프로필 로딩 대기
-  if (!user || !userProfile) {
-    return null;
+  // 사용자 정보 없으면 로딩 스켈레톤
+  if (!user) {
+    return <DashboardSkeleton />;
   }
+
+  // userProfile이 없어도 기본값으로 처리 (user.user_metadata 사용)
+  const displayName = userProfile?.name || user?.user_metadata?.name || "사용자";
+  const displayCredits = userProfile?.credits ?? undefined;
 
   return (
     <DashboardLayout
-      title={`안녕하세요, ${userProfile.name}님!`}
+      title={`안녕하세요, ${displayName}님!`}
       description={greeting}
       breadcrumbs={[{ label: "워크소스", href: "/" }, { label: "대시보드" }]}
-      credits={userProfile.credits ?? undefined}
+      credits={displayCredits}
       onCreditClick={handleCreditClick}
       actions={
         <button
