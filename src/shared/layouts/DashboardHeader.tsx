@@ -1,15 +1,16 @@
-import { type ReactNode, useState, useRef, useEffect } from "react";
+import { type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   MdArrowBack,
   MdChevronRight,
   MdSettings,
   MdLogout,
-  MdKeyboardArrowDown,
   MdAccountBalanceWallet,
   MdAdd,
 } from "react-icons/md";
 import { useAuth } from "@/shared/contexts/useAuth";
+import { UserProfileDropdown } from "@/shared/components/ui";
+import type { UserMenuItem } from "@/shared/components/ui";
 
 interface BreadcrumbItem {
   label: string;
@@ -49,8 +50,6 @@ export const DashboardHeader = ({
   onCreditClick,
   creditsLoading = false,
 }: DashboardHeaderProps) => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const { signOut } = useAuth();
   const navigate = useNavigate();
 
@@ -59,21 +58,6 @@ export const DashboardHeader = ({
     "text-neutral-600 hover:text-primary transition-colors duration-200";
   const currentClassName = "text-neutral-800 font-medium";
 
-  // 드롭다운 외부 클릭 시 닫기
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   const handleLogout = async () => {
     try {
       await signOut();
@@ -81,6 +65,20 @@ export const DashboardHeader = ({
       console.error("로그아웃 실패:", error);
     }
   };
+
+  // 사용자 드롭다운 메뉴 아이템
+  const userMenuItems: UserMenuItem[] = [
+    {
+      icon: <MdSettings className="w-4 h-4" />,
+      label: "설정",
+      onClick: () => navigate("/dashboard/settings"),
+    },
+    {
+      icon: <MdLogout className="w-4 h-4" />,
+      label: "로그아웃",
+      onClick: handleLogout,
+    },
+  ];
 
   return (
     <div className="bg-white border-b border-gray-200">
@@ -186,58 +184,15 @@ export const DashboardHeader = ({
 
             {/* User Profile Dropdown */}
             {userProfile && (
-              <div
-                className="relative pl-4 border-l border-gray-200"
-                ref={dropdownRef}
-              >
-                <button
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center gap-2 h-[52px] px-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
-                >
-                  {/* User Info */}
-                  <div className="text-left">
-                    <p className="text-sm font-medium text-neutral-800 truncate max-w-32">
-                      {userProfile.name}
-                    </p>
-                    <p className="text-xs text-neutral-600 truncate max-w-32">
-                      {userProfile.email}
-                    </p>
-                  </div>
-                  <MdKeyboardArrowDown
-                    className={`w-4 h-4 text-neutral-500 transition-transform duration-200 ${
-                      isDropdownOpen ? "rotate-180" : ""
-                    }`}
-                  />
-                </button>
-
-                {/* Dropdown Menu */}
-                {isDropdownOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                    <div className="py-1">
-                      <button
-                        onClick={() => {
-                          setIsDropdownOpen(false);
-                          navigate("/dashboard/settings");
-                        }}
-                        className="w-full px-4 py-2 text-left text-sm text-neutral-700 hover:bg-gray-100 transition-colors duration-200 flex items-center gap-2"
-                      >
-                        <MdSettings className="w-4 h-4" />
-                        설정
-                      </button>
-                      <button
-                        onClick={() => {
-                          setIsDropdownOpen(false);
-                          handleLogout();
-                        }}
-                        className="w-full px-4 py-2 text-left text-sm text-neutral-700 hover:bg-gray-100 transition-colors duration-200 flex items-center gap-2"
-                      >
-                        <MdLogout className="w-4 h-4" />
-                        로그아웃
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <UserProfileDropdown
+                user={{
+                  name: userProfile.name,
+                  email: userProfile.email,
+                }}
+                menuItems={userMenuItems}
+                variant="desktop"
+                className="pl-4 border-l border-gray-200"
+              />
             )}
           </div>
         </div>

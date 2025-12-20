@@ -10,7 +10,8 @@ import {
   MdAdminPanelSettings,
 } from "react-icons/md";
 import { Link, useNavigate } from "react-router-dom";
-import { Logo } from "@/shared/components/ui";
+import { Logo, UserProfileDropdown } from "@/shared/components/ui";
+import type { UserMenuItem } from "@/shared/components/ui";
 import { MenuLink } from "@/features/landing/components/ui/MenuLink";
 import { MobileMenu } from "@/features/landing/components/ui/MobileMenu";
 import { useOutsideClick } from "@/features/landing/hooks/useOutsideClick";
@@ -39,7 +40,6 @@ const menuItems: MenuItem[] = [
 
 export const LandingHeader = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const { user, signOut, forceSignOut, deleteAccount } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
@@ -50,13 +50,9 @@ export const LandingHeader = () => {
 
   // 메뉴 외부 클릭 시 닫기
   const menuRef = useOutsideClick(() => setIsMenuOpen(false));
-  const userMenuRef = useOutsideClick(() => setIsUserMenuOpen(false));
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
-
-  const toggleUserMenu = () => setIsUserMenuOpen(!isUserMenuOpen);
-  const closeUserMenu = () => setIsUserMenuOpen(false);
 
   const handleSignOut = async () => {
     try {
@@ -64,7 +60,6 @@ export const LandingHeader = () => {
       if (!error) {
         showToast("success", "로그아웃 완료", "로그아웃되었습니다");
         navigate("/");
-        closeUserMenu();
       } else {
         showToast("error", "로그아웃 실패", "로그아웃 중 오류가 발생했습니다");
       }
@@ -80,7 +75,6 @@ export const LandingHeader = () => {
       if (!error) {
         showToast("success", "강제 로그아웃 완료", "개발 모드 강제 로그아웃");
         navigate("/");
-        closeUserMenu();
       } else {
         showToast("error", "강제 로그아웃 실패", "오류가 발생했습니다");
       }
@@ -104,7 +98,6 @@ export const LandingHeader = () => {
       if (!error) {
         showToast("success", "회원탈퇴 완료", "회원탈퇴가 완료되었습니다");
         navigate("/");
-        closeUserMenu();
       } else {
         showToast("error", "회원탈퇴 실패", "회원탈퇴 중 오류가 발생했습니다");
       }
@@ -113,6 +106,36 @@ export const LandingHeader = () => {
       showToast("error", "회원탈퇴 실패", "회원탈퇴 중 오류가 발생했습니다");
     }
   };
+
+  // 데스크톱 사용자 드롭다운 메뉴 아이템
+  const userMenuItems: UserMenuItem[] = [
+    {
+      icon: <MdDashboard className="w-4 h-4" />,
+      label: "대시보드",
+      href: "/dashboard",
+    },
+    {
+      icon: <MdLogout className="w-4 h-4" />,
+      label: "로그아웃",
+      onClick: handleSignOut,
+      divider: "before",
+    },
+    {
+      icon: <MdBugReport className="w-4 h-4" />,
+      label: "강제 로그아웃 (DEV)",
+      onClick: handleForceSignOut,
+      variant: "danger",
+      divider: "before",
+      hidden: !isDevelopment,
+    },
+    {
+      icon: <MdPersonRemove className="w-4 h-4" />,
+      label: "회원탈퇴 (DEV)",
+      onClick: handleDeleteAccount,
+      variant: "danger",
+      hidden: !isDevelopment,
+    },
+  ];
 
   return (
     <header className="z-[99] bg-white w-full fixed top-0 shadow-sm py-3">
@@ -166,67 +189,17 @@ export const LandingHeader = () => {
               />
 
               {/* 사용자 프로필 드롭다운 */}
-              <div className="relative" ref={userMenuRef}>
-                <button
-                  onClick={toggleUserMenu}
-                  className={clsx(
-                    "flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors",
-                    "hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500",
-                    isUserMenuOpen ? "bg-neutral-100" : ""
-                  )}
-                >
-                  <div className="text-left">
-                    <p className="text-sm font-medium text-neutral-900">
-                      {user.user_metadata?.name ||
-                        user.email?.split("@")[0] ||
-                        "사용자"}
-                    </p>
-                    <p className="text-xs text-neutral-500">{user.email}</p>
-                  </div>
-                </button>
-
-                {/* 드롭다운 메뉴 */}
-                {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white border border-neutral-200 rounded-lg shadow-lg py-1 z-50">
-                    <Link
-                      to="/dashboard"
-                      onClick={closeUserMenu}
-                      className="flex items-center space-x-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
-                    >
-                      <MdDashboard className="w-4 h-4" />
-                      <span>대시보드</span>
-                    </Link>
-                    <hr className="my-1" />
-                    <button
-                      onClick={handleSignOut}
-                      className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
-                    >
-                      <MdLogout className="w-4 h-4" />
-                      <span>로그아웃</span>
-                    </button>
-                    {/* Development only: Force Logout */}
-                    {isDevelopment && (
-                      <>
-                        <hr className="my-1" />
-                        <button
-                          onClick={handleForceSignOut}
-                          className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                        >
-                          <MdBugReport className="w-4 h-4" />
-                          <span>강제 로그아웃 (DEV)</span>
-                        </button>
-                        <button
-                          onClick={handleDeleteAccount}
-                          className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                        >
-                          <MdPersonRemove className="w-4 h-4" />
-                          <span>회원탈퇴 (DEV)</span>
-                        </button>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
+              <UserProfileDropdown
+                user={{
+                  name:
+                    user.user_metadata?.name ||
+                    user.email?.split("@")[0] ||
+                    "사용자",
+                  email: user.email || "",
+                }}
+                menuItems={userMenuItems}
+                variant="compact"
+              />
             </>
           )}
         </div>
