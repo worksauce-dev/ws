@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useAuth } from "@/shared/contexts/useAuth";
 import { supabase } from "@/shared/lib/supabase";
 import toast from "react-hot-toast";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
+import { PasswordStrengthIndicator } from "@/features/auth/components/ui/PasswordStrengthIndicator";
+import { calculatePasswordStrength } from "@/features/auth/utils/calculatePasswordStrength";
 
 export const ProfileSection = () => {
   const { user } = useAuth();
@@ -15,6 +17,10 @@ export const ProfileSection = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const passwordStrength = useMemo(() => {
+    return calculatePasswordStrength(newPassword);
+  }, [newPassword]);
+
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -24,13 +30,33 @@ export const ProfileSection = () => {
       return;
     }
 
-    if (newPassword !== confirmPassword) {
-      toast.error("새 비밀번호가 일치하지 않습니다");
+    if (newPassword.length < 8) {
+      toast.error("비밀번호는 8자 이상이어야 합니다");
       return;
     }
 
-    if (newPassword.length < 8) {
-      toast.error("새 비밀번호는 최소 8자 이상이어야 합니다");
+    if (!passwordStrength.checks.uppercase) {
+      toast.error("대문자를 포함해주세요");
+      return;
+    }
+
+    if (!passwordStrength.checks.lowercase) {
+      toast.error("소문자를 포함해주세요");
+      return;
+    }
+
+    if (!passwordStrength.checks.number) {
+      toast.error("숫자를 포함해주세요");
+      return;
+    }
+
+    if (passwordStrength.score < 3) {
+      toast.error("더 강한 비밀번호를 사용해주세요");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error("비밀번호가 일치하지 않습니다");
       return;
     }
 
@@ -171,7 +197,7 @@ export const ProfileSection = () => {
                     value={newPassword}
                     onChange={e => setNewPassword(e.target.value)}
                     className="w-full px-4 py-3 pr-12 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    placeholder="새 비밀번호 입력 (최소 8자)"
+                    placeholder="비밀번호 (8자 이상, 대소문자, 숫자 포함)"
                     disabled={isLoading}
                   />
                   <button
@@ -186,6 +212,12 @@ export const ProfileSection = () => {
                     )}
                   </button>
                 </div>
+
+                <PasswordStrengthIndicator
+                  password={newPassword}
+                  strength={passwordStrength}
+                  className="mt-3"
+                />
               </div>
 
               {/* 새 비밀번호 확인 */}
