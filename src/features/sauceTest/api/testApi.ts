@@ -3,16 +3,17 @@ import { type Applicant } from "../types/test";
 import type { TestRawData, TestResult } from "@/shared/types/database.types";
 
 /**
- * 지원자 ID로 지원자 정보를 조회합니다.
+ * test_token으로 지원자 정보를 조회합니다.
+ * 익명 사용자도 test_token만 있으면 조회 가능 (RLS 정책 필요)
  */
-export async function getApplicant(
-  applicantId: string
+export async function getApplicantByToken(
+  testToken: string
 ): Promise<Applicant | null> {
   try {
     const { data, error } = await supabase
       .from("applicants")
-      .select("id, name, email, group_id, test_status")
-      .eq("id", applicantId)
+      .select("id, name, email, group_id, test_token, test_status")
+      .eq("test_token", testToken)
       .single();
 
     if (error || !data) {
@@ -21,7 +22,7 @@ export async function getApplicant(
 
     return data;
   } catch (error) {
-    console.error("Get applicant error:", error);
+    console.error("Get applicant by token error:", error);
     return null;
   }
 }

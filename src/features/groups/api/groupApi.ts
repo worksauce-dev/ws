@@ -55,7 +55,7 @@ export const createGroup = async (data: CreateGroupRequest) => {
   const { data: insertedApplicants, error: applicantsError } = await supabase
     .from("applicants")
     .insert(applicantsToInsert)
-    .select();
+    .select("id, name, email, test_token, test_status");
 
   if (applicantsError) throw applicantsError;
 

@@ -18,7 +18,7 @@ import type { TestRawData } from "@/shared/types/database.types";
 
 interface TestSessionProps {
   applicant: Applicant;
-  testId: string;
+  testToken: string;
 }
 
 // 동사 테스트 결과 타입

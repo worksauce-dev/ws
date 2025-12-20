@@ -8,12 +8,12 @@ import { VerifyApplicant } from "../components/VerifyApplicant";
 import { TestSession } from "../components/TestSession";
 
 export const SauceTestPage = () => {
-  const { testId } = useParams<{ testId: string }>();
+  const { testToken } = useParams<{ testToken: string }>();
   const navigate = useNavigate();
   const [isVerified, setIsVerified] = useState(false);
   const [showTestSession, setShowTestSession] = useState(false);
   const { data: applicant, isLoading: isLoadingApplicant } = useApplicant(
-    testId!
+    testToken!
   );
 
   const handleVerifySuccess = () => {
@@ -31,8 +31,8 @@ export const SauceTestPage = () => {
     }
   }, [isVerified]);
 
-  // 테스트 ID가 없는 경우
-  if (!testId) {
+  // 테스트 토큰이 없는 경우
+  if (!testToken) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-primary-50">
         <motion.div
@@ -107,7 +107,7 @@ export const SauceTestPage = () => {
 
   // 테스트 세션 시작
   if (showTestSession) {
-    return <TestSession applicant={applicant} testId={testId} />;
+    return <TestSession applicant={applicant} testToken={testToken} />;
   }
 
   // 검증 완료 후 로딩 화면

@@ -141,7 +141,7 @@ function App() {
                   {/* 미니 테스트 - 누구나 접근 가능 */}
                   <Route path="/mini-test" element={<MiniTestPage />} />
 
-                  <Route path="/test/:testId" element={<SauceTestPage />} />
+                  <Route path="/test/:testToken" element={<SauceTestPage />} />
 
                   {/* 인증 페이지들 - 로그인된 사용자는 대시보드로 리다이렉트 */}
                   <Route

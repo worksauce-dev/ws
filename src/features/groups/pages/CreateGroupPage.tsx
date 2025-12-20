@@ -105,6 +105,7 @@ export const CreateGroupPage = () => {
       id: string;
       name: string;
       email: string;
+      test_token: string;
     }>
   ) => {
     try {
@@ -130,7 +131,7 @@ export const CreateGroupPage = () => {
           applicantEmail: applicant.email,
           userName: userName,
           applicantName: applicant.name,
-          testId: applicant.id,
+          testId: applicant.test_token,
           dashboardId: group.id,
           deadline: group.deadline,
         })
