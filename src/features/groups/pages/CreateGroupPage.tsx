@@ -111,19 +111,31 @@ export const CreateGroupPage = () => {
     try {
       // 발신자 이름 결정 로직:
       // 1. showRealName이 false면 "담당자"
-      // 2. 기업 회원(is_business_verified)이면 기업 이름
+      // 2. 기업 회원(business_verified)이면 기업 이름
       // 3. 그 외는 개인 이름 또는 이메일 앞부분
       let userName = "담당자";
 
       if (showRealName) {
-        if (userProfile?.is_business_verified && userProfile?.business_name) {
+        if (userProfile?.business_verified && userProfile?.business_name) {
           // 기업 회원인 경우 기업 이름 사용
           userName = userProfile.business_name;
+          console.log("📧 발신자 이름 (기업):", userName);
         } else {
           // 개인 회원인 경우 개인 이름 사용
           userName = user?.user_metadata?.name || user?.email?.split("@")[0] || "관리자";
+          console.log("📧 발신자 이름 (개인):", userName);
         }
+      } else {
+        console.log("📧 발신자 이름 (익명):", userName);
       }
+
+      // 디버깅: userProfile 상태 확인
+      console.log("📧 UserProfile 상태:", {
+        business_verified: userProfile?.business_verified,
+        business_name: userProfile?.business_name,
+        showRealName,
+        finalUserName: userName,
+      });
 
       // 모든 지원자에게 이메일 발송
       const emailPromises = applicants.map(applicant =>

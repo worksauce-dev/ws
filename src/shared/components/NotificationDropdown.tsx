@@ -61,9 +61,18 @@ export const NotificationDropdown = ({
     }
 
     // 알림 타입에 따라 해당 페이지로 이동
-    if (notification.type === "test_completed" && notification.data?.group_id) {
-      navigate(`/dashboard/groups/${notification.data.group_id}`);
-      onClose();
+    if (notification.type === "test_completed") {
+      const { group_id, applicant_id } = notification.data || {};
+
+      if (group_id && applicant_id) {
+        // 지원자 상세 페이지로 이동
+        navigate(`/dashboard/groups/${group_id}/applicants/${applicant_id}`);
+        onClose();
+      } else if (group_id) {
+        // applicant_id가 없으면 그룹 페이지로 이동
+        navigate(`/dashboard/groups/${group_id}`);
+        onClose();
+      }
     }
   };
 
