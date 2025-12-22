@@ -11,6 +11,7 @@ import {
 import { useAuth } from "@/shared/contexts/useAuth";
 import { UserProfileDropdown } from "@/shared/components/ui";
 import type { UserMenuItem } from "@/shared/components/ui";
+import { NotificationBell } from "@/shared/components/NotificationBell";
 
 interface BreadcrumbItem {
   label: string;
@@ -181,6 +182,11 @@ export const DashboardHeader = ({
                 )}
               </div>
             )}
+
+            {/* Notification Bell */}
+            <div className="pl-4 border-l border-gray-200">
+              <NotificationBell />
+            </div>
 
             {/* User Profile Dropdown */}
             {userProfile && (

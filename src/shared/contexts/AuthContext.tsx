@@ -13,6 +13,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   // 사용자 프로필 조회
   // const fetchUserProfile = async (
@@ -227,6 +228,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
             setUser(null);
             setUserProfile(null);
             setLoading(false);
+            setInitialLoadComplete(true);
             return;
           }
         } catch (error) {
@@ -236,6 +238,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
           setUser(null);
           setUserProfile(null);
           setLoading(false);
+          setInitialLoadComplete(true);
           return;
         }
       }
@@ -249,6 +252,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
       }
 
       setLoading(false);
+      setInitialLoadComplete(true);
     };
 
     getInitialSession();
@@ -257,7 +261,28 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event);
+      if (import.meta.env.VITE_ENV === "Dev") {
+        console.log("Auth state changed:", event, "Session exists:", !!session);
+      }
+
+      // TOKEN_REFRESHED 이벤트는 세션만 업데이트하고 프로필은 다시 조회하지 않음
+      if (event === "TOKEN_REFRESHED") {
+        if (session?.user) {
+          setSession(session);
+          setUser(session.user);
+        }
+        return;
+      }
+
+      // INITIAL_SESSION 이벤트는 무시 (getInitialSession에서 이미 처리됨)
+      if (event === "INITIAL_SESSION") {
+        return;
+      }
+
+      // 초기 로드가 완료되지 않은 상태에서 발생하는 SIGNED_IN 이벤트는 무시
+      if (event === "SIGNED_IN" && !initialLoadComplete) {
+        return;
+      }
 
       setSession(session);
       setUser(session?.user ?? null);
@@ -273,6 +298,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     });
 
     return () => subscription.unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const value = {
