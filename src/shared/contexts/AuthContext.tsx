@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, useCallback, type ReactNode } from "react";
 import { type User, type Session } from "@supabase/supabase-js";
 import { supabase, type UserProfile } from "@/shared/lib/supabase";
 import type { SignupFormData } from "@/features/auth/types/auth.types";
@@ -42,12 +42,41 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   //   }
   // };
 
-  // 프로필 새로고침 (현재 사용하지 않음 - user.user_metadata 사용)
-  const refreshProfile = async () => {
+  // 사용자 프로필 조회 (기업 인증 정보 포함)
+  // useCallback으로 메모이제이션하여 무한 루프 방지
+  const fetchUserProfile = useCallback(
+    async (userId: string): Promise<UserProfile | null> => {
+      try {
+        const { data, error } = await supabase
+          .from("user_profile")
+          .select("*")
+          .eq("id", userId)
+          .single();
+
+        if (error) {
+          console.warn("❌ User profile fetch error:", {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code,
+          });
+          return null;
+        }
+
+        return data as UserProfile;
+      } catch (error) {
+        console.warn("❌ Exception fetching user profile:", error);
+        return null;
+      }
+    },
+    []
+  );
+
+  const refreshProfile = useCallback(async () => {
     if (!user) return;
-    // Skip profile refresh since we're using user.user_metadata
-    setUserProfile(null);
-  };
+    const profile = await fetchUserProfile(user.id);
+    setUserProfile(profile);
+  }, [user, fetchUserProfile]);
 
   const signUp = async (formData: SignupFormData) => {
     try {
@@ -215,8 +244,8 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        // Skip profile fetching since we're using user.user_metadata
-        setUserProfile(null);
+        const profile = await fetchUserProfile(session.user.id);
+        setUserProfile(profile);
       }
 
       setLoading(false);
@@ -234,8 +263,8 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        // Skip profile fetching since we're using user.user_metadata
-        setUserProfile(null);
+        const profile = await fetchUserProfile(session.user.id);
+        setUserProfile(profile);
       } else {
         setUserProfile(null);
       }

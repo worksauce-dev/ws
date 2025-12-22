@@ -304,6 +304,7 @@ export async function approveBusinessVerification(
   error: string | null;
 }> {
   try {
+    // 1. 기업 인증 요청 승인 처리
     const { data, error } = await supabase
       .from("business_verifications")
       .update({
@@ -321,6 +322,22 @@ export async function approveBusinessVerification(
         data: null,
         error: "기업 인증 승인에 실패했습니다.",
       };
+    }
+
+    // 2. user_profiles 테이블 업데이트 (business_verified, business_name)
+    const { error: profileError } = await supabase
+      .from("user_profile")
+      .update({
+        business_verified: true,
+        business_name: data.company_name,
+      })
+      .eq("id", data.user_id);
+
+    if (profileError) {
+      console.error("Update user profile error:", profileError);
+      // user_profile 업데이트 실패 시 경고만 로그하고 계속 진행
+      // (business_verifications 테이블은 이미 승인 상태로 업데이트됨)
+      console.warn("기업 인증은 승인되었으나 프로필 업데이트에 실패했습니다.");
     }
 
     return {

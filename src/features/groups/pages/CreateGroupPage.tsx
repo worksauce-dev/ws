@@ -330,6 +330,7 @@ export const CreateGroupPage = () => {
         {showEmailPreview && (
           <PreviewTestEmail
             user={user}
+            userProfile={userProfile ?? null}
             groupName={groupForm.formData.name}
             deadline={groupForm.formData.deadline}
             applicants={applicantManager.applicants}
