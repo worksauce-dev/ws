@@ -11,7 +11,6 @@ import { generateGreeting } from "@/shared/utils/dashboardGreetings";
 import { SelectDropdown } from "@/shared/components/ui/Dropdown";
 import { TabGroup } from "@/shared/components/ui/TabGroup";
 import { useMinimumLoadingTime } from "@/shared/hooks/useMinimumLoadingTime";
-import { useUserProfile } from "@/shared/hooks/useUserProfile";
 import { useGroups } from "../hooks/useGroups";
 import { useGroupFilters } from "../hooks/useGroupFilters";
 import { useGroupActions } from "../hooks/useGroupActions";
@@ -29,11 +28,10 @@ type ViewMode = "grid" | "calendar";
 
 export const DashboardPage = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
 
   // 데이터 페칭
   const { groups, isLoading, error, refetch } = useGroups();
-  const { data: userProfile } = useUserProfile(user?.id);
 
   // 커스텀 hooks
   const {

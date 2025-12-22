@@ -25,11 +25,11 @@ export const useMinimumLoadingTime = (
   const [startTime, setStartTime] = useState<number | null>(null);
 
   useEffect(() => {
-    if (isLoading) {
-      // 로딩 시작 - 시작 시간 기록
+    if (isLoading && startTime === null) {
+      // 로딩 시작 - 시작 시간 기록 (최초 1회만)
       setShowLoading(true);
       setStartTime(Date.now());
-    } else if (startTime !== null) {
+    } else if (!isLoading && startTime !== null) {
       // 로딩 완료 - 최소 시간 체크
       const elapsed = Date.now() - startTime;
       const remaining = Math.max(0, minTime - elapsed);
