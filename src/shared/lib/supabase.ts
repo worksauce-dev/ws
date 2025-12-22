@@ -28,6 +28,8 @@ export type UserProfile = {
   updated_at: string;
   email_verified: boolean;
   is_admin: boolean;
+  business_verified: boolean;
+  business_name?: string | null;
   last_login_at?: string | null;
   credits?: number;
 };
