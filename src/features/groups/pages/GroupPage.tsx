@@ -239,34 +239,34 @@ export const GroupPage = () => {
         groupId={groupId!}
       />
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <div className="h-full bg-white rounded-xl p-6 border border-neutral-200">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6">
+        <div className="h-full bg-white rounded-xl p-3 sm:p-6 border border-neutral-200">
           <div className="flex items-center h-full">
-            <div className="p-3 rounded-lg mr-4 bg-info-100">
-              <MdPerson className="w-6 h-6 text-info" />
+            <div className="p-2 sm:p-3 rounded-lg mr-2 sm:mr-4 bg-info-100">
+              <MdPerson className="w-4 h-4 sm:w-6 sm:h-6 text-info" />
             </div>
             <div>
-              <p className="text-sm font-medium text-neutral-600">총 지원자</p>
-              <p className="text-2xl font-bold text-neutral-800">
+              <p className="text-xs sm:text-sm font-medium text-neutral-600">총 지원자</p>
+              <p className="text-lg sm:text-2xl font-bold text-neutral-800">
                 {applicants.length}명
               </p>
             </div>
           </div>
         </div>
-        <div className="h-full bg-white rounded-xl p-6 border border-neutral-200">
+        <div className="h-full bg-white rounded-xl p-3 sm:p-6 border border-neutral-200">
           <div className="flex items-center h-full">
-            <div className="p-3 rounded-lg mr-4 bg-success-100">
-              <MdCheckCircle className="w-6 h-6 text-success" />
+            <div className="p-2 sm:p-3 rounded-lg mr-2 sm:mr-4 bg-success-100">
+              <MdCheckCircle className="w-4 h-4 sm:w-6 sm:h-6 text-success" />
             </div>
             <div>
-              <p className="text-sm font-medium text-neutral-600">
+              <p className="text-xs sm:text-sm font-medium text-neutral-600">
                 테스트 완료
               </p>
-              <div className="flex items-baseline gap-2">
-                <p className="text-2xl font-bold text-neutral-800">
+              <div className="flex items-baseline gap-1 sm:gap-2">
+                <p className="text-lg sm:text-2xl font-bold text-neutral-800">
                   {completedCount}명
                 </p>
-                <p className="text-sm text-neutral-600">
+                <p className="text-xs sm:text-sm text-neutral-600">
                   (
                   {applicants.length > 0
                     ? Math.round((completedCount / applicants.length) * 100)
@@ -277,18 +277,18 @@ export const GroupPage = () => {
             </div>
           </div>
         </div>
-        <div className="h-full bg-white rounded-xl p-6 border border-neutral-200">
+        <div className="h-full bg-white rounded-xl p-3 sm:p-6 border border-neutral-200">
           <div className="flex items-center h-full">
-            <div className="p-3 rounded-lg mr-4 bg-warning-100">
-              <MdTrendingUp className="w-6 h-6 text-warning" />
+            <div className="p-2 sm:p-3 rounded-lg mr-2 sm:mr-4 bg-warning-100">
+              <MdTrendingUp className="w-4 h-4 sm:w-6 sm:h-6 text-warning" />
             </div>
             <div>
-              <p className="text-sm font-medium text-neutral-600">추천 후보</p>
-              <div className="flex items-baseline gap-2">
-                <p className="text-2xl font-bold text-neutral-800">
+              <p className="text-xs sm:text-sm font-medium text-neutral-600">추천 후보</p>
+              <div className="flex items-baseline gap-1 sm:gap-2">
+                <p className="text-lg sm:text-2xl font-bold text-neutral-800">
                   {recommendedCount}명
                 </p>
-                <p className="text-sm text-neutral-600">
+                <p className="text-xs sm:text-sm text-neutral-600">
                   (
                   {completedCount > 0
                     ? Math.round((recommendedCount / completedCount) * 100)
@@ -299,23 +299,23 @@ export const GroupPage = () => {
             </div>
           </div>
         </div>
-        <div className="h-full bg-white rounded-xl p-6 border border-neutral-200">
+        <div className="h-full bg-white rounded-xl p-3 sm:p-6 border border-neutral-200">
           <div className="flex items-center h-full">
-            <div className="p-3 rounded-lg mr-4 bg-primary-100">
-              <MdTrendingUp className="w-6 h-6 text-primary" />
+            <div className="p-2 sm:p-3 rounded-lg mr-2 sm:mr-4 bg-primary-100">
+              <MdTrendingUp className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
             </div>
             <div>
-              <p className="text-sm font-medium text-neutral-600">
+              <p className="text-xs sm:text-sm font-medium text-neutral-600">
                 평균 매칭도
               </p>
-              <div className="flex items-baseline gap-2">
+              <div className="flex items-baseline gap-1 sm:gap-2">
                 <p
-                  className={`text-2xl font-bold ${getScoreColorClass(averageJobMatchScore)}`}
+                  className={`text-lg sm:text-2xl font-bold ${getScoreColorClass(averageJobMatchScore)}`}
                 >
                   {averageJobMatchScore}%
                 </p>
               </div>
-              <p className="text-xs text-neutral-500 mt-1">
+              <p className="text-[10px] sm:text-xs text-neutral-500 mt-0.5 sm:mt-1">
                 완료된 지원자 기준
               </p>
             </div>
