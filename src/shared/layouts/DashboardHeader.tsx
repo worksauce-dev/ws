@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   MdArrowBack,
@@ -7,11 +7,16 @@ import {
   MdLogout,
   MdAccountBalanceWallet,
   MdAdd,
+  MdMenu,
+  MdClose,
+  MdNotifications,
 } from "react-icons/md";
+import { clsx } from "clsx";
 import { useAuth } from "@/shared/contexts/useAuth";
 import { UserProfileDropdown } from "@/shared/components/ui";
 import type { UserMenuItem } from "@/shared/components/ui";
 import { NotificationBell } from "@/shared/components/NotificationBell";
+import { useOutsideClick } from "@/features/landing/hooks/useOutsideClick";
 
 interface BreadcrumbItem {
   label: string;
@@ -53,21 +58,41 @@ export const DashboardHeader = ({
 }: DashboardHeaderProps) => {
   const { signOut } = useAuth();
   const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // 메뉴 외부 클릭 시 닫기
+  const menuRef = useOutsideClick(() => setIsMobileMenuOpen(false));
 
   // 공통 스타일 클래스
   const linkClassName =
     "text-neutral-600 hover:text-primary transition-colors duration-200";
   const currentClassName = "text-neutral-800 font-medium";
 
+  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
+
   const handleLogout = async () => {
     try {
       await signOut();
+      closeMobileMenu();
     } catch (error) {
       console.error("로그아웃 실패:", error);
     }
   };
 
-  // 사용자 드롭다운 메뉴 아이템
+  const handleSettingsClick = () => {
+    navigate("/dashboard/settings");
+    closeMobileMenu();
+  };
+
+  const handleCreditClickMobile = () => {
+    if (onCreditClick) {
+      onCreditClick();
+      closeMobileMenu();
+    }
+  };
+
+  // 사용자 드롭다운 메뉴 아이템 (데스크톱)
   const userMenuItems: UserMenuItem[] = [
     {
       icon: <MdSettings className="w-4 h-4" />,
@@ -114,7 +139,7 @@ export const DashboardHeader = ({
 
         {/* Main Header */}
         <div className="flex items-center justify-between py-6">
-          <div className="sm:flex hidden items-center min-w-0 flex-1">
+          <div className="flex items-center min-w-0 flex-1">
             {/* Back Button */}
             {showBackButton && (
               <button
@@ -127,79 +152,177 @@ export const DashboardHeader = ({
 
             {/* Title Section */}
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl lg:text-3xl font-bold text-primary truncate">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold text-primary truncate">
                   {title}
                 </h1>
                 {statusBadge}
               </div>
               {description && (
-                <p className="mt-1 lg:mt-2 text-sm lg:text-base text-neutral-600 truncate">
+                <p className="mt-1 lg:mt-2 text-xs sm:text-sm lg:text-base text-neutral-600 truncate">
                   {description}
                 </p>
               )}
             </div>
           </div>
 
-          {/* Right Section: Actions + Credits + User Profile */}
-          <div className="flex items-center gap-4 flex-shrink-0">
-            {/* Actions */}
+          {/* Right Section: Desktop - Full Menu / Mobile - Hamburger */}
+          <div className="flex items-center gap-2 sm:gap-4">
+            {/* Actions (항상 표시) */}
             {actions && (
-              <div className="flex items-center gap-3">{actions}</div>
+              <div className="flex items-center gap-2 sm:gap-3">{actions}</div>
             )}
 
-            {/* Credits Display */}
-            {(credits !== undefined || creditsLoading) && (
+            {/* Desktop Only: Credits + Notification + Profile */}
+            <div className="hidden sm:flex items-center gap-4">
+              {/* Credits Display */}
+              {(credits !== undefined || creditsLoading) && (
+                <div className="pl-4 border-l border-gray-200">
+                  {creditsLoading ? (
+                    <div className="flex items-center gap-2 h-[52px] px-3">
+                      <div className="w-4 h-4 bg-neutral-200 rounded animate-pulse" />
+                      <div className="flex items-baseline gap-1">
+                        <div className="h-3 w-10 bg-neutral-200 rounded animate-pulse" />
+                        <div className="h-4 w-12 bg-neutral-200 rounded animate-pulse" />
+                      </div>
+                      <div className="w-4 h-4 bg-neutral-200 rounded animate-pulse" />
+                    </div>
+                  ) : (
+                    <button
+                      onClick={onCreditClick}
+                      className="flex items-center gap-2 h-[52px] px-3 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                      disabled={!onCreditClick}
+                    >
+                      <MdAccountBalanceWallet className="w-4 h-4 text-neutral-600" />
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-xs text-neutral-600 font-medium">
+                          크레딧
+                        </span>
+                        <span className="text-sm font-semibold text-neutral-800">
+                          {credits?.toLocaleString()}
+                        </span>
+                      </div>
+                      {onCreditClick && (
+                        <MdAdd className="w-4 h-4 text-neutral-500" />
+                      )}
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Notification Bell */}
               <div className="pl-4 border-l border-gray-200">
-                {creditsLoading ? (
-                  <div className="flex items-center gap-2 h-[52px] px-3">
-                    <div className="w-4 h-4 bg-neutral-200 rounded animate-pulse" />
-                    <div className="flex items-baseline gap-1">
-                      <div className="h-3 w-10 bg-neutral-200 rounded animate-pulse" />
-                      <div className="h-4 w-12 bg-neutral-200 rounded animate-pulse" />
-                    </div>
-                    <div className="w-4 h-4 bg-neutral-200 rounded animate-pulse" />
-                  </div>
-                ) : (
-                  <button
-                    onClick={onCreditClick}
-                    className="flex items-center gap-2 h-[52px] px-3 rounded-lg hover:bg-gray-100 transition-colors duration-200"
-                    disabled={!onCreditClick}
-                  >
-                    <MdAccountBalanceWallet className="w-4 h-4 text-neutral-600" />
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-xs text-neutral-600 font-medium">
-                        크레딧
-                      </span>
-                      <span className="text-sm font-semibold text-neutral-800">
-                        {credits?.toLocaleString()}
-                      </span>
-                    </div>
-                    {onCreditClick && (
-                      <MdAdd className="w-4 h-4 text-neutral-500" />
-                    )}
-                  </button>
-                )}
+                <NotificationBell />
               </div>
-            )}
 
-            {/* Notification Bell */}
-            <div className="pl-4 border-l border-gray-200">
-              <NotificationBell />
+              {/* User Profile Dropdown */}
+              {userProfile && (
+                <UserProfileDropdown
+                  user={{
+                    name: userProfile.name,
+                    email: userProfile.email,
+                  }}
+                  menuItems={userMenuItems}
+                  variant="desktop"
+                  className="pl-4 border-l border-gray-200"
+                />
+              )}
             </div>
 
-            {/* User Profile Dropdown */}
-            {userProfile && (
-              <UserProfileDropdown
-                user={{
-                  name: userProfile.name,
-                  email: userProfile.email,
-                }}
-                menuItems={userMenuItems}
-                variant="desktop"
-                className="pl-4 border-l border-gray-200"
-              />
-            )}
+            {/* Mobile Only: Hamburger Menu */}
+            <div className="sm:hidden relative" ref={menuRef}>
+              <button
+                className={clsx(
+                  "flex items-center justify-center w-10 h-10 rounded-full",
+                  "transition-all duration-200 hover:scale-105 active:scale-95",
+                  isMobileMenuOpen
+                    ? "bg-primary-500 text-white"
+                    : "text-neutral-600 hover:text-primary-500 hover:bg-primary-50"
+                )}
+                onClick={toggleMobileMenu}
+                aria-label={isMobileMenuOpen ? "메뉴 닫기" : "메뉴 열기"}
+              >
+                {isMobileMenuOpen ? (
+                  <MdClose className="w-5 h-5" />
+                ) : (
+                  <MdMenu className="w-6 h-6" />
+                )}
+              </button>
+
+              {/* 모바일 드롭다운 메뉴 */}
+              {isMobileMenuOpen && (
+                <div className="absolute right-0 mt-2 w-64 bg-white border border-neutral-200 rounded-lg shadow-lg py-2 z-50">
+                  {/* 사용자 정보 */}
+                  {userProfile && (
+                    <div className="px-4 py-3 border-b border-neutral-100">
+                      <p className="font-medium text-neutral-900 truncate">
+                        {userProfile.name}
+                      </p>
+                      <p className="text-sm text-neutral-500 truncate">
+                        {userProfile.email}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* 크레딧 (클릭 가능한 경우만) */}
+                  {credits !== undefined && onCreditClick && (
+                    <button
+                      onClick={handleCreditClickMobile}
+                      className="w-full flex items-center justify-between px-4 py-3 text-neutral-700 hover:bg-neutral-50"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <MdAccountBalanceWallet className="w-5 h-5" />
+                        <span>크레딧</span>
+                      </div>
+                      <span className="font-semibold text-neutral-800">
+                        {credits.toLocaleString()}
+                      </span>
+                    </button>
+                  )}
+
+                  {/* 크레딧 (읽기 전용) */}
+                  {credits !== undefined && !onCreditClick && (
+                    <div className="flex items-center justify-between px-4 py-3 text-neutral-700">
+                      <div className="flex items-center space-x-2">
+                        <MdAccountBalanceWallet className="w-5 h-5" />
+                        <span>크레딧</span>
+                      </div>
+                      <span className="font-semibold text-neutral-800">
+                        {credits.toLocaleString()}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* 알림 */}
+                  <div className="px-4 py-3 border-t border-neutral-100">
+                    <div className="flex items-center space-x-2 text-neutral-700">
+                      <MdNotifications className="w-5 h-5" />
+                      <span>알림</span>
+                    </div>
+                  </div>
+
+                  <hr className="my-1" />
+
+                  {/* 설정 */}
+                  <button
+                    onClick={handleSettingsClick}
+                    className="w-full flex items-center space-x-2 px-4 py-3 text-neutral-700 hover:bg-neutral-50"
+                  >
+                    <MdSettings className="w-5 h-5" />
+                    <span>설정</span>
+                  </button>
+
+                  {/* 로그아웃 */}
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center space-x-2 px-4 py-3 text-neutral-700 hover:bg-neutral-50"
+                  >
+                    <MdLogout className="w-5 h-5" />
+                    <span>로그아웃</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

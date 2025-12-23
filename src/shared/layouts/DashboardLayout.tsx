@@ -1,7 +1,6 @@
 import { type ReactNode } from "react";
 import { DashboardHeader } from "@/shared/layouts/DashboardHeader";
-import { useAuth } from "@/shared/contexts/useAuth";
-import type { UserProfile } from "@/shared/lib/supabase";
+import { useUser } from "@/shared/hooks/useUser";
 
 interface BreadcrumbItem {
   label: string;
@@ -72,21 +71,12 @@ export const DashboardLayout = ({
     }
   };
 
-  const { user } = useAuth();
+  const { userName, userEmail, isAuthenticated } = useUser();
 
-  if (!user) {
+  if (!isAuthenticated) {
     return null;
   }
 
-  // user 데이터를 userProfile 형태로 변환
-  const userProfile: UserProfile = {
-    id: user.id,
-    created_at: user.created_at,
-    updated_at: user.updated_at ?? user.created_at,
-    email_verified: Boolean(user.user_metadata?.email_verified),
-    name: (user.user_metadata?.name as string | undefined) ?? "사용자",
-    email: user.email ?? "",
-  };
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -98,7 +88,10 @@ export const DashboardLayout = ({
         onBackClick={onBackClick}
         actions={actions}
         statusBadge={statusBadge}
-        userProfile={userProfile}
+        userProfile={{
+          name: userName,
+          email: userEmail,
+        }}
         credits={credits}
         onCreditClick={onCreditClick}
         creditsLoading={creditsLoading}

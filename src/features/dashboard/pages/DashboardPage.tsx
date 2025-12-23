@@ -105,9 +105,10 @@ export const DashboardPage = () => {
       actions={
         <button
           onClick={handleCreateGroup}
-          className="inline-flex items-center h-[52px] px-6 rounded-lg font-medium text-white text-sm bg-primary-500 hover:bg-primary-dark transition-all duration-200 hover:shadow-md"
+          className="inline-flex items-center h-[52px] sm:px-6 px-3 rounded-lg font-medium text-white text-sm bg-primary-500 hover:bg-primary-dark transition-all duration-200 hover:shadow-md"
         >
-          <MdAdd className="w-4 h-4 mr-2" />새 그룹 생성
+          <MdAdd className="w-5 h-5 sm:w-4 sm:h-4 sm:mr-2" />
+          <span className="hidden sm:inline">새 그룹 생성</span>
         </button>
       }
     >

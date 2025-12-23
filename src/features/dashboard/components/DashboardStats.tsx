@@ -69,7 +69,7 @@ export const DashboardStats = ({ stats }: DashboardStatsProps) => {
             <MdTrendingUp className="w-6 h-6 text-warning" />
           </div>
           <div>
-            <p className="text-sm font-medium text-neutral-600">완료 지원자</p>
+            <p className="text-sm font-medium text-neutral-600">완료</p>
             <p className="text-2xl font-bold text-neutral-800">
               {stats.completedTests}
             </p>
