@@ -329,32 +329,34 @@ export const GroupPage = () => {
           {/* Tabs and Controls */}
           <div className="bg-white rounded-xl border border-neutral-200 mb-6 overflow-hidden">
             <div className="p-6 border-b border-neutral-200">
-              <div className="flex flex-col sm:flex-row gap-4 justify-between">
+              <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
                 {/* Tabs */}
-                <TabGroup
-                  tabs={[
-                    {
-                      id: "all",
-                      label: "전체",
-                      count: applicants.length,
-                    },
-                    {
-                      id: "completed",
-                      label: "완료",
-                      count: applicants.filter(
-                        applicant => applicant.test_status === "completed"
-                      ).length,
-                    },
-                  ]}
-                  activeTab={selectedTab}
-                  variant="secondary"
-                  onChange={tabId =>
-                    setSelectedTab(tabId as "all" | "completed")
-                  }
-                />
+                <div className="w-fit">
+                  <TabGroup
+                    tabs={[
+                      {
+                        id: "all",
+                        label: "전체",
+                        count: applicants.length,
+                      },
+                      {
+                        id: "completed",
+                        label: "완료",
+                        count: applicants.filter(
+                          applicant => applicant.test_status === "completed"
+                        ).length,
+                      },
+                    ]}
+                    activeTab={selectedTab}
+                    variant="secondary"
+                    onChange={tabId =>
+                      setSelectedTab(tabId as "all" | "completed")
+                    }
+                  />
+                </div>
 
                 {/* Search */}
-                <div className="relative flex-1 sm:flex-initial sm:w-64">
+                <div className="relative sm:ml-auto sm:w-64">
                   <MdSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-500" />
                   <input
                     type="text"
