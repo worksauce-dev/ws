@@ -102,12 +102,26 @@ export const BusinessSection = () => {
     submitVerification(formData);
   };
 
+  // 로딩 스켈레톤 렌더링
+  const renderLoadingSkeleton = () => {
+    return (
+      <div className="space-y-6 animate-pulse">
+        {/* 상태 카드 스켈레톤 */}
+        <div className="bg-neutral-100 rounded-lg h-24" />
+
+        {/* 폼 필드 스켈레톤 */}
+        <div className="space-y-4">
+          <div className="h-10 bg-neutral-100 rounded-lg" />
+          <div className="h-10 bg-neutral-100 rounded-lg" />
+          <div className="h-10 bg-neutral-100 rounded-lg" />
+          <div className="h-32 bg-neutral-100 rounded-lg" />
+        </div>
+      </div>
+    );
+  };
+
   // 인증 상태에 따른 UI 렌더링
   const renderVerificationStatus = () => {
-    if (isLoadingStatus) {
-      return null;
-    }
-
     if (!verification) {
       return null;
     }
@@ -294,11 +308,15 @@ export const BusinessSection = () => {
         </p>
       </div>
 
-      {renderVerificationStatus()}
-      {renderApprovedInfo()}
+      {isLoadingStatus ? (
+        renderLoadingSkeleton()
+      ) : (
+        <>
+          {renderVerificationStatus()}
+          {renderApprovedInfo()}
 
-      {/* 승인된 경우 폼 숨김 */}
-      {verification?.status === "approved" ? null : (
+          {/* 승인된 경우 폼 숨김 */}
+          {verification?.status === "approved" ? null : (
         <>
           {/* 기업 정보 입력 폼 */}
           <div className="space-y-4">
@@ -485,6 +503,8 @@ export const BusinessSection = () => {
               영업일이 소요됩니다.
             </p>
           </div>
+        </>
+      )}
         </>
       )}
     </div>

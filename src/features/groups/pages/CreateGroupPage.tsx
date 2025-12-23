@@ -12,6 +12,8 @@ import { useToast } from "@/shared/components/ui/useToast";
 import { ApplicantManager } from "../components/ApplicantManager";
 import { GroupInfoForm } from "../components/GroupInfoForm";
 import PreviewTestEmail from "../components/PreviewTestEmail";
+import { CreateGroupLoadingModal } from "../components/CreateGroupLoadingModal";
+import type { CreateGroupStep } from "../components/CreateGroupLoadingModal";
 import { useGroupForm } from "../hooks/useGroupForm";
 import { useCustomPosition } from "../hooks/useCustomPosition";
 import { useApplicantManager } from "../hooks/useApplicantManager";
@@ -29,6 +31,9 @@ export const CreateGroupPage = () => {
   // State
   const [showEmailPreview, setShowEmailPreview] = useState(false);
   const [showRealName, setShowRealName] = useState(true); // 기본값: 실명 표시
+  const [loadingStep, setLoadingStep] = useState<CreateGroupStep>("creating");
+  const [emailProgress, setEmailProgress] = useState({ success: 0, failed: 0 });
+  const [loadingError, setLoadingError] = useState<string>("");
 
   // Hooks
   const groupForm = useGroupForm();
@@ -39,18 +44,24 @@ export const CreateGroupPage = () => {
   // 그룹 생성 mutation
   const { mutate: createGroup, isPending: isCreating } = useCreateGroup({
     onSuccess: async data => {
-      showToast(
-        "success",
-        "그룹 생성 완료",
-        `채용 그룹이 생성되었습니다. ${data.applicants.length}명의 지원자가 추가되었습니다.`
-      );
+      // 이메일 발송 단계로 전환
+      setLoadingStep("sending");
+      setEmailProgress({ success: 0, failed: 0 });
 
       // 모든 지원자에게 소스테스트 이메일 발송
       await handleSendSauceTest(data.group, data.applicants);
 
-      navigate(`/dashboard/groups/${data.group.id}`);
+      // 완료 단계로 전환
+      setLoadingStep("complete");
+
+      // 1초 후 페이지 이동 (사용자가 완료 메시지를 볼 수 있도록)
+      setTimeout(() => {
+        navigate(`/dashboard/groups/${data.group.id}`);
+      }, 1500);
     },
     onError: error => {
+      setLoadingStep("error");
+      setLoadingError(error.message);
       showToast("error", "생성 실패", error.message);
     },
   });
@@ -135,24 +146,34 @@ export const CreateGroupPage = () => {
         finalUserName: senderName,
       });
 
-      // 모든 지원자에게 이메일 발송
-      const emailPromises = applicants.map(applicant =>
-        sendSauceTestEmail({
-          applicantEmail: applicant.email,
-          userName: senderName,
-          applicantName: applicant.name,
-          testId: applicant.test_token,
-          dashboardId: group.id,
-          deadline: group.deadline,
-        })
-      );
+      // 각 지원자에게 순차적으로 이메일 발송 (진행 상황 업데이트를 위해)
+      let successCount = 0;
+      let failedCount = 0;
 
-      // 모든 이메일 발송 결과 대기
-      const results = await Promise.all(emailPromises);
+      for (const applicant of applicants) {
+        try {
+          const result = await sendSauceTestEmail({
+            applicantEmail: applicant.email,
+            userName: senderName,
+            applicantName: applicant.name,
+            testId: applicant.test_token,
+            dashboardId: group.id,
+            deadline: group.deadline,
+          });
 
-      // 성공/실패 카운트
-      const successCount = results.filter(r => r.success).length;
-      const failedCount = results.length - successCount;
+          if (result.success) {
+            successCount++;
+          } else {
+            failedCount++;
+          }
+
+          // 진행 상황 업데이트
+          setEmailProgress({ success: successCount, failed: failedCount });
+        } catch (error) {
+          failedCount++;
+          setEmailProgress({ success: successCount, failed: failedCount });
+        }
+      }
 
       // 결과에 따른 토스트 메시지
       if (failedCount === 0) {
@@ -215,6 +236,11 @@ export const CreateGroupPage = () => {
       showToast("warning", "입력 오류", validation.error!);
       return;
     }
+
+    // 로딩 상태 초기화
+    setLoadingStep("creating");
+    setEmailProgress({ success: 0, failed: 0 });
+    setLoadingError("");
 
     // CreateGroupRequest 객체 생성
     const request: CreateGroupRequest = {
@@ -347,6 +373,16 @@ export const CreateGroupPage = () => {
             onClose={() => setShowEmailPreview(false)}
           />
         )}
+
+        {/* 그룹 생성 진행 상황 모달 */}
+        <CreateGroupLoadingModal
+          isOpen={isCreating || loadingStep === "sending" || loadingStep === "complete"}
+          currentStep={loadingStep}
+          applicantCount={applicantManager.applicants.length}
+          successCount={emailProgress.success}
+          failedCount={emailProgress.failed}
+          errorMessage={loadingError}
+        />
       </div>
     </DashboardLayout>
   );
