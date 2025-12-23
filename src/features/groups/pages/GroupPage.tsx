@@ -411,7 +411,7 @@ export const GroupPage = () => {
         groupId={groupId!}
       />
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <div className="h-full bg-white rounded-xl p-6 border border-neutral-200">
           <div className="flex items-center h-full">
             <div className="p-3 rounded-lg mr-4 bg-info-100">
