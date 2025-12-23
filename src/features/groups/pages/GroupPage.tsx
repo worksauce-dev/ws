@@ -1,32 +1,34 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   MdEmail,
   MdPerson,
   MdCheckCircle,
-  MdCancel,
-  MdPending,
   MdTrendingUp,
   MdAssignment,
   MdSearch,
-  MdStar,
-  MdStarBorder,
-  MdCalendarToday,
-  MdWork,
-  MdNotifications,
 } from "react-icons/md";
 import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
 import { TabGroup } from "@/shared/components/ui/TabGroup";
-import { type TestStatus } from "@/shared/types/database.types";
 import { useGroupDetail } from "../hooks/useGroupDetail";
-import {
-  WORK_TYPE_KEYWORDS,
-  type WorkTypeCode,
-} from "@/features/groups/constants/workTypeKeywords";
-import { POSITION_OPTIONS } from "@/features/groups/constants/positionOptions";
+import type { WorkTypeCode } from "@/features/groups/constants/workTypeKeywords";
 import { useDdayCalculator } from "@/features/dashboard/hooks/useDdayCalculator";
 import { calculateJobFitScore } from "../utils/analyzeTestResult";
 import { AddApplicantModal } from "../components/AddApplicantModal";
+import { ApplicantCard } from "../components/ApplicantCard";
+import { GroupInfoSidebar } from "../components/GroupInfoSidebar";
+import { WorkTypeDistribution } from "../components/WorkTypeDistribution";
+import { GroupPageSkeleton } from "../components/GroupPageSkeleton";
+import {
+  getGroupStatusColor,
+  getGroupStatusText,
+} from "../utils/groupStatusHelpers";
+import {
+  getWorkTypeName,
+  getWorkTypeColor,
+  convertToScoreDistribution,
+} from "../utils/workTypeHelpers";
+import { getScoreColorClass } from "../utils/formatHelpers";
 
 export const GroupPage = () => {
   const { groupId } = useParams<{ groupId: string }>();
@@ -41,51 +43,6 @@ export const GroupPage = () => {
   const [selectedTab, setSelectedTab] = useState<"all" | "completed">("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddApplicantModalOpen, setIsAddApplicantModalOpen] = useState(false);
-
-  const getStatusIcon = (status: TestStatus) => {
-    switch (status) {
-      case "completed":
-        return <MdCheckCircle className="w-4 h-4 text-success" />;
-      case "in_progress":
-        return <MdStar className="w-4 h-4 text-warning" />;
-      case "expired":
-        return <MdCancel className="w-4 h-4 text-error" />;
-      case "pending":
-        return <MdPending className="w-4 h-4 text-neutral-500" />;
-      default:
-        return <MdPending className="w-4 h-4 text-neutral-500" />;
-    }
-  };
-
-  const getStatusLabel = (status: TestStatus): string => {
-    switch (status) {
-      case "completed":
-        return "완료";
-      case "in_progress":
-        return "진행중";
-      case "expired":
-        return "만료";
-      case "pending":
-        return "대기중";
-      default:
-        return "대기중";
-    }
-  };
-
-  const getStatusColor = (status: TestStatus) => {
-    switch (status) {
-      case "completed":
-        return "bg-success-50 text-success-700 border-success-200";
-      case "in_progress":
-        return "bg-warning-50 text-warning-700 border-warning-200";
-      case "expired":
-        return "bg-error-50 text-error-700 border-error-200";
-      case "pending":
-        return "bg-neutral-50 text-neutral-700 border-neutral-200";
-      default:
-        return "bg-neutral-50 text-neutral-700 border-neutral-200";
-    }
-  };
 
   // 데이터 추출
   const currentGroup = data?.group;
@@ -105,74 +62,6 @@ export const GroupPage = () => {
 
     return matchesTab && matchesSearch;
   });
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("ko-KR", {
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  // 포지션 라벨 표시 헬퍼 함수
-  const getPositionLabel = (positionValue: string): string => {
-    const position = POSITION_OPTIONS.find(p => p.value === positionValue);
-    return position?.label || positionValue;
-  };
-
-  // 경력 수준 표시 헬퍼 함수
-  const getExperienceLevelLabel = (level: string): string => {
-    const levelMap: Record<string, string> = {
-      entry: "신입 (0-1년)",
-      junior: "주니어 (1-3년)",
-      mid: "중급 (3-5년)",
-      senior: "시니어 (5년 이상)",
-      lead: "리드/매니저급",
-      any: "경력 무관",
-    };
-    return levelMap[level] || level;
-  };
-
-  // 그룹 상태 색상 (deadline 기준)
-  const getGroupStatusColor = (group: typeof currentGroup) => {
-    if (!group) return "bg-gray-100 text-gray-800 border-gray-200";
-
-    // draft 상태는 그대로 유지
-    if (group.status === "draft") {
-      return "bg-gray-100 text-gray-800 border-gray-200";
-    }
-
-    // 마감일 기준으로 판단
-    const now = new Date();
-    const deadline = new Date(group.deadline);
-
-    if (deadline < now) {
-      // 마감됨
-      return "bg-red-100 text-red-800 border-red-200";
-    } else {
-      // 진행중
-      return "bg-blue-100 text-blue-800 border-blue-200";
-    }
-  };
-
-  // 그룹 상태 텍스트 (deadline 기준)
-  const getGroupStatusText = (group: typeof currentGroup) => {
-    if (!group) return "상태 없음";
-
-    // draft 상태는 그대로 유지
-    if (group.status === "draft") {
-      return "준비중";
-    }
-
-    // 마감일 기준으로 판단
-    const now = new Date();
-    const deadline = new Date(group.deadline);
-
-    if (deadline < now) {
-      return "마감";
-    } else {
-      return "진행중";
-    }
-  };
 
   const toggleStar = (candidateId: string) => {
     // Mock function - 실제 구현에서는 상태 업데이트 로직 추가
@@ -214,61 +103,6 @@ export const GroupPage = () => {
 
     // 확인했거나 마감일 전이면 모달 열기
     setIsAddApplicantModalOpen(true);
-  };
-
-  // WorkType 코드를 이름으로 변환하는 헬퍼 함수
-  const getWorkTypeName = (code: WorkTypeCode): string => {
-    const workType = WORK_TYPE_KEYWORDS.find(wt => wt.code === code);
-    return workType?.type || code;
-  };
-
-  // WorkType별 색상 매핑
-  const getWorkTypeColor = (code: WorkTypeCode): string => {
-    const colorMap: Record<WorkTypeCode, string> = {
-      SE: "bg-blue-500",
-      SA: "bg-purple-500",
-      AS: "bg-pink-500",
-      AF: "bg-orange-500",
-      UM: "bg-teal-500",
-      UR: "bg-indigo-500",
-      CA: "bg-green-500",
-      CH: "bg-cyan-500",
-      EE: "bg-red-500",
-      EG: "bg-amber-500",
-    };
-    return colorMap[code] || "bg-gray-500";
-  };
-
-  // 2차 직무 유형 계산 (statementScores에서 두 번째로 높은 점수)
-  const getSecondaryWorkType = (
-    statementScores: Record<WorkTypeCode, number>
-  ): WorkTypeCode | null => {
-    const sorted = Object.entries(statementScores).sort(
-      ([, a], [, b]) => b - a
-    );
-    return sorted.length > 1 ? (sorted[1][0] as WorkTypeCode) : null;
-  };
-
-  // statementScores를 scoreDistribution 형태로 변환하는 헬퍼
-  const convertToScoreDistribution = useCallback(
-    (statementScores: Record<WorkTypeCode, number>) => {
-      return Object.entries(statementScores).map(([code, score]) => ({
-        code: code as WorkTypeCode,
-        name: getWorkTypeName(code as WorkTypeCode),
-        score,
-        level: "high" as const, // 실제로는 사용하지 않음
-        rank: 0, // 실제로는 사용하지 않음
-      }));
-    },
-    []
-  );
-
-  // 점수 색상 클래스
-  const getScoreColorClass = (score: number): string => {
-    if (score >= 80) return "text-success";
-    if (score >= 60) return "text-primary";
-    if (score >= 40) return "text-warning";
-    return "text-error";
   };
 
   // 직무 유형 분포 계산
@@ -321,7 +155,7 @@ export const GroupPage = () => {
       0
     );
     return Math.round(totalScore / completedWithScores.length);
-  }, [applicants, currentGroup?.preferred_work_types, convertToScoreDistribution]);
+  }, [applicants, currentGroup?.preferred_work_types]);
 
   // 추천 후보 수 계산
   const recommendedCount = useMemo(() => {
@@ -343,15 +177,8 @@ export const GroupPage = () => {
   // 로딩 상태
   if (isLoading) {
     return (
-      <DashboardLayout title="로딩 중..." description="">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-4 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
-            <p className="text-neutral-600 text-lg">
-              그룹 정보를 불러오는 중...
-            </p>
-          </div>
-        </div>
+      <DashboardLayout title="" description="">
+        <GroupPageSkeleton />
       </DashboardLayout>
     );
   }
@@ -526,14 +353,14 @@ export const GroupPage = () => {
                 />
 
                 {/* Search */}
-                <div className="relative">
-                  <MdSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-500" />
+                <div className="relative flex-1 sm:flex-initial sm:w-64">
+                  <MdSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-500" />
                   <input
                     type="text"
                     placeholder="이름, 이메일 검색"
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-4 py-2 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary focus:ring-opacity-50 focus:outline-none text-sm text-neutral-800"
+                    className="w-full pl-10 pr-4 py-3 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary focus:ring-opacity-50 focus:outline-none text-sm text-neutral-800"
                   />
                 </div>
               </div>
@@ -542,113 +369,13 @@ export const GroupPage = () => {
             {/* applicant List */}
             <div className="divide-y divide-neutral-200">
               {filteredApplicants.map(applicant => (
-                <div
+                <ApplicantCard
                   key={applicant.id}
-                  className="p-6 hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
-                  onClick={() => handleApplicantClick(applicant.id)}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <button
-                          onClick={e => {
-                            e.stopPropagation();
-                            toggleStar(applicant.id);
-                          }}
-                          className="p-1 rounded hover:bg-gray-200 transition-colors duration-200"
-                        >
-                          {applicant.is_starred ? (
-                            <MdStar className="w-4 h-4 text-warning" />
-                          ) : (
-                            <MdStarBorder className="w-4 h-4 text-neutral-500" />
-                          )}
-                        </button>
-                        <h3 className="font-semibold text-lg text-neutral-800">
-                          {applicant.name}
-                        </h3>
-                        <span
-                          className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border ${getStatusColor(applicant.test_status)}`}
-                        >
-                          {getStatusIcon(applicant.test_status)}
-                          <span>{getStatusLabel(applicant.test_status)}</span>
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-4 mb-3 text-sm text-neutral-600">
-                        <span>{applicant.email}</span>
-                        <span>•</span>
-                        <span>지원일: {formatDate(applicant.created_at)}</span>
-                        {applicant.test_submitted_at && (
-                          <>
-                            <span>•</span>
-                            <span>
-                              완료일: {formatDate(applicant.test_submitted_at)}
-                            </span>
-                          </>
-                        )}
-                      </div>
-
-                      {applicant.test_result?.statementScores && (
-                        <div className="flex items-center gap-6 mb-3">
-                          {/* 주/부 유형 */}
-                          <div className="flex items-center gap-1">
-                            <span className="text-base font-bold text-primary">
-                              {getWorkTypeName(
-                                applicant.test_result.primaryWorkType
-                              )}
-                            </span>
-                            {(() => {
-                              const secondary = getSecondaryWorkType(
-                                applicant.test_result.statementScores
-                              );
-                              return secondary ? (
-                                <>
-                                  <span className="text-neutral-400 mx-1">
-                                    /
-                                  </span>
-                                  <span className="text-sm font-medium text-neutral-600">
-                                    {getWorkTypeName(secondary)}
-                                  </span>
-                                </>
-                              ) : null;
-                            })()}
-                          </div>
-
-                          <span className="text-neutral-300">|</span>
-
-                          {/* 유형 매칭도 */}
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-neutral-700">
-                              유형 매칭도
-                            </span>
-                            <span
-                              className={`text-lg font-bold ${getScoreColorClass(
-                                Math.round(
-                                  calculateJobFitScore(
-                                    convertToScoreDistribution(
-                                      applicant.test_result.statementScores
-                                    ),
-                                    currentGroup.preferred_work_types
-                                  )
-                                )
-                              )}`}
-                            >
-                              {Math.round(
-                                calculateJobFitScore(
-                                  convertToScoreDistribution(
-                                    applicant.test_result.statementScores
-                                  ),
-                                  currentGroup.preferred_work_types
-                                )
-                              )}
-                              %
-                            </span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                  applicant={applicant}
+                  preferredWorkTypes={currentGroup.preferred_work_types}
+                  onToggleStar={toggleStar}
+                  onClick={handleApplicantClick}
+                />
               ))}
             </div>
 
@@ -667,128 +394,12 @@ export const GroupPage = () => {
 
         {/* Sidebar - Group Info & Work Type Distribution */}
         <div className="lg:col-span-1">
-          {/* 그룹 정보 */}
-          <div className="bg-white rounded-xl border border-neutral-200 p-6 mb-6">
-            <h2 className="text-lg font-semibold mb-4 text-neutral-800">
-              그룹 정보
-            </h2>
-            <div className="space-y-4">
-              {/* 모집 포지션 */}
-              <div className="flex items-start gap-3">
-                <MdWork className="w-5 h-5 text-neutral-500 mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-xs text-neutral-500 mb-1">모집 포지션</p>
-                  <p className="text-sm font-medium text-neutral-800">
-                    {getPositionLabel(currentGroup.position)}
-                  </p>
-                </div>
-              </div>
-
-              {/* 경력 수준 */}
-              <div className="flex items-start gap-3">
-                <MdPerson className="w-5 h-5 text-neutral-500 mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-xs text-neutral-500 mb-1">경력 수준</p>
-                  <p className="text-sm font-medium text-neutral-800">
-                    {getExperienceLevelLabel(currentGroup.experience_level)}
-                  </p>
-                </div>
-              </div>
-
-              {/* 마감일 */}
-              <div className="flex items-start gap-3">
-                <MdCalendarToday className="w-5 h-5 text-neutral-500 mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-xs text-neutral-500 mb-1">마감일</p>
-                  <div className="flex items-baseline gap-2">
-                    <p className="text-sm font-medium text-neutral-800">
-                      {new Date(currentGroup.deadline).toLocaleDateString(
-                        "ko-KR",
-                        {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        }
-                      )}
-                    </p>
-                    <span
-                      className={`text-xs font-semibold ${getDdayColor(currentGroup.deadline, currentGroup.status)}`}
-                    >
-                      {calculateDday(currentGroup.deadline)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* 자동 리마인더 */}
-              {currentGroup.auto_reminder && (
-                <div className="flex items-start gap-3">
-                  <MdNotifications className="w-5 h-5 text-neutral-500 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="text-xs text-neutral-500 mb-1">
-                      자동 리마인더
-                    </p>
-                    <p className="text-sm font-medium text-success-600">
-                      활성화됨
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* 선호 직무 유형 */}
-              <div className="pt-2 border-t border-neutral-100">
-                <p className="text-xs text-neutral-500 mb-2">선호 직무 유형</p>
-                <div className="flex flex-wrap gap-2">
-                  {currentGroup.preferred_work_types.map(
-                    (type: WorkTypeCode) => (
-                      <span
-                        key={type}
-                        className="px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary"
-                      >
-                        {getWorkTypeName(type as WorkTypeCode)}
-                      </span>
-                    )
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl border border-neutral-200 p-6">
-            <h2 className="text-lg font-semibold mb-4 text-neutral-800">
-              지원자 직무 유형 분포
-            </h2>
-            {workTypeDistribution.length > 0 ? (
-              <div className="space-y-4">
-                {workTypeDistribution.map(item => (
-                  <div key={item.code}>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-neutral-700 font-medium">
-                        {item.name}
-                      </span>
-                      <span className="text-neutral-600">
-                        {item.count}명 ({item.percentage}%)
-                      </span>
-                    </div>
-                    <div className="w-full h-2 rounded-full bg-neutral-100 overflow-hidden">
-                      <div
-                        className={`h-2 rounded-full transition-all duration-300 ${item.colorClass}`}
-                        style={{
-                          width: `${item.percentage}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-sm text-neutral-600">
-                  아직 완료된 테스트가 없습니다.
-                </p>
-              </div>
-            )}
-          </div>
+          <GroupInfoSidebar
+            group={currentGroup}
+            calculateDday={calculateDday}
+            getDdayColor={getDdayColor}
+          />
+          <WorkTypeDistribution distribution={workTypeDistribution} />
         </div>
       </div>
     </DashboardLayout>
