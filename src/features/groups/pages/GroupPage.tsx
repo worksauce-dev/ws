@@ -224,10 +224,11 @@ export const GroupPage = () => {
       actions={
         <button
           onClick={handleAddApplicantClick}
-          className="inline-flex items-center px-4 py-2 rounded-lg font-medium border border-neutral-200 text-neutral-700 transition-colors duration-200 hover:bg-neutral-50"
+          className="inline-flex items-center px-3 sm:px-4 py-2 rounded-lg font-medium border border-neutral-200 text-neutral-700 transition-colors duration-200 hover:bg-neutral-50"
+          aria-label="지원자 추가하기"
         >
-          <MdEmail className="w-4 h-4 mr-2" />
-          지원자 추가하기
+          <MdEmail className="w-4 h-4 sm:mr-2" />
+          <span className="hidden sm:inline">지원자 추가하기</span>
         </button>
       }
     >
