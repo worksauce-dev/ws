@@ -16,8 +16,8 @@ import { MenuLink } from "@/features/landing/components/ui/MenuLink";
 import { MobileMenu } from "@/features/landing/components/ui/MobileMenu";
 import { useOutsideClick } from "@/features/landing/hooks/useOutsideClick";
 import { useAuth } from "@/shared/contexts/useAuth";
+import { useUser } from "@/shared/hooks/useUser";
 import { useToast } from "@/shared/components/ui/useToast";
-import { useUserProfile } from "@/shared/hooks/useUserProfile";
 import type { MenuItem } from "@/features/landing/types/landing.types";
 import { clsx } from "clsx";
 
@@ -40,13 +40,11 @@ const menuItems: MenuItem[] = [
 
 export const LandingHeader = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, signOut, forceSignOut, deleteAccount } = useAuth();
+  const { signOut, forceSignOut, deleteAccount } = useAuth();
+  const { userName, userEmail, isAdmin, isAuthenticated } = useUser();
   const { showToast } = useToast();
   const navigate = useNavigate();
   const isDevelopment = import.meta.env.VITE_ENV === "Dev";
-
-  // user_profile에서 is_admin 조회
-  const { data: userProfile } = useUserProfile(user?.id);
 
   // 메뉴 외부 클릭 시 닫기
   const menuRef = useOutsideClick(() => setIsMenuOpen(false));
@@ -145,7 +143,7 @@ export const LandingHeader = () => {
 
         {/* 데스크톱 메뉴 */}
         <div className="hidden md:flex items-center space-x-4">
-          {!user ? (
+          {!isAuthenticated ? (
             // 로그아웃 상태: 기존 메뉴
             <div className="flex space-x-1">
               {menuItems.map((item, index) => (
@@ -168,7 +166,7 @@ export const LandingHeader = () => {
                 isMobile={false}
                 onClose={closeMenu}
               />
-              {userProfile?.is_admin && (
+              {isAdmin && (
                 <MenuLink
                   item={{
                     href: "/admin",
@@ -191,11 +189,8 @@ export const LandingHeader = () => {
               {/* 사용자 프로필 드롭다운 */}
               <UserProfileDropdown
                 user={{
-                  name:
-                    user.user_metadata?.name ||
-                    user.email?.split("@")[0] ||
-                    "사용자",
-                  email: user.email || "",
+                  name: userName,
+                  email: userEmail,
                 }}
                 menuItems={userMenuItems}
                 variant="compact"
@@ -207,7 +202,7 @@ export const LandingHeader = () => {
         {/* 모바일 메뉴 */}
         <div className="md:hidden flex items-center space-x-2">
           {/* 로그인된 사용자의 프로필 아이콘 (모바일) */}
-          {user && (
+          {isAuthenticated && (
             <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
               <MdPerson className="w-4 h-4 text-primary-600" />
             </div>
@@ -236,17 +231,15 @@ export const LandingHeader = () => {
             {/* 모바일 드롭다운 메뉴 */}
             {isMenuOpen && (
               <div className="absolute right-0 mt-2 w-64 bg-white border border-neutral-200 rounded-lg shadow-lg py-2 z-50">
-                {user ? (
+                {isAuthenticated ? (
                   // 로그인 상태 모바일 메뉴
                   <>
                     {/* 사용자 정보 */}
                     <div className="px-4 py-3 border-b border-neutral-100">
                       <p className="font-medium text-neutral-900">
-                        {user.user_metadata?.name ||
-                          user.email?.split("@")[0] ||
-                          "사용자"}
+                        {userName}
                       </p>
-                      <p className="text-sm text-neutral-500">{user.email}</p>
+                      <p className="text-sm text-neutral-500">{userEmail}</p>
                     </div>
 
                     {/* 메뉴 항목 */}
@@ -267,7 +260,7 @@ export const LandingHeader = () => {
                       <span>미니 테스트</span>
                     </Link>
 
-                    {userProfile?.is_admin && (
+                    {isAdmin && (
                       <Link
                         to="/dashboard/admin"
                         onClick={closeMenu}

@@ -6,7 +6,7 @@
 import { useState, useMemo } from "react";
 import { MdAdd, MdSearch, MdGridView, MdCalendarMonth } from "react-icons/md";
 import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
-import { useAuth } from "@/shared/contexts/useAuth";
+import { useUser } from "@/shared/hooks/useUser";
 import { generateGreeting } from "@/shared/utils/dashboardGreetings";
 import { SelectDropdown } from "@/shared/components/ui/Dropdown";
 import { TabGroup } from "@/shared/components/ui/TabGroup";
@@ -28,7 +28,7 @@ type ViewMode = "grid" | "calendar";
 
 export const DashboardPage = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
-  const { user, userProfile } = useAuth();
+  const { userName, credits, userProfile, isAuthenticated } = useUser();
 
   // 데이터 페칭
   const { groups, isLoading, error, refetch } = useGroups();
@@ -91,20 +91,16 @@ export const DashboardPage = () => {
   }
 
   // 사용자 정보 없으면 로딩 스켈레톤
-  if (!user) {
+  if (!isAuthenticated) {
     return <DashboardSkeleton />;
   }
 
-  // userProfile이 없어도 기본값으로 처리 (user.user_metadata 사용)
-  const displayName = userProfile?.name || user?.user_metadata?.name || "사용자";
-  const displayCredits = userProfile?.credits ?? undefined;
-
   return (
     <DashboardLayout
-      title={`안녕하세요, ${displayName}님!`}
+      title={`안녕하세요, ${userName}님!`}
       description={greeting}
       breadcrumbs={[{ label: "워크소스", href: "/" }, { label: "대시보드" }]}
-      credits={displayCredits}
+      credits={credits}
       onCreditClick={handleCreditClick}
       actions={
         <button

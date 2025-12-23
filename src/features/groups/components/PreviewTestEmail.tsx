@@ -1,7 +1,6 @@
 import { format } from "date-fns";
 import { MdInfo, MdClose, MdHelpOutline } from "react-icons/md";
-import type { User } from "@supabase/supabase-js";
-import type { UserProfile } from "@/shared/lib/supabase";
+import { useUser } from "@/shared/hooks/useUser";
 
 /**
  * XSS 방지를 위한 문자열 새니타이제이션
@@ -139,8 +138,6 @@ function generateSauceTestEmailTemplate(
 }
 
 interface PreviewTestEmailProps {
-  user: User | null;
-  userProfile: UserProfile | null;
   groupName: string;
   deadline: string;
   applicants: Array<{ name: string; email: string }>;
@@ -150,8 +147,6 @@ interface PreviewTestEmailProps {
 }
 
 const PreviewTestEmail = ({
-  user,
-  userProfile,
   groupName,
   deadline,
   applicants,
@@ -159,25 +154,23 @@ const PreviewTestEmail = ({
   onToggleRealName,
   onClose,
 }: PreviewTestEmailProps) => {
-  // 기업 인증 여부 확인 (user_profiles 테이블에서 조회)
-  const isBusinessVerified = userProfile?.business_verified === true;
-  const businessName = userProfile?.business_name;
+  const { userName, isBusinessVerified, businessName } = useUser();
 
   const getEmailPreview = () => {
     const testToken = "preview-" + Math.random().toString(36).substring(2, 15);
 
     // 기업회원이면 기업명, 아니면 실명/담당자
-    const userName = isBusinessVerified
+    const senderName = isBusinessVerified
       ? businessName || "기업명"
       : showRealName
-      ? user?.user_metadata?.name || user?.email?.split("@")[0] || "관리자"
+      ? userName
       : "담당자";
 
     const applicantName =
       applicants.length > 0 ? applicants[0].name : "[지원자 이름]";
 
     return generateSauceTestEmailTemplate(
-      userName,
+      senderName,
       applicantName,
       testToken,
       deadline || new Date().toISOString()
@@ -264,11 +257,7 @@ const PreviewTestEmail = ({
                           className="w-4 h-4 text-primary-600 border-amber-300 rounded focus:ring-primary-500"
                         />
                         <span className="text-sm font-medium text-amber-900">
-                          이메일에 내 실명 "
-                          {user?.user_metadata?.name ||
-                            user?.email?.split("@")[0] ||
-                            "관리자"}
-                          " 표시하기
+                          이메일에 내 실명 "{userName}" 표시하기
                         </span>
                       </label>
                       {!showRealName && (
@@ -294,9 +283,7 @@ const PreviewTestEmail = ({
                       {isBusinessVerified
                         ? `[${businessName}]`
                         : showRealName
-                        ? user?.user_metadata?.name ||
-                          user?.email?.split("@")[0] ||
-                          "관리자"
+                        ? userName
                         : "담당자"}
                       님
                     </li>

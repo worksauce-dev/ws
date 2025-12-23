@@ -1,6 +1,5 @@
 import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
-import { useAuth } from "@/shared/contexts/useAuth";
-import { useUserProfile } from "@/shared/hooks/useUserProfile";
+import { useUser } from "@/shared/hooks/useUser";
 import { Navigate, useNavigate } from "react-router-dom";
 import {
   MdPeople,
@@ -15,21 +14,18 @@ import { useSurveys } from "../hooks/useSurveys";
 import { useAllBusinessVerifications } from "../hooks/useBusinessVerifications";
 
 export const AdminPage = () => {
-  const { user } = useAuth();
-  const { data: userProfile, isLoading: profileLoading } = useUserProfile(
-    user?.id
-  );
+  const { isAdmin, isLoading } = useUser();
   const { data: surveys } = useSurveys();
   const { data: verifications } = useAllBusinessVerifications();
   const navigate = useNavigate();
 
   // 관리자가 아닌 경우 대시보드로 리다이렉트
-  if (!profileLoading && !userProfile?.is_admin) {
+  if (!isLoading && !isAdmin) {
     return <Navigate to="/dashboard" replace />;
   }
 
   // 로딩 중
-  if (profileLoading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="spinner h-8 w-8 text-primary-500" />

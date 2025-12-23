@@ -301,6 +301,47 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // user_profile 테이블 변경사항 실시간 구독
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const isDev = import.meta.env.VITE_ENV === "Dev";
+
+    if (isDev) {
+      console.log("👤 Setting up user_profile realtime subscription for:", user.id);
+    }
+
+    const channel = supabase
+      .channel(`user-profile-${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "user_profile",
+          filter: `id=eq.${user.id}`,
+        },
+        async (payload) => {
+          if (isDev) {
+            console.log("👤 User profile updated:", payload.new);
+          }
+
+          // 프로필 변경 시 자동으로 최신 정보 가져오기
+          const updatedProfile = await fetchUserProfile(user.id);
+          setUserProfile(updatedProfile);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      if (isDev) {
+        console.log("👤 Cleaning up user_profile subscription");
+      }
+      supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
   const value = {
     user,
     userProfile,

@@ -18,15 +18,13 @@ import { useApplicantManager } from "../hooks/useApplicantManager";
 import { useFileUpload } from "../hooks/useFileUpload";
 import { useCreateGroup } from "../hooks/useCreateGroup";
 import type { CreateGroupRequest, Group } from "../types/group.types";
-import { useAuth } from "@/shared/contexts/useAuth";
-import { useUserProfile } from "@/shared/hooks/useUserProfile";
+import { useUser } from "@/shared/hooks/useUser";
 import { sendSauceTestEmail } from "@/shared/services/sauceTestService";
 
 export const CreateGroupPage = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const { user } = useAuth();
-  const { data: userProfile } = useUserProfile(user?.id);
+  const { userId, userName, userEmail, isBusinessVerified, businessName, isAuthenticated } = useUser();
 
   // State
   const [showEmailPreview, setShowEmailPreview] = useState(false);
@@ -57,7 +55,7 @@ export const CreateGroupPage = () => {
     },
   });
 
-  if (!user) {
+  if (!isAuthenticated) {
     return <Navigate to="/auth/login" replace />;
   }
 
@@ -113,35 +111,35 @@ export const CreateGroupPage = () => {
       // 1. showRealName이 false면 "담당자"
       // 2. 기업 회원(business_verified)이면 기업 이름
       // 3. 그 외는 개인 이름 또는 이메일 앞부분
-      let userName = "담당자";
+      let senderName = "담당자";
 
       if (showRealName) {
-        if (userProfile?.business_verified && userProfile?.business_name) {
+        if (isBusinessVerified && businessName) {
           // 기업 회원인 경우 기업 이름 사용
-          userName = userProfile.business_name;
-          console.log("📧 발신자 이름 (기업):", userName);
+          senderName = businessName;
+          console.log("📧 발신자 이름 (기업):", senderName);
         } else {
           // 개인 회원인 경우 개인 이름 사용
-          userName = user?.user_metadata?.name || user?.email?.split("@")[0] || "관리자";
-          console.log("📧 발신자 이름 (개인):", userName);
+          senderName = userName;
+          console.log("📧 발신자 이름 (개인):", senderName);
         }
       } else {
-        console.log("📧 발신자 이름 (익명):", userName);
+        console.log("📧 발신자 이름 (익명):", senderName);
       }
 
-      // 디버깅: userProfile 상태 확인
-      console.log("📧 UserProfile 상태:", {
-        business_verified: userProfile?.business_verified,
-        business_name: userProfile?.business_name,
+      // 디버깅: 사용자 정보 확인
+      console.log("📧 사용자 정보:", {
+        business_verified: isBusinessVerified,
+        business_name: businessName,
         showRealName,
-        finalUserName: userName,
+        finalUserName: senderName,
       });
 
       // 모든 지원자에게 이메일 발송
       const emailPromises = applicants.map(applicant =>
         sendSauceTestEmail({
           applicantEmail: applicant.email,
-          userName: userName,
+          userName: senderName,
           applicantName: applicant.name,
           testId: applicant.test_token,
           dashboardId: group.id,
@@ -220,7 +218,7 @@ export const CreateGroupPage = () => {
 
     // CreateGroupRequest 객체 생성
     const request: CreateGroupRequest = {
-      user_id: user.id,
+      user_id: userId!,
       name: groupForm.formData.name,
       description: groupForm.formData.description,
       position: groupForm.formData.position,
@@ -341,8 +339,6 @@ export const CreateGroupPage = () => {
         {/* 이메일 미리보기 모달 */}
         {showEmailPreview && (
           <PreviewTestEmail
-            user={user}
-            userProfile={userProfile ?? null}
             groupName={groupForm.formData.name}
             deadline={groupForm.formData.deadline}
             applicants={applicantManager.applicants}

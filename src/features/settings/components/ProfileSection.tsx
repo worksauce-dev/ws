@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useAuth } from "@/shared/contexts/useAuth";
+import { useUser } from "@/shared/hooks/useUser";
 import { supabase } from "@/shared/lib/supabase";
 import toast from "react-hot-toast";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
@@ -7,7 +7,7 @@ import { PasswordStrengthIndicator } from "@/features/auth/components/ui/Passwor
 import { calculatePasswordStrength } from "@/features/auth/utils/calculatePasswordStrength";
 
 export const ProfileSection = () => {
-  const { user } = useAuth();
+  const { userName, userEmail } = useUser();
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -122,7 +122,7 @@ export const ProfileSection = () => {
           </label>
           <input
             type="text"
-            value={user?.user_metadata?.name || ""}
+            value={userName}
             readOnly
             className="w-full px-4 py-3 border border-neutral-300 rounded-lg bg-neutral-50 text-neutral-500 cursor-not-allowed"
           />
@@ -136,7 +136,7 @@ export const ProfileSection = () => {
           </label>
           <input
             type="email"
-            value={user?.email || ""}
+            value={userEmail}
             readOnly
             className="w-full px-4 py-3 border border-neutral-300 rounded-lg bg-neutral-50 text-neutral-500 cursor-not-allowed"
           />
