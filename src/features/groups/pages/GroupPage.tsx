@@ -216,7 +216,7 @@ export const GroupPage = () => {
       ]}
       statusBadge={
         <span
-          className={`px-2 py-1 rounded-md text-xs font-medium border ${getGroupStatusColor(currentGroup)}`}
+          className={`hidden sm:inline-flex px-2 py-1 rounded-md text-xs font-medium border ${getGroupStatusColor(currentGroup)}`}
         >
           {getGroupStatusText(currentGroup)}
         </span>
