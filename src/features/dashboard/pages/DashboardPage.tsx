@@ -141,9 +141,9 @@ export const DashboardPage = () => {
         <button
           data-tour="create-group-button"
           onClick={handleCreateGroup}
-          className="inline-flex items-center h-[52px] sm:px-6 px-3 rounded-lg font-medium text-white text-sm bg-primary-500 hover:bg-primary-dark transition-all duration-200 hover:shadow-md"
+          className="inline-flex items-center justify-center w-10 h-10 sm:w-auto sm:h-[52px] sm:px-6 rounded-full sm:rounded-lg font-medium text-white text-sm bg-primary-500 hover:bg-primary-600 transition-all duration-200 hover:shadow-md hover:scale-105 active:scale-95"
         >
-          <MdAdd className="w-5 h-5 sm:w-4 sm:h-4 sm:mr-2" />
+          <MdAdd className="w-6 h-6 sm:w-4 sm:h-4 sm:mr-2" />
           <span className="hidden sm:inline">새 그룹 생성</span>
         </button>
       }

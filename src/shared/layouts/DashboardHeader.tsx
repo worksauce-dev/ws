@@ -250,8 +250,8 @@ export const DashboardHeader = ({
                   "flex items-center justify-center w-10 h-10 rounded-full",
                   "transition-all duration-200 hover:scale-105 active:scale-95",
                   isMobileMenuOpen
-                    ? "bg-primary-500 text-white"
-                    : "text-neutral-600 hover:text-primary-500 hover:bg-primary-50"
+                    ? "bg-primary-600 text-white hover:bg-primary-700"
+                    : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
                 )}
                 onClick={toggleMobileMenu}
                 aria-label={isMobileMenuOpen ? "메뉴 닫기" : "메뉴 열기"}
