@@ -37,6 +37,8 @@ export interface UseCustomPositionReturn {
   openModal: () => void;
   closeModal: () => void;
   addCustomPosition: (position: string) => void;
+  handlePositionSelection: (value: string, onSelect: (value: string) => void) => void;
+  addPositionWithValidation: (position: string, onSelect: (value: string) => void) => boolean;
 }
 
 /**
@@ -87,6 +89,7 @@ export interface CreateGroupResponse {
     id: string;
     name: string;
     email: string;
+    test_token: string;
   }>;
 }
 

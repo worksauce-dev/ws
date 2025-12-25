@@ -1,5 +1,5 @@
 /**
- * 그룹 생성 페이지
+ * 그룹 생성 페이지 (리팩토링 버전)
  * 그룹 정보 입력 및 지원자 관리 기능 제공
  */
 
@@ -8,32 +8,26 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
 import { Button } from "@/shared/components/ui/Button";
 import { Modal } from "@/shared/components/ui/Modal";
-import { useToast } from "@/shared/components/ui/useToast";
 import { ApplicantManager } from "../components/ApplicantManager";
 import { GroupInfoForm } from "../components/GroupInfoForm";
 import PreviewTestEmail from "../components/PreviewTestEmail";
 import { CreateGroupLoadingModal } from "../components/CreateGroupLoadingModal";
-import type { CreateGroupStep } from "../components/CreateGroupLoadingModal";
 import { useGroupForm } from "../hooks/useGroupForm";
 import { useCustomPosition } from "../hooks/useCustomPosition";
 import { useApplicantManager } from "../hooks/useApplicantManager";
 import { useFileUpload } from "../hooks/useFileUpload";
-import { useCreateGroup } from "../hooks/useCreateGroup";
-import type { CreateGroupRequest, Group } from "../types/group.types";
+import { useCreateGroupFlow } from "../hooks/useCreateGroupFlow";
+import { useGroupFormValidation } from "../hooks/useGroupFormValidation";
+import { buildCreateGroupRequest } from "../utils/buildCreateGroupRequest";
 import { useUser } from "@/shared/hooks/useUser";
-import { sendSauceTestEmail } from "@/shared/services/sauceTestService";
 
 export const CreateGroupPage = () => {
   const navigate = useNavigate();
-  const { showToast } = useToast();
-  const { userId, userName, userEmail, isBusinessVerified, businessName, isAuthenticated } = useUser();
+  const { userId, isAuthenticated } = useUser();
 
   // State
   const [showEmailPreview, setShowEmailPreview] = useState(false);
-  const [showRealName, setShowRealName] = useState(true); // 기본값: 실명 표시
-  const [loadingStep, setLoadingStep] = useState<CreateGroupStep>("creating");
-  const [emailProgress, setEmailProgress] = useState({ success: 0, failed: 0 });
-  const [loadingError, setLoadingError] = useState<string>("");
+  const [showRealName, setShowRealName] = useState(true);
 
   // Hooks
   const groupForm = useGroupForm();
@@ -41,29 +35,15 @@ export const CreateGroupPage = () => {
   const applicantManager = useApplicantManager();
   const fileUpload = useFileUpload(applicantManager.applicants);
 
-  // 그룹 생성 mutation
-  const { mutate: createGroup, isPending: isCreating } = useCreateGroup({
-    onSuccess: async data => {
-      // 이메일 발송 단계로 전환
-      setLoadingStep("sending");
-      setEmailProgress({ success: 0, failed: 0 });
+  // 폼 유효성 검증
+  const { validateAndNotify } = useGroupFormValidation({
+    groupForm,
+    applicantsCount: applicantManager.applicants.length,
+  });
 
-      // 모든 지원자에게 소스테스트 이메일 발송
-      await handleSendSauceTest(data.group, data.applicants);
-
-      // 완료 단계로 전환
-      setLoadingStep("complete");
-
-      // 1초 후 페이지 이동 (사용자가 완료 메시지를 볼 수 있도록)
-      setTimeout(() => {
-        navigate(`/dashboard/groups/${data.group.id}`);
-      }, 1500);
-    },
-    onError: error => {
-      setLoadingStep("error");
-      setLoadingError(error.message);
-      showToast("error", "생성 실패", error.message);
-    },
+  // 그룹 생성 플로우
+  const { executeFlow, flowState, isCreating } = useCreateGroupFlow({
+    showRealName,
   });
 
   if (!isAuthenticated) {
@@ -74,217 +54,53 @@ export const CreateGroupPage = () => {
     navigate("/dashboard");
   };
 
-  // 포지션 변경 처리 (커스텀 포지션 모달 열기)
-  const handlePositionChange = (value: string) => {
-    if (value === "__custom__") {
-      customPosition.openModal();
-    } else {
-      groupForm.handleInputChange("position", value);
-    }
-  };
-
-  // 커스텀 포지션 추가
-  const handleAddCustomPosition = () => {
-    if (!customPosition.customPosition.trim()) {
-      showToast("warning", "포지션명 입력 필요", "포지션명을 입력해주세요.");
-      return;
-    }
-
-    customPosition.addCustomPosition(customPosition.customPosition);
-    groupForm.handleInputChange(
-      "position",
-      customPosition.customPosition.trim()
-    );
-
-    showToast(
-      "success",
-      "포지션 추가 완료",
-      `"${customPosition.customPosition.trim()}" 포지션이 추가되었습니다.`
-    );
-  };
-
-  /**
-   * 소스테스트 이메일 발송 함수
-   * @param group 생성된 그룹 정보
-   * @param applicants 생성된 지원자 배열
-   */
-  const handleSendSauceTest = async (
-    group: Pick<Group, "id" | "deadline">,
-    applicants: Array<{
-      id: string;
-      name: string;
-      email: string;
-      test_token: string;
-    }>
-  ) => {
-    try {
-      // 발신자 이름 결정 로직:
-      // 1. showRealName이 false면 "담당자"
-      // 2. 기업 회원(business_verified)이면 기업 이름
-      // 3. 그 외는 개인 이름 또는 이메일 앞부분
-      let senderName = "담당자";
-
-      if (showRealName) {
-        if (isBusinessVerified && businessName) {
-          // 기업 회원인 경우 기업 이름 사용
-          senderName = businessName;
-          console.log("📧 발신자 이름 (기업):", senderName);
-        } else {
-          // 개인 회원인 경우 개인 이름 사용
-          senderName = userName;
-          console.log("📧 발신자 이름 (개인):", senderName);
-        }
-      } else {
-        console.log("📧 발신자 이름 (익명):", senderName);
-      }
-
-      // 디버깅: 사용자 정보 확인
-      console.log("📧 사용자 정보:", {
-        business_verified: isBusinessVerified,
-        business_name: businessName,
-        showRealName,
-        finalUserName: senderName,
-      });
-
-      // 각 지원자에게 순차적으로 이메일 발송 (진행 상황 업데이트를 위해)
-      let successCount = 0;
-      let failedCount = 0;
-
-      for (const applicant of applicants) {
-        try {
-          const result = await sendSauceTestEmail({
-            applicantEmail: applicant.email,
-            userName: senderName,
-            applicantName: applicant.name,
-            testId: applicant.test_token,
-            dashboardId: group.id,
-            deadline: group.deadline,
-          });
-
-          if (result.success) {
-            successCount++;
-          } else {
-            failedCount++;
-          }
-
-          // 진행 상황 업데이트
-          setEmailProgress({ success: successCount, failed: failedCount });
-        } catch (error) {
-          failedCount++;
-          setEmailProgress({ success: successCount, failed: failedCount });
-        }
-      }
-
-      // 결과에 따른 토스트 메시지
-      if (failedCount === 0) {
-        showToast(
-          "success",
-          "이메일 발송 완료",
-          `${successCount}명의 지원자에게 소스테스트 이메일을 발송했습니다.`
-        );
-      } else if (successCount === 0) {
-        showToast(
-          "error",
-          "이메일 발송 실패",
-          "모든 이메일 발송에 실패했습니다. 나중에 다시 시도해주세요."
-        );
-      } else {
-        showToast(
-          "warning",
-          "일부 이메일 발송 실패",
-          `${successCount}명에게 발송 완료, ${failedCount}명 발송 실패`
-        );
-      }
-    } catch (error) {
-      console.error("이메일 발송 중 오류:", error);
-      showToast(
-        "error",
-        "이메일 발송 실패",
-        "이메일 발송 중 오류가 발생했습니다."
-      );
-    }
-  };
-
   // 이메일 미리보기 버튼 클릭
   const handlePreviewEmail = (e: React.FormEvent) => {
     e.preventDefault();
-
-    // 클라이언트 측 유효성 검증
-    const validation = groupForm.validateForm(
-      applicantManager.applicants.length
-    );
-
-    if (!validation.isValid) {
-      showToast("warning", "입력 오류", validation.error!);
-      return;
+    if (validateAndNotify()) {
+      setShowEmailPreview(true);
     }
-
-    // 이메일 미리보기 표시
-    setShowEmailPreview(true);
   };
 
   // 폼 제출
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 클라이언트 측 유효성 검증
-    const validation = groupForm.validateForm(
-      applicantManager.applicants.length
-    );
-
-    if (!validation.isValid) {
-      showToast("warning", "입력 오류", validation.error!);
+    if (!validateAndNotify()) {
       return;
     }
 
-    // 로딩 상태 초기화
-    setLoadingStep("creating");
-    setEmailProgress({ success: 0, failed: 0 });
-    setLoadingError("");
+    const request = buildCreateGroupRequest({
+      userId: userId!,
+      formData: groupForm.formData,
+      applicants: applicantManager.applicants,
+    });
 
-    // CreateGroupRequest 객체 생성
-    const request: CreateGroupRequest = {
-      user_id: userId!,
-      name: groupForm.formData.name,
-      description: groupForm.formData.description,
-      position: groupForm.formData.position,
-      experience_level: groupForm.formData.experienceLevel,
-      preferred_work_types: groupForm.formData.preferredWorkTypes,
-      deadline: groupForm.formData.deadline,
-      auto_reminder: groupForm.formData.autoReminder === "yes",
-      status: "active",
-      applicants: applicantManager.applicants.map(app => ({
-        name: app.name,
-        email: app.email,
-      })),
-    };
-
-    // API 호출
-    createGroup(request);
+    executeFlow(request);
   };
 
   return (
     <DashboardLayout
       title="새 채용 그룹 만들기"
-      description="포지션 정보를 입력하고 지원자를 추가하세요"
+      breadcrumbs={[
+        { label: "대시보드", href: "/dashboard" },
+        { label: "새 그룹 생성" },
+      ]}
+      showBackButton={true}
+      onBackClick={handleBackClick}
     >
       <div className="max-w-7xl mx-auto">
-        {/* 뒤로가기 버튼 */}
-        <button
-          onClick={handleBackClick}
-          className="mb-6 flex items-center gap-2 text-neutral-600 hover:text-neutral-800 transition-colors duration-200"
-        >
-          <span>←</span>
-          <span>대시보드로 돌아가기</span>
-        </button>
-
         <form onSubmit={handleSubmit} noValidate>
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             {/* 그룹 정보 폼 */}
             <GroupInfoForm
               groupForm={groupForm}
               customPositionList={customPosition.customPositionList}
-              onPositionChange={handlePositionChange}
+              onPositionChange={value =>
+                customPosition.handlePositionSelection(value, position =>
+                  groupForm.handleInputChange("position", position)
+                )
+              }
             />
 
             {/* 지원자 관리 */}
@@ -354,7 +170,12 @@ export const CreateGroupPage = () => {
               <Button
                 type="button"
                 variant="primary"
-                onClick={handleAddCustomPosition}
+                onClick={() =>
+                  customPosition.addPositionWithValidation(
+                    customPosition.customPosition,
+                    position => groupForm.handleInputChange("position", position)
+                  )
+                }
               >
                 추가
               </Button>
@@ -376,12 +197,16 @@ export const CreateGroupPage = () => {
 
         {/* 그룹 생성 진행 상황 모달 */}
         <CreateGroupLoadingModal
-          isOpen={isCreating || loadingStep === "sending" || loadingStep === "complete"}
-          currentStep={loadingStep}
+          isOpen={
+            isCreating ||
+            flowState.currentStep === "sending" ||
+            flowState.currentStep === "complete"
+          }
+          currentStep={flowState.currentStep}
           applicantCount={applicantManager.applicants.length}
-          successCount={emailProgress.success}
-          failedCount={emailProgress.failed}
-          errorMessage={loadingError}
+          successCount={flowState.emailProgress.success}
+          failedCount={flowState.emailProgress.failed}
+          errorMessage={flowState.error}
         />
       </div>
     </DashboardLayout>

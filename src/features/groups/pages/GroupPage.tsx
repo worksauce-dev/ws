@@ -177,7 +177,7 @@ export const GroupPage = () => {
   // 로딩 상태
   if (isLoading) {
     return (
-      <DashboardLayout title="" description="">
+      <DashboardLayout>
         <GroupPageSkeleton />
       </DashboardLayout>
     );
@@ -186,7 +186,7 @@ export const GroupPage = () => {
   // 에러 상태
   if (isError || !currentGroup) {
     return (
-      <DashboardLayout title="오류" description="">
+      <DashboardLayout title="오류">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <p className="text-error text-lg mb-4">
@@ -239,7 +239,7 @@ export const GroupPage = () => {
         groupId={groupId!}
       />
       {/* Summary Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
         <div className="h-full bg-white rounded-xl p-3 sm:p-6 border border-neutral-200">
           <div className="flex items-center h-full">
             <div className="p-2 sm:p-3 rounded-lg mr-2 sm:mr-4 bg-info-100">

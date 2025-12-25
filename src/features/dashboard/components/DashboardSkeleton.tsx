@@ -3,16 +3,13 @@ import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
 const DashboardSkeleton = () => {
   return (
     <DashboardLayout
-      title="대시보드"
-      description="데이터를 불러오는 중입니다..."
-      breadcrumbs={[{ label: "워크소스", href: "/" }, { label: "대시보드" }]}
       creditsLoading={true}
       actions={
         <div className="h-[52px] w-32 bg-neutral-200 rounded-lg animate-pulse" />
       }
     >
       {/* Search and Filter Bar Skeleton */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="flex-1 h-12 bg-neutral-200 rounded-lg animate-pulse" />
         <div className="flex gap-2">
           <div className="h-12 w-36 bg-neutral-200 rounded-lg animate-pulse" />
@@ -21,7 +18,7 @@ const DashboardSkeleton = () => {
       </div>
 
       {/* Summary Stats Skeleton */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-6">
         {[1, 2, 3, 4].map(i => (
           <div
             key={i}
@@ -39,7 +36,7 @@ const DashboardSkeleton = () => {
       </div>
 
       {/* Groups Grid Skeleton */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 mb-6">
         {[1, 2, 3, 4, 5, 6].map(i => (
           <div
             key={i}

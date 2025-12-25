@@ -13,7 +13,7 @@ import {
 } from "react-icons/md";
 import { clsx } from "clsx";
 import { useAuth } from "@/shared/contexts/useAuth";
-import { UserProfileDropdown } from "@/shared/components/ui";
+import { UserProfileDropdown, Logo } from "@/shared/components/ui";
 import type { UserMenuItem } from "@/shared/components/ui";
 import { NotificationBell } from "@/shared/components/NotificationBell";
 import { useOutsideClick } from "@/features/landing/hooks/useOutsideClick";
@@ -62,7 +62,8 @@ export const DashboardHeader = ({
 }: DashboardHeaderProps) => {
   const { signOut } = useAuth();
   const navigate = useNavigate();
-  const [internalIsMobileMenuOpen, setInternalIsMobileMenuOpen] = useState(false);
+  const [internalIsMobileMenuOpen, setInternalIsMobileMenuOpen] =
+    useState(false);
 
   // 외부에서 제어하는 경우 외부 state 사용, 아니면 내부 state 사용
   const isMobileMenuOpen = externalIsMobileMenuOpen ?? internalIsMobileMenuOpen;
@@ -123,37 +124,52 @@ export const DashboardHeader = ({
   return (
     <div className="bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Breadcrumbs */}
+        {/* Breadcrumbs (only when breadcrumbs exist) */}
         {breadcrumbs && breadcrumbs.length > 0 && (
           <div className="py-3 border-b border-gray-100">
-            <nav className="flex items-center space-x-2 text-sm">
-              {breadcrumbs.map((item, index) => (
-                <div key={index} className="flex items-center">
-                  {index > 0 && (
-                    <MdChevronRight className="w-4 h-4 text-neutral-400 mx-2" />
-                  )}
+            <div className="flex items-center justify-between">
+              {/* Logo */}
+              <Logo variant="header" linkTo="/" className="flex-shrink-0" />
 
-                  {/* href가 있으면 Link, onClick만 있으면 button, 둘 다 없으면 span */}
-                  {item.href ? (
-                    <Link to={item.href} className={linkClassName}>
-                      {item.label}
-                    </Link>
-                  ) : item.onClick ? (
-                    <button onClick={item.onClick} className={linkClassName}>
-                      {item.label}
-                    </button>
-                  ) : (
-                    <span className={currentClassName}>{item.label}</span>
-                  )}
-                </div>
-              ))}
-            </nav>
+              {/* Breadcrumbs */}
+              <nav className="flex items-center space-x-2 text-sm flex-1 ml-4">
+                {breadcrumbs.map((item, index) => (
+                  <div key={index} className="flex items-center">
+                    {index > 0 && (
+                      <MdChevronRight className="w-4 h-4 text-neutral-400 mx-2" />
+                    )}
+
+                    {/* href가 있으면 Link, onClick만 있으면 button, 둘 다 없으면 span */}
+                    {item.href ? (
+                      <Link to={item.href} className={linkClassName}>
+                        {item.label}
+                      </Link>
+                    ) : item.onClick ? (
+                      <button onClick={item.onClick} className={linkClassName}>
+                        {item.label}
+                      </button>
+                    ) : (
+                      <span className={currentClassName}>{item.label}</span>
+                    )}
+                  </div>
+                ))}
+              </nav>
+            </div>
           </div>
         )}
 
         {/* Main Header */}
         <div className="flex items-center justify-between py-6">
           <div className="flex items-center min-w-0 flex-1">
+            {/* Logo (only when no breadcrumbs) */}
+            {(!breadcrumbs || breadcrumbs.length === 0) && (
+              <Logo
+                variant="header"
+                linkTo="/"
+                className="mr-4 flex-shrink-0"
+              />
+            )}
+
             {/* Back Button */}
             {showBackButton && (
               <button
@@ -167,7 +183,7 @@ export const DashboardHeader = ({
             {/* Title Section */}
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 sm:gap-3">
-                <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold text-primary truncate">
+                <h1 className="text-lg sm:text-2xl font-semibold text-primary truncate">
                   {title}
                 </h1>
                 {statusBadge}
@@ -225,7 +241,10 @@ export const DashboardHeader = ({
               )}
 
               {/* Notification Bell */}
-              <div className="pl-4 border-l border-gray-200" data-tour="notification-bell">
+              <div
+                className="pl-4 border-l border-gray-200"
+                data-tour="notification-bell"
+              >
                 <NotificationBell />
               </div>
 
@@ -308,7 +327,10 @@ export const DashboardHeader = ({
                   )}
 
                   {/* 알림 */}
-                  <div className="px-4 py-3 border-t border-neutral-100" data-tour="notification-bell-mobile">
+                  <div
+                    className="px-4 py-3 border-t border-neutral-100"
+                    data-tour="notification-bell-mobile"
+                  >
                     <div className="flex items-center space-x-2 text-neutral-700">
                       <MdNotifications className="w-5 h-5" />
                       <span>알림</span>

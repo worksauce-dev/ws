@@ -7,7 +7,6 @@ import { useState, useMemo } from "react";
 import { MdAdd, MdSearch, MdGridView, MdCalendarMonth } from "react-icons/md";
 import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
 import { useUser } from "@/shared/hooks/useUser";
-import { generateGreeting } from "@/shared/utils/dashboardGreetings";
 import { SelectDropdown } from "@/shared/components/ui/Dropdown";
 import { TabGroup } from "@/shared/components/ui/TabGroup";
 import { useMinimumLoadingTime } from "@/shared/hooks/useMinimumLoadingTime";
@@ -31,7 +30,7 @@ type ViewMode = "grid" | "calendar";
 export const DashboardPage = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { userName, credits, userProfile, isAuthenticated } = useUser();
+  const { credits, isAuthenticated } = useUser();
 
   // 데이터 페칭
   const { groups, isLoading, error, refetch } = useGroups();
@@ -74,7 +73,8 @@ export const DashboardPage = () => {
       {
         target: "[data-tour='notification-bell']",
         title: "실시간 알림",
-        description: "지원자가 테스트를 제출하면 여기에서 즉시 알림을 받을 수 있습니다. 놓치지 마세요!",
+        description:
+          "지원자가 테스트를 제출하면 여기에서 즉시 알림을 받을 수 있습니다. 놓치지 마세요!",
         placement: "bottom" as const,
       },
       {
@@ -90,15 +90,6 @@ export const DashboardPage = () => {
 
   // 로딩 상태 처리
   const showLoading = useMinimumLoadingTime(isLoading, 1250);
-
-  // 인사말 메모이제이션
-  const greeting = useMemo(
-    () =>
-      userProfile
-        ? generateGreeting(userProfile)
-        : "워크소스에 오신 것을 환영합니다!",
-    [userProfile]
-  );
 
   // 필터 초기화 핸들러
   const handleResetFilters = () => {
@@ -130,9 +121,6 @@ export const DashboardPage = () => {
 
   return (
     <DashboardLayout
-      title={`안녕하세요, ${userName}님!`}
-      description={greeting}
-      breadcrumbs={[{ label: "워크소스", href: "/" }, { label: "대시보드" }]}
       credits={credits}
       onCreditClick={handleCreditClick}
       isMobileMenuOpen={isMobileMenuOpen}
@@ -149,7 +137,7 @@ export const DashboardPage = () => {
       }
     >
       {/* Search and Filter Bar */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="relative flex-1" data-tour="search-bar">
           <MdSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-500" />
           <input

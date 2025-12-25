@@ -10,7 +10,7 @@ interface BreadcrumbItem {
 
 interface DashboardLayoutProps {
   children: ReactNode;
-  title: string;
+  title?: string;
   description?: string;
   breadcrumbs?: BreadcrumbItem[];
   showBackButton?: boolean;
@@ -85,7 +85,7 @@ export const DashboardLayout = ({
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <DashboardHeader
-        title={title}
+        title={title || ""}
         description={description}
         breadcrumbs={breadcrumbs}
         showBackButton={showBackButton}
