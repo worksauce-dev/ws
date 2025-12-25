@@ -41,6 +41,8 @@ interface DashboardHeaderProps {
   credits?: number;
   onCreditClick?: () => void;
   creditsLoading?: boolean;
+  isMobileMenuOpen?: boolean;
+  onMobileMenuToggle?: (isOpen: boolean) => void;
 }
 
 export const DashboardHeader = ({
@@ -55,10 +57,22 @@ export const DashboardHeader = ({
   credits,
   onCreditClick,
   creditsLoading = false,
+  isMobileMenuOpen: externalIsMobileMenuOpen,
+  onMobileMenuToggle,
 }: DashboardHeaderProps) => {
   const { signOut } = useAuth();
   const navigate = useNavigate();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [internalIsMobileMenuOpen, setInternalIsMobileMenuOpen] = useState(false);
+
+  // 외부에서 제어하는 경우 외부 state 사용, 아니면 내부 state 사용
+  const isMobileMenuOpen = externalIsMobileMenuOpen ?? internalIsMobileMenuOpen;
+  const setIsMobileMenuOpen = (isOpen: boolean) => {
+    if (onMobileMenuToggle) {
+      onMobileMenuToggle(isOpen);
+    } else {
+      setInternalIsMobileMenuOpen(isOpen);
+    }
+  };
 
   // 메뉴 외부 클릭 시 닫기
   const menuRef = useOutsideClick(() => setIsMobileMenuOpen(false));
@@ -211,7 +225,7 @@ export const DashboardHeader = ({
               )}
 
               {/* Notification Bell */}
-              <div className="pl-4 border-l border-gray-200">
+              <div className="pl-4 border-l border-gray-200" data-tour="notification-bell">
                 <NotificationBell />
               </div>
 
@@ -294,7 +308,7 @@ export const DashboardHeader = ({
                   )}
 
                   {/* 알림 */}
-                  <div className="px-4 py-3 border-t border-neutral-100">
+                  <div className="px-4 py-3 border-t border-neutral-100" data-tour="notification-bell-mobile">
                     <div className="flex items-center space-x-2 text-neutral-700">
                       <MdNotifications className="w-5 h-5" />
                       <span>알림</span>

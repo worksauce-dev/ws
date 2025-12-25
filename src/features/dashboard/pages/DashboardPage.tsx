@@ -15,6 +15,7 @@ import { useGroups } from "../hooks/useGroups";
 import { useGroupFilters } from "../hooks/useGroupFilters";
 import { useGroupActions } from "../hooks/useGroupActions";
 import { useDashboardStats } from "../hooks/useDashboardStats";
+import { useOnboardingTour } from "../hooks/useOnboardingTour";
 import { GroupsErrorDisplay } from "../../groups/components/GroupsErrorDisplay";
 import DashboardSkeleton from "../components/DashboardSkeleton";
 import { DashboardStats } from "../components/DashboardStats";
@@ -22,12 +23,14 @@ import { GroupsGrid } from "../components/GroupsGrid";
 import { Pagination } from "../components/Pagination";
 import { EmptyState } from "../components/EmptyState";
 import { CalendarView } from "../components/CalendarView";
+import { OnboardingTour } from "../components/OnboardingTour";
 import { GROUP_STATUS_FILTER_OPTIONS } from "../constants/groupStyles";
 
 type ViewMode = "grid" | "calendar";
 
 export const DashboardPage = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { userName, credits, userProfile, isAuthenticated } = useUser();
 
   // 데이터 페칭
@@ -54,6 +57,36 @@ export const DashboardPage = () => {
   } = useGroupActions(groups);
 
   const stats = useDashboardStats(groups);
+
+  // 온보딩 투어
+  const { showTour, completeTour, skipTour } = useOnboardingTour();
+
+  // 투어 단계 정의
+  const tourSteps = useMemo(
+    () => [
+      {
+        target: "[data-tour='create-group-button']",
+        title: "채용 그룹 만들기",
+        description:
+          "여기를 클릭하여 첫 채용 그룹을 생성해보세요. 포지션, 우대 직무유형, 마감일을 설정할 수 있습니다.",
+        placement: "bottom" as const,
+      },
+      {
+        target: "[data-tour='notification-bell']",
+        title: "실시간 알림",
+        description: "지원자가 테스트를 제출하면 여기에서 즉시 알림을 받을 수 있습니다. 놓치지 마세요!",
+        placement: "bottom" as const,
+      },
+      {
+        target: "[data-tour='stats']",
+        title: "한눈에 보는 통계",
+        description:
+          "전체 그룹 수, 활성 그룹, 지원자 수, 완료된 테스트 수를 실시간으로 확인하세요.",
+        placement: "bottom" as const,
+      },
+    ],
+    []
+  );
 
   // 로딩 상태 처리
   const showLoading = useMinimumLoadingTime(isLoading, 1250);
@@ -102,8 +135,11 @@ export const DashboardPage = () => {
       breadcrumbs={[{ label: "워크소스", href: "/" }, { label: "대시보드" }]}
       credits={credits}
       onCreditClick={handleCreditClick}
+      isMobileMenuOpen={isMobileMenuOpen}
+      onMobileMenuToggle={setIsMobileMenuOpen}
       actions={
         <button
+          data-tour="create-group-button"
           onClick={handleCreateGroup}
           className="inline-flex items-center h-[52px] sm:px-6 px-3 rounded-lg font-medium text-white text-sm bg-primary-500 hover:bg-primary-dark transition-all duration-200 hover:shadow-md"
         >
@@ -114,7 +150,7 @@ export const DashboardPage = () => {
     >
       {/* Search and Filter Bar */}
       <div className="flex flex-col sm:flex-row gap-4 mb-8">
-        <div className="relative flex-1">
+        <div className="relative flex-1" data-tour="search-bar">
           <MdSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-500" />
           <input
             type="text"
@@ -134,6 +170,7 @@ export const DashboardPage = () => {
           />
           {/* View Mode Toggle */}
           <TabGroup
+            data-tour="view-mode"
             tabs={[
               {
                 id: "grid",
@@ -155,7 +192,9 @@ export const DashboardPage = () => {
       </div>
 
       {/* Summary Stats */}
-      <DashboardStats stats={stats} />
+      <div data-tour="stats">
+        <DashboardStats stats={stats} />
+      </div>
 
       {/* Grid View */}
       {viewMode === "grid" && (
@@ -182,6 +221,16 @@ export const DashboardPage = () => {
       {/* Calendar View */}
       {viewMode === "calendar" && (
         <CalendarView groups={filteredGroups} onGroupClick={handleGroupClick} />
+      )}
+
+      {/* Onboarding Tour */}
+      {showTour && groups.length === 0 && (
+        <OnboardingTour
+          steps={tourSteps}
+          onComplete={completeTour}
+          onSkip={skipTour}
+          onMobileMenuToggle={setIsMobileMenuOpen}
+        />
       )}
     </DashboardLayout>
   );

@@ -22,6 +22,8 @@ interface DashboardLayoutProps {
   credits?: number;
   onCreditClick?: () => void;
   creditsLoading?: boolean;
+  isMobileMenuOpen?: boolean;
+  onMobileMenuToggle?: (isOpen: boolean) => void;
 }
 
 export const DashboardLayout = ({
@@ -38,6 +40,8 @@ export const DashboardLayout = ({
   credits,
   onCreditClick,
   creditsLoading = false,
+  isMobileMenuOpen,
+  onMobileMenuToggle,
 }: DashboardLayoutProps) => {
   const getMaxWidthClass = () => {
     switch (maxWidth) {
@@ -95,6 +99,8 @@ export const DashboardLayout = ({
         credits={credits}
         onCreditClick={onCreditClick}
         creditsLoading={creditsLoading}
+        isMobileMenuOpen={isMobileMenuOpen}
+        onMobileMenuToggle={onMobileMenuToggle}
       />
 
       {/* Main Content */}
