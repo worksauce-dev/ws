@@ -21,49 +21,47 @@ export const ApplicantCard = ({
 }: ApplicantCardProps) => {
   return (
     <div
-      className="p-6 hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
+      className="p-4 sm:p-6 hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
       onClick={() => onClick(applicant.id)}
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">
           {/* Header: Star + Name + Status */}
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
             <button
               onClick={e => {
                 e.stopPropagation();
                 onToggleStar(applicant.id);
               }}
-              className="w-10 h-10 sm:w-8 sm:h-8 flex items-center justify-center rounded hover:bg-gray-200 transition-colors duration-200"
+              className="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-200 transition-colors duration-200 flex-shrink-0"
             >
               {applicant.is_starred ? (
-                <MdStar className="w-5 h-5 sm:w-4 sm:h-4 text-warning" />
+                <MdStar className="w-5 h-5 text-warning" />
               ) : (
-                <MdStarBorder className="w-5 h-5 sm:w-4 sm:h-4 text-neutral-500" />
+                <MdStarBorder className="w-5 h-5 text-neutral-500" />
               )}
             </button>
-            <h3 className="font-semibold text-lg text-neutral-800">
+            <h3 className="font-semibold text-base sm:text-lg text-neutral-800 truncate">
               {applicant.name}
             </h3>
             <span
-              className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold border ${getStatusColor(applicant.test_status)}`}
+              className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold border flex-shrink-0 ${getStatusColor(applicant.test_status)}`}
             >
               {getStatusIcon(applicant.test_status)}
-              <span className="hidden sm:inline">
-                {getStatusLabel(applicant.test_status)}
-              </span>
+              <span>{getStatusLabel(applicant.test_status)}</span>
             </span>
           </div>
 
           {/* Email + Dates */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 mb-3 text-sm text-neutral-600">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-3 text-sm text-neutral-600">
             <span className="truncate">{applicant.email}</span>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 sm:gap-4">
               <span className="hidden sm:inline">•</span>
-              <span>지원일: {formatDate(applicant.created_at)}</span>
+              <span className="text-xs sm:text-sm">지원일: {formatDate(applicant.created_at)}</span>
               {applicant.test_submitted_at && (
                 <>
                   <span>•</span>
-                  <span>완료일: {formatDate(applicant.test_submitted_at)}</span>
+                  <span className="text-xs sm:text-sm">완료일: {formatDate(applicant.test_submitted_at)}</span>
                 </>
               )}
             </div>
@@ -71,10 +69,10 @@ export const ApplicantCard = ({
 
           {/* Work Type + Matching Score */}
           {applicant.test_result?.statementScores && (
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 mb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
               {/* 주/부 유형 */}
               <div className="flex items-center gap-1">
-                <span className="text-base font-bold text-primary">
+                <span className="text-sm sm:text-base font-bold text-primary">
                   {getWorkTypeName(applicant.test_result.primaryWorkType)}
                 </span>
                 {(() => {
@@ -96,11 +94,11 @@ export const ApplicantCard = ({
 
               {/* 유형 매칭도 */}
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-neutral-700">
+                <span className="text-xs sm:text-sm font-medium text-neutral-700">
                   유형 매칭도
                 </span>
                 <span
-                  className={`text-lg font-bold ${getScoreColorClass(
+                  className={`text-base sm:text-lg font-bold ${getScoreColorClass(
                     Math.round(
                       calculateJobFitScore(
                         convertToScoreDistribution(
