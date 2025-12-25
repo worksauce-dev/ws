@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   MdPsychology,
@@ -26,17 +26,61 @@ export const ApplicantDetailPage = () => {
   }>();
   const navigate = useNavigate();
 
-  // 상태 관리
-  const [isStarred, setIsStarred] = useState(false);
-  const [activeTab, setActiveTab] = useState<"analysis" | "team" | "interview">(
-    "analysis"
-  );
-
   // 그룹 상세 정보 조회 (지원자 데이터 포함)
   const { data, isLoading, isError, error } = useGroupDetail(groupId || "");
 
-  // 현재 지원자 찾기
-  const currentApplicant = data?.applicants?.find(a => a.id === applicantId);
+  // 현재 지원자 찾기 (useMemo로 최적화)
+  const currentApplicant = useMemo(
+    () => data?.applicants?.find(a => a.id === applicantId),
+    [data?.applicants, applicantId]
+  );
+
+  // 테스트 결과 분석 (useMemo로 최적화) - early return 전에 모든 hooks 호출
+  const analyzedResult = useMemo(
+    () =>
+      currentApplicant?.test_result
+        ? analyzeTestResult(currentApplicant.test_result)
+        : null,
+    [currentApplicant?.test_result]
+  );
+
+  const workTypeData = useMemo(
+    () =>
+      analyzedResult ? WORK_TYPE_DATA[analyzedResult.primaryType.code] : null,
+    [analyzedResult]
+  );
+
+  // 유형 매칭도: 선호 유형들과의 종합 매칭 점수 (반올림)
+  const matchScore = useMemo(
+    () =>
+      analyzedResult && data?.group
+        ? Math.round(
+            calculateJobFitScore(
+              analyzedResult.scoreDistribution,
+              data.group.preferred_work_types
+            )
+          )
+        : 0,
+    [analyzedResult, data?.group]
+  );
+
+  // 포지션 라벨 찾기 (useMemo로 최적화)
+  const positionLabel = useMemo(
+    () =>
+      data?.group
+        ? POSITION_OPTIONS.find(option => option.value === data.group.position)
+            ?.label || data.group.position
+        : "",
+    [data?.group]
+  );
+
+  // 상태 관리 (초기값을 applicant 데이터에서 가져오기)
+  const [isStarred, setIsStarred] = useState(
+    currentApplicant?.is_starred ?? false
+  );
+  const [activeTab, setActiveTab] = useState<"analysis" | "team" | "interview">(
+    "analysis"
+  );
 
   const handleBackClick = () => {
     navigate(`/dashboard/groups/${groupId}`);
@@ -106,22 +150,10 @@ export const ApplicantDetailPage = () => {
     );
   }
 
-  // 테스트 결과 분석
-  const analyzedResult = analyzeTestResult(currentApplicant.test_result);
-  const workTypeData = WORK_TYPE_DATA[analyzedResult.primaryType.code];
-
-  // 유형 매칭도: 선호 유형들과의 종합 매칭 점수 (반올림)
-  const matchScore = Math.round(
-    calculateJobFitScore(
-      analyzedResult.scoreDistribution,
-      data.group.preferred_work_types
-    )
-  );
-
-  // 포지션 라벨 찾기
-  const positionLabel =
-    POSITION_OPTIONS.find(option => option.value === data.group.position)
-      ?.label || data.group.position;
+  // workTypeData와 analyzedResult가 null이 아님을 보장 (타입스크립트)
+  if (!workTypeData || !analyzedResult) {
+    return null;
+  }
 
   return (
     <DashboardLayout
@@ -168,7 +200,10 @@ export const ApplicantDetailPage = () => {
               >
                 <div className="flex flex-row sm:flex-col items-center gap-1.5 sm:gap-1">
                   <MdPsychology className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="whitespace-nowrap">직무유형 분석</span>
+                  <span className="whitespace-nowrap">
+                    <span className="sm:hidden">분석</span>
+                    <span className="hidden sm:inline">직무유형 분석</span>
+                  </span>
                 </div>
               </button>
               <button
@@ -185,7 +220,10 @@ export const ApplicantDetailPage = () => {
               >
                 <div className="flex flex-row sm:flex-col items-center gap-1.5 sm:gap-1">
                   <MdGroups className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="whitespace-nowrap">팀워크 스타일</span>
+                  <span className="whitespace-nowrap">
+                    <span className="sm:hidden">팀워크</span>
+                    <span className="hidden sm:inline">팀워크 스타일</span>
+                  </span>
                 </div>
               </button>
               <button
@@ -202,7 +240,10 @@ export const ApplicantDetailPage = () => {
               >
                 <div className="flex flex-row sm:flex-col items-center gap-1.5 sm:gap-1">
                   <MdQuestionAnswer className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="whitespace-nowrap">면접 가이드</span>
+                  <span className="whitespace-nowrap">
+                    <span className="sm:hidden">면접</span>
+                    <span className="hidden sm:inline">면접 가이드</span>
+                  </span>
                 </div>
               </button>
             </div>
