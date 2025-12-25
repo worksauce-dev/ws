@@ -149,7 +149,7 @@ export const ApplicantDetailPage = () => {
 
         {/* 탭 네비게이션 */}
         <div className="bg-white rounded-xl border border-neutral-200">
-          <div className="px-6 py-4 border-b border-neutral-200">
+          <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-neutral-200">
             <div
               className="flex rounded-xl p-1.5 bg-neutral-100 w-fit"
               role="tablist"
@@ -160,14 +160,14 @@ export const ApplicantDetailPage = () => {
                 aria-controls="analysis-panel"
                 id="analysis-tab"
                 onClick={() => setActiveTab("analysis")}
-                className={`px-5 py-3 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                className={`px-3 sm:px-5 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 ${
                   activeTab === "analysis"
                     ? "bg-white text-primary shadow-md scale-[1.02]"
                     : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-800"
                 }`}
               >
-                <div className="flex flex-col items-center gap-1">
-                  <MdPsychology className="w-5 h-5" />
+                <div className="flex flex-row sm:flex-col items-center gap-1.5 sm:gap-1">
+                  <MdPsychology className="w-4 h-4 sm:w-5 sm:h-5" />
                   <span className="whitespace-nowrap">직무유형 분석</span>
                 </div>
               </button>
@@ -177,14 +177,14 @@ export const ApplicantDetailPage = () => {
                 aria-controls="team-panel"
                 id="team-tab"
                 onClick={() => setActiveTab("team")}
-                className={`px-5 py-3 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                className={`px-3 sm:px-5 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 ${
                   activeTab === "team"
                     ? "bg-white text-primary shadow-md scale-[1.02]"
                     : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-800"
                 }`}
               >
-                <div className="flex flex-col items-center gap-1">
-                  <MdGroups className="w-5 h-5" />
+                <div className="flex flex-row sm:flex-col items-center gap-1.5 sm:gap-1">
+                  <MdGroups className="w-4 h-4 sm:w-5 sm:h-5" />
                   <span className="whitespace-nowrap">팀워크 스타일</span>
                 </div>
               </button>
@@ -194,14 +194,14 @@ export const ApplicantDetailPage = () => {
                 aria-controls="interview-panel"
                 id="interview-tab"
                 onClick={() => setActiveTab("interview")}
-                className={`px-5 py-3 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                className={`px-3 sm:px-5 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 ${
                   activeTab === "interview"
                     ? "bg-white text-primary shadow-md scale-[1.02]"
                     : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-800"
                 }`}
               >
-                <div className="flex flex-col items-center gap-1">
-                  <MdQuestionAnswer className="w-5 h-5" />
+                <div className="flex flex-row sm:flex-col items-center gap-1.5 sm:gap-1">
+                  <MdQuestionAnswer className="w-4 h-4 sm:w-5 sm:h-5" />
                   <span className="whitespace-nowrap">면접 가이드</span>
                 </div>
               </button>
@@ -209,7 +209,7 @@ export const ApplicantDetailPage = () => {
           </div>
 
           {/* 탭 컨텐츠 */}
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             {activeTab === "analysis" && (
               <WorkTypeAnalysisTab workTypeData={workTypeData} />
             )}
@@ -223,24 +223,24 @@ export const ApplicantDetailPage = () => {
         </div>
 
         {/* 액션 버튼 */}
-        <div className="bg-white rounded-xl border border-neutral-200 p-6 no-pdf">
-          <div className="flex items-center justify-between">
+        <div className="bg-white rounded-xl border border-neutral-200 p-4 sm:p-6 no-pdf">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h3 className="text-lg font-semibold text-neutral-800 mb-1">
+              <h3 className="text-base sm:text-lg font-semibold text-neutral-800 mb-1">
                 다음 단계
               </h3>
-              <p className="text-neutral-600">
+              <p className="text-sm sm:text-base text-neutral-600">
                 분석 결과를 바탕으로 채용 의사결정을 진행하세요.
               </p>
             </div>
-            <div className="flex items-center gap-3">
-              <button className="px-6 py-2 rounded-lg font-medium border border-error text-error transition-colors duration-200 hover:bg-error-50">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+              <button className="px-4 sm:px-6 py-2 rounded-lg text-sm sm:text-base font-medium border border-error text-error transition-colors duration-200 hover:bg-error-50">
                 불합격 처리
               </button>
-              <button className="px-6 py-2 rounded-lg font-medium border border-warning text-warning transition-colors duration-200 hover:bg-warning-50">
+              <button className="px-4 sm:px-6 py-2 rounded-lg text-sm sm:text-base font-medium border border-warning text-warning transition-colors duration-200 hover:bg-warning-50">
                 추가 면접 일정
               </button>
-              <button className="px-6 py-2 rounded-lg font-medium bg-primary-500 text-white transition-colors duration-200 hover:bg-primary-600">
+              <button className="px-4 sm:px-6 py-2 rounded-lg text-sm sm:text-base font-medium bg-primary-500 text-white transition-colors duration-200 hover:bg-primary-600">
                 최종 합격 처리
               </button>
             </div>
