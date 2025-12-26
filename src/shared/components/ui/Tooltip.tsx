@@ -72,7 +72,7 @@ export const Tooltip = ({
       {isVisible && (
         <div
           className={clsx(
-            "absolute z-50 px-3 py-2 text-sm text-white bg-neutral-800 rounded-lg shadow-lg pointer-events-none max-w-xs",
+            "absolute z-50 px-3 py-2 text-sm text-white bg-neutral-800 rounded-lg shadow-lg pointer-events-none max-w-xs whitespace-normal break-keep",
             getPlacementClasses(),
             className
           )}

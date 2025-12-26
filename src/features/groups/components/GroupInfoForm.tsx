@@ -6,20 +6,56 @@ import {
 } from "@/shared/components/ui/Dropdown";
 import { Tooltip } from "@/shared/components/ui/Tooltip";
 import { MdCheckCircle } from "react-icons/md";
+import { WorkTypeCounter } from "./WorkTypeCounter";
 import type { UseGroupFormReturn } from "../types/group.types";
 import type { PositionOption } from "../types/group.types";
+import type { WorkTypeCode } from "../constants/workTypeKeywords";
+import type { TeamComposition } from "@/shared/types/database.types";
 
 interface GroupInfoFormProps {
   groupForm: UseGroupFormReturn;
   customPositionList: PositionOption[];
   onPositionChange: (value: string) => void;
+  teamComposition: TeamComposition | null;
+  onTeamCompositionChange: (composition: TeamComposition | null) => void;
 }
 
 export const GroupInfoForm = ({
   groupForm,
   customPositionList,
   onPositionChange,
+  teamComposition,
+  onTeamCompositionChange,
 }: GroupInfoFormProps) => {
+  // 팀 구성 토글 핸들러
+  const handleToggleTeamComposition = () => {
+    if (teamComposition === null) {
+      // 활성화: 빈 객체로 초기화
+      onTeamCompositionChange({});
+    } else {
+      // 비활성화: null로 설정
+      onTeamCompositionChange(null);
+    }
+  };
+
+  // 팀 구성 카운터 변경 핸들러
+  const handleTeamCountChange = (code: WorkTypeCode, newCount: number) => {
+    if (teamComposition === null) return;
+
+    if (newCount === 0) {
+      // 0이면 해당 키 제거
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { [code]: _, ...rest } = teamComposition;
+      onTeamCompositionChange(rest);
+    } else {
+      // 값 업데이트
+      onTeamCompositionChange({
+        ...teamComposition,
+        [code]: newCount,
+      });
+    }
+  };
+
   return (
     <div className="xl:col-span-2 space-y-8">
       {/* 기본 정보 섹션 */}
@@ -164,6 +200,61 @@ export const GroupInfoForm = ({
             <p className="text-xs text-neutral-500 mt-3">
               *선택하지 않으면 모든 유형을 대상으로 합니다.
             </p>
+          </div>
+
+          {/* 현재 팀 구성 (선택 사항) */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-sm font-medium text-neutral-700">
+                현재 팀 구성
+              </label>
+              <button
+                type="button"
+                onClick={handleToggleTeamComposition}
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 ${
+                  teamComposition !== null
+                    ? "bg-primary-100 text-primary-700 hover:bg-primary-200"
+                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                }`}
+              >
+                {teamComposition !== null ? "입력 중" : "입력하기"}
+              </button>
+            </div>
+
+            {teamComposition !== null && (
+              <div className="space-y-3 p-4 bg-neutral-50 rounded-lg border border-neutral-200">
+                <p className="text-xs text-neutral-600 mb-2">
+                  각 유형별로 현재 팀원 수를 입력해주세요
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {WORK_TYPE_KEYWORDS.map(type => (
+                    <WorkTypeCounter
+                      key={type.code}
+                      workTypeName={type.type}
+                      code={type.code}
+                      count={teamComposition[type.code] || 0}
+                      onChange={handleTeamCountChange}
+                    />
+                  ))}
+                </div>
+                <div className="mt-3 pt-3 border-t border-neutral-200">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium text-neutral-700">총 팀원 수</span>
+                    <span className="font-semibold text-primary">
+                      {Object.values(teamComposition).reduce((sum, count) => sum + count, 0)}명
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {teamComposition === null && (
+              <div className="p-4 bg-neutral-50 rounded-lg border border-dashed border-neutral-300">
+                <p className="text-xs text-neutral-500 text-center">
+                  선택 사항입니다. 입력하지 않아도 채용 진행에 문제없습니다.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>

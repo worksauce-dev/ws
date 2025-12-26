@@ -1,4 +1,5 @@
 import type { ApplicantSummary } from "./applicant.types";
+import type { TeamComposition } from "@/shared/types/database.types";
 
 export interface GroupFormData {
   name: string;
@@ -76,6 +77,7 @@ export interface CreateGroupRequest {
   deadline: string;
   auto_reminder: boolean;
   status?: GroupStatus; // 선택적 필드 (기본값: 'active')
+  current_team_composition?: TeamComposition | null; // 현재 팀 구성 (선택 사항)
   applicants: {
     name: string;
     email: string;

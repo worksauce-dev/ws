@@ -13,6 +13,7 @@ import { useToast } from "@/shared/components/ui/useToast";
 import {
   analyzeTestResult,
   calculateJobFitScore,
+  calculateTeamFitScore,
 } from "../utils/analyzeTestResult";
 import WORK_TYPE_DATA from "../constants/workTypes";
 import { POSITION_OPTIONS } from "../constants/positionOptions";
@@ -20,6 +21,7 @@ import { ApplicantDetailHeader } from "../components/applicantDetail/ApplicantDe
 import { WorkTypeAnalysisTab } from "../components/applicantDetail/WorkTypeAnalysisTab";
 import { TeamSynergyTab } from "../components/applicantDetail/TeamSynergyTab";
 import { InterviewGuideTab } from "../components/applicantDetail/InterviewGuideTab";
+import { TeamCompositionChart } from "../components/applicantDetail/TeamCompositionChart";
 import type { ApplicantStatus } from "@/shared/types/database.types";
 
 export const ApplicantDetailPage = () => {
@@ -99,6 +101,18 @@ export const ApplicantDetailPage = () => {
             ?.label || data.group.position
         : "",
     [data?.group]
+  );
+
+  // 팀 적합도 분석 (현재 팀 구성이 있는 경우에만)
+  const teamFitAnalysis = useMemo(
+    () =>
+      analyzedResult && data?.group?.current_team_composition
+        ? calculateTeamFitScore(
+            analyzedResult.primaryType.code,
+            data.group.current_team_composition
+          )
+        : null,
+    [analyzedResult, data?.group?.current_team_composition]
   );
 
   // 상태 관리 (초기값을 applicant 데이터에서 가져오기)
@@ -289,6 +303,93 @@ export const ApplicantDetailPage = () => {
             )}
           </div>
         </div>
+
+        {/* 팀 적합도 분석 (현재 팀 구성이 있는 경우에만 표시) */}
+        {teamFitAnalysis && (
+          <div className="bg-white rounded-xl border border-neutral-200 p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold text-neutral-800 mb-4">
+              팀 적합도 분석
+            </h3>
+
+            {/* 점수 표시 */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+              <div className="bg-neutral-50 rounded-lg p-4">
+                <div className="text-xs sm:text-sm text-neutral-600 mb-1">
+                  팀 밸런스 점수
+                </div>
+                <div className="text-2xl sm:text-3xl font-bold text-primary">
+                  {teamFitAnalysis.balanceScore}
+                  <span className="text-base sm:text-lg text-neutral-500">/100</span>
+                </div>
+              </div>
+              <div className="bg-neutral-50 rounded-lg p-4">
+                <div className="text-xs sm:text-sm text-neutral-600 mb-1">
+                  팀 다양성 점수
+                </div>
+                <div className="text-2xl sm:text-3xl font-bold text-primary">
+                  {teamFitAnalysis.diversityScore}
+                  <span className="text-base sm:text-lg text-neutral-500">/100</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 추천 메시지 */}
+            <div
+              className={`p-4 rounded-lg border-2 ${
+                teamFitAnalysis.recommendation.level === "excellent"
+                  ? "bg-success-50 border-success-200"
+                  : teamFitAnalysis.recommendation.level === "good"
+                    ? "bg-info-50 border-info-200"
+                    : teamFitAnalysis.recommendation.level === "neutral"
+                      ? "bg-neutral-50 border-neutral-200"
+                      : "bg-warning-50 border-warning-200"
+              }`}
+            >
+              <div
+                className={`text-sm sm:text-base font-semibold mb-2 ${
+                  teamFitAnalysis.recommendation.level === "excellent"
+                    ? "text-success-800"
+                    : teamFitAnalysis.recommendation.level === "good"
+                      ? "text-info-800"
+                      : teamFitAnalysis.recommendation.level === "neutral"
+                        ? "text-neutral-800"
+                        : "text-warning-800"
+                }`}
+              >
+                {teamFitAnalysis.recommendation.message}
+              </div>
+              <ul className="space-y-1">
+                {teamFitAnalysis.recommendation.reasons.map((reason, idx) => (
+                  <li
+                    key={idx}
+                    className={`text-xs sm:text-sm ${
+                      teamFitAnalysis.recommendation.level === "excellent"
+                        ? "text-success-700"
+                        : teamFitAnalysis.recommendation.level === "good"
+                          ? "text-info-700"
+                          : teamFitAnalysis.recommendation.level === "neutral"
+                            ? "text-neutral-700"
+                            : "text-warning-700"
+                    }`}
+                  >
+                    • {reason}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* 팀 구성 변화 (Before/After 차트) */}
+            <div className="mt-6">
+              <div className="text-sm font-medium text-neutral-700 mb-4">
+                팀 구성 변화
+              </div>
+              <TeamCompositionChart
+                currentComposition={teamFitAnalysis.currentComposition}
+                afterComposition={teamFitAnalysis.afterComposition}
+              />
+            </div>
+          </div>
+        )}
 
         {/* 채용 상태 관리 */}
         <div className="bg-white rounded-xl border border-neutral-200 p-4 sm:p-6 no-pdf">

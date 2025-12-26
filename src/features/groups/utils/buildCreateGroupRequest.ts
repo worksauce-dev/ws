@@ -4,11 +4,13 @@
 
 import type { CreateGroupRequest, GroupFormData } from "../types/group.types";
 import type { Applicant } from "../types/applicant.types";
+import type { TeamComposition } from "@/shared/types/database.types";
 
 interface BuildRequestParams {
   userId: string;
   formData: GroupFormData;
   applicants: Applicant[];
+  teamComposition?: TeamComposition | null;
 }
 
 /**
@@ -18,6 +20,7 @@ export const buildCreateGroupRequest = ({
   userId,
   formData,
   applicants,
+  teamComposition,
 }: BuildRequestParams): CreateGroupRequest => {
   return {
     user_id: userId,
@@ -29,6 +32,7 @@ export const buildCreateGroupRequest = ({
     deadline: formData.deadline,
     auto_reminder: formData.autoReminder === "yes",
     status: "active",
+    current_team_composition: teamComposition,
     applicants: applicants.map(app => ({
       name: app.name,
       email: app.email,

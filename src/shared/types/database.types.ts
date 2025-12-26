@@ -12,6 +12,10 @@ export type ApplicantStatus =
   | "rejected" // 불합격
   | "passed"; // 최종 합격
 
+// 팀 구성 정보 (선택 사항)
+// 각 직무 유형별 현재 팀원 수
+export type TeamComposition = Partial<Record<WorkTypeCode, number>>;
+
 // VerbTest 원본 데이터 타입
 export interface VerbTestRawData {
   selectionHistory: Record<VerbCategory, string[]>;
@@ -67,6 +71,7 @@ export interface Group {
   deadline: string;
   auto_reminder: boolean;
   status: string;
+  current_team_composition: TeamComposition | null; // 현재 팀 구성 (선택 사항)
   created_at: string;
   updated_at: string;
 }

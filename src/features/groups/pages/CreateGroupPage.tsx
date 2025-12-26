@@ -20,6 +20,7 @@ import { useCreateGroupFlow } from "../hooks/useCreateGroupFlow";
 import { useGroupFormValidation } from "../hooks/useGroupFormValidation";
 import { buildCreateGroupRequest } from "../utils/buildCreateGroupRequest";
 import { useUser } from "@/shared/hooks/useUser";
+import type { TeamComposition } from "@/shared/types/database.types";
 
 export const CreateGroupPage = () => {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ export const CreateGroupPage = () => {
   // State
   const [showEmailPreview, setShowEmailPreview] = useState(false);
   const [showRealName, setShowRealName] = useState(true);
+  const [teamComposition, setTeamComposition] = useState<TeamComposition | null>(null);
 
   // Hooks
   const groupForm = useGroupForm();
@@ -74,6 +76,7 @@ export const CreateGroupPage = () => {
       userId: userId!,
       formData: groupForm.formData,
       applicants: applicantManager.applicants,
+      teamComposition,
     });
 
     executeFlow(request);
@@ -101,6 +104,8 @@ export const CreateGroupPage = () => {
                   groupForm.handleInputChange("position", position)
                 )
               }
+              teamComposition={teamComposition}
+              onTeamCompositionChange={setTeamComposition}
             />
 
             {/* 지원자 관리 */}
