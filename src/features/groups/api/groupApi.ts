@@ -394,6 +394,32 @@ export const addApplicantsToGroup = async (
   return finalResult;
 };
 
+/**
+ * 지원자 채용 상태 업데이트
+ *
+ * @param applicantId 지원자 ID
+ * @param status 새로운 채용 상태
+ * @returns 업데이트된 지원자 정보
+ */
+export const updateApplicantStatus = async (
+  applicantId: string,
+  status: "pending" | "shortlisted" | "interview" | "rejected" | "passed"
+) => {
+  const { data, error } = await supabase
+    .from("applicants")
+    .update({ status })
+    .eq("id", applicantId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("지원자 상태 업데이트 실패:", error);
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
 // 기본 export (객체로 묶어서 export)
 export const groupApi = {
   createGroup,
@@ -402,4 +428,5 @@ export const groupApi = {
   updateGroup,
   deleteGroup,
   addApplicantsToGroup,
+  updateApplicantStatus,
 };

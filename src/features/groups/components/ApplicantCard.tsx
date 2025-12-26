@@ -50,6 +50,30 @@ export const ApplicantCard = ({
               {getStatusIcon(applicant.test_status)}
               <span>{getStatusLabel(applicant.test_status)}</span>
             </span>
+            {/* 채용 상태 배지 */}
+            <span
+              className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border flex-shrink-0 ${
+                applicant.status === "pending"
+                  ? "bg-neutral-50 text-neutral-600 border-neutral-200"
+                  : applicant.status === "shortlisted"
+                    ? "bg-info-50 text-info-700 border-info-200"
+                    : applicant.status === "interview"
+                      ? "bg-warning-50 text-warning-700 border-warning-200"
+                      : applicant.status === "rejected"
+                        ? "bg-error-50 text-error-700 border-error-200"
+                        : "bg-success-50 text-success-700 border-success-200"
+              }`}
+            >
+              {applicant.status === "pending"
+                ? "검토 대기"
+                : applicant.status === "shortlisted"
+                  ? "서류 합격"
+                  : applicant.status === "interview"
+                    ? "면접 예정"
+                    : applicant.status === "rejected"
+                      ? "불합격"
+                      : "최종 합격"}
+            </span>
           </div>
 
           {/* Email + Dates */}

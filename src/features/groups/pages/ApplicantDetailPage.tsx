@@ -8,6 +8,8 @@ import {
 } from "react-icons/md";
 import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
 import { useGroupDetail } from "../hooks/useGroupDetail";
+import { useUpdateApplicantStatus } from "../hooks/useUpdateApplicantStatus";
+import { useToast } from "@/shared/components/ui/useToast";
 import {
   analyzeTestResult,
   calculateJobFitScore,
@@ -18,6 +20,7 @@ import { ApplicantDetailHeader } from "../components/applicantDetail/ApplicantDe
 import { WorkTypeAnalysisTab } from "../components/applicantDetail/WorkTypeAnalysisTab";
 import { TeamSynergyTab } from "../components/applicantDetail/TeamSynergyTab";
 import { InterviewGuideTab } from "../components/applicantDetail/InterviewGuideTab";
+import type { ApplicantStatus } from "@/shared/types/database.types";
 
 export const ApplicantDetailPage = () => {
   const { groupId, applicantId } = useParams<{
@@ -25,9 +28,33 @@ export const ApplicantDetailPage = () => {
     applicantId: string;
   }>();
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   // 그룹 상세 정보 조회 (지원자 데이터 포함)
   const { data, isLoading, isError, error } = useGroupDetail(groupId || "");
+
+  // 지원자 상태 업데이트 mutation
+  const { mutate: updateStatus, isPending: isUpdating } =
+    useUpdateApplicantStatus({
+      groupId: groupId || "",
+      onSuccess: data => {
+        const statusLabels: Record<ApplicantStatus, string> = {
+          pending: "검토 대기",
+          shortlisted: "서류 합격",
+          interview: "면접 예정",
+          rejected: "불합격",
+          passed: "최종 합격",
+        };
+        showToast(
+          "success",
+          "상태 변경 완료",
+          `채용 상태가 "${statusLabels[data.status]}"(으)로 변경되었습니다.`
+        );
+      },
+      onError: error => {
+        showToast("error", "상태 변경 실패", error.message);
+      },
+    });
 
   // 현재 지원자 찾기 (useMemo로 최적화)
   const currentApplicant = useMemo(
@@ -263,26 +290,110 @@ export const ApplicantDetailPage = () => {
           </div>
         </div>
 
-        {/* 액션 버튼 */}
+        {/* 채용 상태 관리 */}
         <div className="bg-white rounded-xl border border-neutral-200 p-4 sm:p-6 no-pdf">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h3 className="text-base sm:text-lg font-semibold text-neutral-800 mb-1">
-                다음 단계
-              </h3>
-              <p className="text-sm sm:text-base text-neutral-600">
-                분석 결과를 바탕으로 채용 의사결정을 진행하세요.
-              </p>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <h3 className="text-base sm:text-lg font-semibold text-neutral-800 mb-1">
+                  채용 상태 관리
+                </h3>
+                <p className="text-sm sm:text-base text-neutral-600">
+                  분석 결과를 바탕으로 채용 의사결정을 진행하세요.
+                </p>
+              </div>
+              {/* 현재 상태 배지 */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-neutral-600">현재 상태:</span>
+                <span
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium ${
+                    currentApplicant.status === "pending"
+                      ? "bg-neutral-100 text-neutral-700"
+                      : currentApplicant.status === "shortlisted"
+                        ? "bg-info-50 text-info-700 border border-info-200"
+                        : currentApplicant.status === "interview"
+                          ? "bg-warning-50 text-warning-700 border border-warning-200"
+                          : currentApplicant.status === "rejected"
+                            ? "bg-error-50 text-error-700 border border-error-200"
+                            : "bg-success-50 text-success-700 border border-success-200"
+                  }`}
+                >
+                  {currentApplicant.status === "pending"
+                    ? "검토 대기"
+                    : currentApplicant.status === "shortlisted"
+                      ? "서류 합격"
+                      : currentApplicant.status === "interview"
+                        ? "면접 예정"
+                        : currentApplicant.status === "rejected"
+                          ? "불합격"
+                          : "최종 합격"}
+                </span>
+              </div>
             </div>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-              <button className="px-4 sm:px-6 py-2 rounded-lg text-sm sm:text-base font-medium border border-error text-error transition-colors duration-200 hover:bg-error-50">
-                불합격 처리
+
+            {/* 상태 변경 버튼들 */}
+            <div className="flex flex-col sm:flex-row items-stretch gap-2">
+              <button
+                onClick={() => {
+                  if (applicantId) {
+                    updateStatus({ applicantId, status: "shortlisted" });
+                  }
+                }}
+                disabled={
+                  currentApplicant.status === "shortlisted" || isUpdating
+                }
+                className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  currentApplicant.status === "shortlisted" || isUpdating
+                    ? "bg-neutral-100 text-neutral-400 cursor-not-allowed"
+                    : "border border-info text-info hover:bg-info-50"
+                }`}
+              >
+                {isUpdating ? "처리 중..." : "서류 합격"}
               </button>
-              <button className="px-4 sm:px-6 py-2 rounded-lg text-sm sm:text-base font-medium border border-warning text-warning transition-colors duration-200 hover:bg-warning-50">
-                추가 면접 일정
+              <button
+                onClick={() => {
+                  if (applicantId) {
+                    updateStatus({ applicantId, status: "interview" });
+                  }
+                }}
+                disabled={currentApplicant.status === "interview" || isUpdating}
+                className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  currentApplicant.status === "interview" || isUpdating
+                    ? "bg-neutral-100 text-neutral-400 cursor-not-allowed"
+                    : "border border-warning text-warning hover:bg-warning-50"
+                }`}
+              >
+                {isUpdating ? "처리 중..." : "면접 예정"}
               </button>
-              <button className="px-4 sm:px-6 py-2 rounded-lg text-sm sm:text-base font-medium bg-primary-500 text-white transition-colors duration-200 hover:bg-primary-600">
-                최종 합격 처리
+              <button
+                onClick={() => {
+                  if (applicantId) {
+                    updateStatus({ applicantId, status: "passed" });
+                  }
+                }}
+                disabled={currentApplicant.status === "passed" || isUpdating}
+                className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  currentApplicant.status === "passed" || isUpdating
+                    ? "bg-neutral-100 text-neutral-400 cursor-not-allowed"
+                    : "bg-primary-500 text-white hover:bg-primary-600"
+                }`}
+              >
+                {isUpdating ? "처리 중..." : "최종 합격"}
+              </button>
+              <button
+                onClick={() => {
+                  if (applicantId) {
+                    updateStatus({ applicantId, status: "rejected" });
+                  }
+                }}
+                disabled={currentApplicant.status === "rejected" || isUpdating}
+                className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  currentApplicant.status === "rejected" || isUpdating
+                    ? "bg-neutral-100 text-neutral-400 cursor-not-allowed"
+                    : "border border-error text-error hover:bg-error-50"
+                }`}
+              >
+                {isUpdating ? "처리 중..." : "불합격"}
               </button>
             </div>
           </div>

@@ -39,6 +39,7 @@ export interface ApplicantSummary {
   name: string;
   email: string;
   test_status: "pending" | "in_progress" | "completed" | "expired";
+  status: "pending" | "shortlisted" | "interview" | "rejected" | "passed";
 }
 
 // 검사 결과 타입

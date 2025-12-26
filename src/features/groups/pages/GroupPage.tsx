@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  MdEmail,
   MdPerson,
   MdCheckCircle,
   MdTrendingUp,
@@ -9,7 +8,7 @@ import {
   MdSearch,
 } from "react-icons/md";
 import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
-import { TabGroup } from "@/shared/components/ui/TabGroup";
+import { SelectDropdown } from "@/shared/components/ui/Dropdown";
 import { useGroupDetail } from "../hooks/useGroupDetail";
 import type { WorkTypeCode } from "@/features/groups/constants/workTypeKeywords";
 import { useDdayCalculator } from "@/features/dashboard/hooks/useDdayCalculator";
@@ -40,7 +39,9 @@ export const GroupPage = () => {
   // D-day 계산 훅
   const { calculateDday, getDdayColor } = useDdayCalculator();
 
-  const [selectedTab, setSelectedTab] = useState<"all" | "completed">("all");
+  const [selectedTab, setSelectedTab] = useState<
+    "all" | "completed" | "pending" | "shortlisted" | "interview" | "rejected" | "passed"
+  >("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddApplicantModalOpen, setIsAddApplicantModalOpen] = useState(false);
 
@@ -50,8 +51,15 @@ export const GroupPage = () => {
 
   const filteredApplicants = applicants.filter(applicant => {
     // 탭 필터링
-    const matchesTab =
-      selectedTab === "all" || applicant.test_status === selectedTab;
+    let matchesTab = false;
+    if (selectedTab === "all") {
+      matchesTab = true;
+    } else if (selectedTab === "completed") {
+      matchesTab = applicant.test_status === "completed";
+    } else {
+      // 채용 상태로 필터링 (pending, shortlisted, interview, rejected, passed)
+      matchesTab = applicant.status === selectedTab;
+    }
 
     // 검색어 필터링
     const matchesSearch =
@@ -221,16 +229,6 @@ export const GroupPage = () => {
           {getGroupStatusText(currentGroup)}
         </span>
       }
-      actions={
-        <button
-          onClick={handleAddApplicantClick}
-          className="inline-flex items-center px-3 sm:px-4 py-2 rounded-lg font-medium border border-neutral-200 text-neutral-700 transition-colors duration-200 hover:bg-neutral-50"
-          aria-label="지원자 추가하기"
-        >
-          <MdEmail className="w-4 h-4 sm:mr-2" />
-          <span className="hidden sm:inline">지원자 추가하기</span>
-        </button>
-      }
     >
       {/* 지원자 추가 모달 */}
       <AddApplicantModal
@@ -330,27 +328,48 @@ export const GroupPage = () => {
           <div className="bg-white rounded-xl border border-neutral-200 mb-6 overflow-hidden">
             <div className="p-6 border-b border-neutral-200">
               <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
-                {/* Tabs */}
-                <div className="w-fit">
-                  <TabGroup
-                    tabs={[
+                {/* Status Filter Dropdown */}
+                <div className="w-full sm:w-64">
+                  <SelectDropdown
+                    value={selectedTab}
+                    placeholder="상태별 필터"
+                    options={[
                       {
-                        id: "all",
-                        label: "전체",
-                        count: applicants.length,
+                        value: "all",
+                        label: `전체 (${applicants.length}명)`,
                       },
                       {
-                        id: "completed",
-                        label: "완료",
-                        count: applicants.filter(
-                          applicant => applicant.test_status === "completed"
-                        ).length,
+                        value: "completed",
+                        label: `테스트 완료 (${applicants.filter(a => a.test_status === "completed").length}명)`,
+                      },
+                      {
+                        value: "shortlisted",
+                        label: `서류 합격 (${applicants.filter(a => a.status === "shortlisted").length}명)`,
+                      },
+                      {
+                        value: "interview",
+                        label: `면접 예정 (${applicants.filter(a => a.status === "interview").length}명)`,
+                      },
+                      {
+                        value: "passed",
+                        label: `최종 합격 (${applicants.filter(a => a.status === "passed").length}명)`,
+                      },
+                      {
+                        value: "rejected",
+                        label: `불합격 (${applicants.filter(a => a.status === "rejected").length}명)`,
                       },
                     ]}
-                    activeTab={selectedTab}
-                    variant="secondary"
-                    onChange={tabId =>
-                      setSelectedTab(tabId as "all" | "completed")
+                    onChange={value =>
+                      setSelectedTab(
+                        value as
+                          | "all"
+                          | "completed"
+                          | "pending"
+                          | "shortlisted"
+                          | "interview"
+                          | "rejected"
+                          | "passed"
+                      )
                     }
                   />
                 </div>
@@ -392,6 +411,16 @@ export const GroupPage = () => {
                 </p>
               </div>
             )}
+
+            {/* 지원자 추가하기 버튼 */}
+            <div className="p-4 border-t border-neutral-200">
+              <button
+                onClick={handleAddApplicantClick}
+                className="w-full py-3 text-sm font-medium text-neutral-700 hover:text-primary hover:bg-neutral-50 transition-colors duration-200 rounded-lg"
+              >
+                + 지원자 추가하기
+              </button>
+            </div>
           </div>
         </div>
 
