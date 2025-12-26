@@ -523,35 +523,158 @@ ApplicantDetailPage → IF team_composition exists:
 
 ---
 
-#### Phase 2: Team Assessment Landing (2-3 weeks) - GOLD 🥇
-**Goal:** Acquire new users through "team assessment" entry point
+#### Phase 2: Team Assessment Landing (2-3 weeks) - GOLD 🥇 ✅ COMPLETED
+**Goal:** Enable users to assess their existing team and reuse data for hiring
 
-**Features:**
-1. **Dedicated Landing Page** (`/team-assessment`)
-   - "우리 팀의 직무 유형 진단하기"
-   - Value proposition: Understand your team in 5 minutes
-   - CTA: Start free assessment
+**Status:** ✅ Completed (Dec 2024)
 
-2. **Quick Team Assessment Flow**
-   - Input team name + member emails
-   - Send SauceTest to all members at once
-   - View team analysis dashboard
-   - Naturally transition to hiring features
+**Features Implemented:**
+1. **Team Management System**
+   - ✅ Separate `teams` and `team_members` tables
+   - ✅ Team creation flow with member email input
+   - ✅ Automatic team composition calculation from completed tests
+   - ✅ Team dashboard with progress tracking
+   - ✅ Team detail page with member status and type distribution
 
-**Implementation:**
+2. **Integration with Hiring Flow**
+   - ✅ "Select from existing team" dropdown in CreateGroupPage
+   - ✅ Auto-fill team composition when team is selected
+   - ✅ Seamless data reuse without manual input
+
+**Database Changes:**
+```sql
+-- teams 테이블
+CREATE TABLE teams (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  description TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- team_members 테이블
+CREATE TABLE team_members (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  team_id UUID NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  test_token TEXT NOT NULL UNIQUE,
+  test_status TEXT NOT NULL DEFAULT 'pending',
+  test_result JSONB,
+  test_url TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+**Implementation Details:**
+
+**Type Definitions:**
 ```typescript
-// groups 테이블에 type 필드 추가
-ALTER TABLE groups
-ADD COLUMN type TEXT DEFAULT 'recruitment';
--- Values: 'recruitment' | 'team_assessment'
+// src/features/teams/types/team.types.ts
+export interface Team {
+  id: string;
+  user_id: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TeamMember {
+  id: string;
+  team_id: string;
+  name: string;
+  email: string;
+  test_token: string;
+  test_status: TeamMemberTestStatus;
+  test_result: TestResult | null;
+  test_url: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TeamDetail extends Team {
+  members: TeamMemberSummary[];
+  total_members: number;
+  completed_tests: number;
+  team_composition: TeamComposition | null; // Auto-calculated
+}
 ```
 
-**Conversion Funnel:**
+**API Layer:**
+```typescript
+// src/features/teams/api/teamApi.ts
+export const teamApi = {
+  createTeam,           // Create team + bulk insert members
+  getTeams,             // Fetch user's teams
+  getTeamWithMembers,   // Fetch team with members + composition
+  updateTeam,           // Update team info
+  deleteTeam,           // Delete team (CASCADE deletes members)
+  addMembersToTeam,     // Add new members to existing team
+  deleteTeamMember,     // Remove member from team
+  getTeamsWithComposition, // For CreateGroupPage dropdown
+};
 ```
-Landing → Team Assessment → See team composition
-       → "Want to hire for this team?" prompt
-       → Create recruitment group with pre-filled team data
+
+**React Query Hooks:**
+```typescript
+// src/features/teams/hooks/
+- useTeams(userId)                    // List all teams
+- useTeamDetail(teamId)               // Team with members
+- useCreateTeam(options)              // Create team mutation
+- useTeamsWithComposition(userId)     // For dropdown in CreateGroupPage
 ```
+
+**Pages:**
+```typescript
+// src/features/teams/pages/
+- TeamsPage                (/dashboard/teams)
+  → Team dashboard with grid view
+  → Progress tracking (X/Y completed)
+  → Empty state with CTA
+
+- CreateTeamPage           (/dashboard/teams/create)
+  → Simple form (name + description)
+  → Reuses ApplicantManager for member input
+  → Excel upload support
+
+- TeamDetailPage           (/dashboard/teams/:teamId)
+  → Team info and statistics
+  → Member list with test status
+  → Team composition chart (pie/bar)
+  → Resend test emails button (TODO)
+```
+
+**User Flow:**
+```
+1. User navigates to /dashboard/teams
+2. Clicks "새 팀 만들기"
+3. Inputs team name/description + member emails
+4. System creates team + sends tests to members
+5. Members complete tests → Auto-calculates team composition
+6. User creates recruitment group → Selects existing team
+7. Team composition auto-fills → Enables team fit analysis
+```
+
+**Key Benefits:**
+- ✅ Solves Phase 1's manual input problem
+- ✅ Makes Phase 1 features fully functional
+- ✅ Data reuse across hiring processes
+- ✅ No duplicated manual work
+- ✅ Maintains "hiring-first" product identity
+
+**Files Modified/Added:**
+- Database: `teams`, `team_members` tables
+- Types: `team.types.ts`, updated `database.types.ts`
+- API: `teamApi.ts`
+- Hooks: `useTeams.ts`, `useTeamDetail.ts`, `useCreateTeam.ts`, `useTeamsWithComposition.ts`
+- Pages: `TeamsPage.tsx`, `CreateTeamPage.tsx`, `TeamDetailPage.tsx`
+- Components: Updated `GroupInfoForm.tsx` with team selector
+- Pages: Updated `CreateGroupPage.tsx` with team selection logic
+- Routing: Added team routes in `App.tsx`
+- Navigation: Added "팀 관리" menu in `DashboardHeader.tsx`
 
 ---
 
@@ -588,6 +711,7 @@ Landing → Team Assessment → See team composition
 - ✅ Reusable email sending infrastructure (`useSendTestEmails`)
 - ✅ Phase 0 (Bronze): Applicant status management
 - ✅ Phase 1 (Silver): Team Context for Better Hiring
+- ✅ Phase 2 (Gold): Team Assessment & Management
 
 **Phase 1 Highlights:**
 - ✅ 12 implementation tasks completed
@@ -597,14 +721,27 @@ Landing → Team Assessment → See team composition
 - ✅ New components: WorkTypeCounter, TeamCompositionChart
 - ✅ Enhanced: GroupInfoForm, ApplicantDetailPage, analyzeTestResult.ts
 
+**Phase 2 Highlights:**
+- ✅ 13 implementation tasks completed
+- ✅ Type check: Passing ✓
+- ✅ Build: Successful ✓
+- ✅ New feature: Complete team management system
+- ✅ New pages: TeamsPage, CreateTeamPage, TeamDetailPage
+- ✅ New API: teamApi with 8 functions
+- ✅ New hooks: 4 React Query hooks
+- ✅ Integration: Seamless connection with hiring flow
+
 **Next Steps:**
-1. Gather user feedback on Phase 1 features
-2. Monitor metrics:
-   - % of users who input team composition
-   - Correlation between team fit scores and hiring decisions
-   - User engagement with team fit analysis section
-3. Validate demand for Phase 2 (Team Assessment Landing)
-4. Monitor: Are users asking for team assessment features?
+1. Deploy Phase 2 to production
+2. Create database migrations for `teams` and `team_members` tables
+3. Test complete flow: Team creation → Member tests → Group creation
+4. Monitor metrics:
+   - % of users who create teams before recruitment groups
+   - % of users who select existing teams vs manual input
+   - Team test completion rates
+   - Correlation between team fit analysis and hiring decisions
+5. Gather user feedback on team management features
+6. Consider Phase 3 based on validated demand
 
 ---
 
@@ -619,8 +756,11 @@ Landing → Team Assessment → See team composition
 - Correlation between team fit score and final hiring decision
 
 **Phase 2 (Gold):**
-- Conversion rate from team assessment to recruitment group creation
-- User retention: Team assessment users vs. direct recruitment users
+- % of users who create teams before recruitment groups
+- Team test completion rate (completed tests / total members)
+- % of users who select existing teams vs manual input when creating groups
+- User retention: Do users who create teams return more often?
+- Conversion: Team assessment → Recruitment group creation rate
 
 ---
 

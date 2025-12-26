@@ -20,6 +20,7 @@ import { useCreateGroupFlow } from "../hooks/useCreateGroupFlow";
 import { useGroupFormValidation } from "../hooks/useGroupFormValidation";
 import { buildCreateGroupRequest } from "../utils/buildCreateGroupRequest";
 import { useUser } from "@/shared/hooks/useUser";
+import { useTeamsWithComposition } from "@/features/teams/hooks/useTeamsWithComposition";
 import type { TeamComposition } from "@/shared/types/database.types";
 
 export const CreateGroupPage = () => {
@@ -36,6 +37,9 @@ export const CreateGroupPage = () => {
   const customPosition = useCustomPosition();
   const applicantManager = useApplicantManager();
   const fileUpload = useFileUpload(applicantManager.applicants);
+
+  // 팀 목록 불러오기
+  const { data: availableTeams } = useTeamsWithComposition(userId);
 
   // 폼 유효성 검증
   const { validateAndNotify } = useGroupFormValidation({
@@ -54,6 +58,14 @@ export const CreateGroupPage = () => {
 
   const handleBackClick = () => {
     navigate("/dashboard");
+  };
+
+  // 팀 선택 핸들러
+  const handleSelectTeam = (teamId: string) => {
+    const selectedTeam = availableTeams?.find(team => team.id === teamId);
+    if (selectedTeam?.team_composition) {
+      setTeamComposition(selectedTeam.team_composition);
+    }
   };
 
   // 이메일 미리보기 버튼 클릭
@@ -106,6 +118,8 @@ export const CreateGroupPage = () => {
               }
               teamComposition={teamComposition}
               onTeamCompositionChange={setTeamComposition}
+              availableTeams={availableTeams}
+              onSelectTeam={handleSelectTeam}
             />
 
             {/* 지원자 관리 */}

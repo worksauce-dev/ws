@@ -81,6 +81,21 @@ const BusinessVerificationsManagementPage = lazy(() =>
     default: module.BusinessVerificationsManagementPage,
   }))
 );
+const TeamsPage = lazy(() =>
+  import("@/features/teams/pages/TeamsPage").then(module => ({
+    default: module.TeamsPage,
+  }))
+);
+const CreateTeamPage = lazy(() =>
+  import("@/features/teams/pages/CreateTeamPage").then(module => ({
+    default: module.CreateTeamPage,
+  }))
+);
+const TeamDetailPage = lazy(() =>
+  import("@/features/teams/pages/TeamDetailPage").then(module => ({
+    default: module.TeamDetailPage,
+  }))
+);
 
 // React Query 클라이언트 설정
 const queryClient = new QueryClient({
@@ -200,6 +215,30 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <SettingsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/dashboard/teams"
+                    element={
+                      <ProtectedRoute>
+                        <TeamsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/dashboard/teams/create"
+                    element={
+                      <ProtectedRoute>
+                        <CreateTeamPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/dashboard/teams/:teamId"
+                    element={
+                      <ProtectedRoute>
+                        <TeamDetailPage />
                       </ProtectedRoute>
                     }
                   />

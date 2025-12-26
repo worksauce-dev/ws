@@ -12,6 +12,9 @@ export type ApplicantStatus =
   | "rejected" // 불합격
   | "passed"; // 최종 합격
 
+// 팀 멤버 테스트 상태 (team_members 테이블용)
+export type TeamMemberTestStatus = "pending" | "in_progress" | "completed" | "expired";
+
 // 팀 구성 정보 (선택 사항)
 // 각 직무 유형별 현재 팀원 수
 export type TeamComposition = Partial<Record<WorkTypeCode, number>>;
@@ -72,6 +75,30 @@ export interface Group {
   auto_reminder: boolean;
   status: string;
   current_team_composition: TeamComposition | null; // 현재 팀 구성 (선택 사항)
+  created_at: string;
+  updated_at: string;
+}
+
+// 팀 (teams 테이블)
+export interface Team {
+  id: string;
+  user_id: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// 팀 멤버 (team_members 테이블)
+export interface TeamMember {
+  id: string;
+  team_id: string;
+  name: string;
+  email: string;
+  test_token: string;
+  test_status: TeamMemberTestStatus;
+  test_result: TestResult | null;
+  test_url: string;
   created_at: string;
   updated_at: string;
 }

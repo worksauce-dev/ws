@@ -10,6 +10,7 @@ import {
   MdMenu,
   MdClose,
   MdNotifications,
+  MdPeople,
 } from "react-icons/md";
 import { clsx } from "clsx";
 import { useAuth } from "@/shared/contexts/useAuth";
@@ -97,6 +98,11 @@ export const DashboardHeader = ({
 
   const handleSettingsClick = () => {
     navigate("/dashboard/settings");
+    closeMobileMenu();
+  };
+
+  const handleTeamsClick = () => {
+    navigate("/dashboard/teams");
     closeMobileMenu();
   };
 
@@ -338,6 +344,15 @@ export const DashboardHeader = ({
                   </div>
 
                   <hr className="my-1" />
+
+                  {/* 팀 관리 */}
+                  <button
+                    onClick={handleTeamsClick}
+                    className="w-full flex items-center space-x-2 px-4 py-3 text-neutral-700 hover:bg-neutral-50"
+                  >
+                    <MdPeople className="w-5 h-5" />
+                    <span>팀 관리</span>
+                  </button>
 
                   {/* 설정 */}
                   <button

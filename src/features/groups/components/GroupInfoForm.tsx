@@ -11,6 +11,7 @@ import type { UseGroupFormReturn } from "../types/group.types";
 import type { PositionOption } from "../types/group.types";
 import type { WorkTypeCode } from "../constants/workTypeKeywords";
 import type { TeamComposition } from "@/shared/types/database.types";
+import type { TeamDetail } from "@/features/teams/types/team.types";
 
 interface GroupInfoFormProps {
   groupForm: UseGroupFormReturn;
@@ -18,6 +19,8 @@ interface GroupInfoFormProps {
   onPositionChange: (value: string) => void;
   teamComposition: TeamComposition | null;
   onTeamCompositionChange: (composition: TeamComposition | null) => void;
+  availableTeams?: TeamDetail[]; // 선택 가능한 팀 목록
+  onSelectTeam?: (teamId: string) => void; // 팀 선택 핸들러
 }
 
 export const GroupInfoForm = ({
@@ -26,6 +29,8 @@ export const GroupInfoForm = ({
   onPositionChange,
   teamComposition,
   onTeamCompositionChange,
+  availableTeams,
+  onSelectTeam,
 }: GroupInfoFormProps) => {
   // 팀 구성 토글 핸들러
   const handleToggleTeamComposition = () => {
@@ -220,6 +225,37 @@ export const GroupInfoForm = ({
                 {teamComposition !== null ? "입력 중" : "입력하기"}
               </button>
             </div>
+
+            {/* 기존 팀에서 가져오기 (팀이 있는 경우에만 표시) */}
+            {availableTeams && availableTeams.length > 0 && teamComposition !== null && (
+              <div className="mb-4 p-3 bg-info-50 border border-info-200 rounded-lg">
+                <p className="text-xs font-medium text-info-800 mb-2">
+                  💡 기존 팀에서 가져오기
+                </p>
+                <select
+                  onChange={e => {
+                    const teamId = e.target.value;
+                    if (teamId && onSelectTeam) {
+                      onSelectTeam(teamId);
+                    }
+                  }}
+                  className="w-full px-3 py-2 text-sm border border-info-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none bg-white"
+                  defaultValue=""
+                >
+                  <option value="">팀을 선택하세요</option>
+                  {availableTeams
+                    .filter(team => team.team_composition && team.completed_tests > 0)
+                    .map(team => (
+                      <option key={team.id} value={team.id}>
+                        {team.name} ({team.completed_tests}/{team.total_members} 완료)
+                      </option>
+                    ))}
+                </select>
+                <p className="text-xs text-info-600 mt-2">
+                  기존 팀의 구성 데이터를 자동으로 가져올 수 있습니다
+                </p>
+              </div>
+            )}
 
             {teamComposition !== null && (
               <div className="space-y-3 p-4 bg-neutral-50 rounded-lg border border-neutral-200">
