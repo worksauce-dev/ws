@@ -6,6 +6,7 @@ import { Button } from "@/shared/components/ui/Button";
 import { useApplicant } from "../hooks/useApplicant";
 import { VerifyApplicant } from "../components/VerifyApplicant";
 import { TestSession } from "../components/TestSession";
+import { getTestLabels } from "../constants/testLabels";
 
 export const SauceTestPage = () => {
   const { testToken } = useParams<{ testToken: string }>();
@@ -15,6 +16,9 @@ export const SauceTestPage = () => {
   const { data: applicant, isLoading: isLoadingApplicant } = useApplicant(
     testToken!
   );
+
+  // 컨텍스트별 레이블 가져오기
+  const labels = getTestLabels(applicant?.context);
 
   const handleVerifySuccess = () => {
     setIsVerified(true);
@@ -70,7 +74,7 @@ export const SauceTestPage = () => {
         >
           <div className="w-16 h-16 mx-auto mb-4 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
           <p className="text-neutral-600 text-lg">
-            지원자 정보를 불러오는 중...
+            정보를 불러오는 중...
           </p>
         </motion.div>
       </div>
@@ -90,12 +94,12 @@ export const SauceTestPage = () => {
             <MdSecurity className="w-10 h-10 text-error-600" />
           </div>
           <h1 className="text-3xl font-bold text-neutral-800 mb-4">
-            지원자 정보를 찾을 수 없습니다
+            정보를 찾을 수 없습니다
           </h1>
           <p className="text-neutral-600 mb-8 max-w-md">
             유효하지 않은 테스트 링크이거나 만료된 링크입니다.
             <br />
-            채용 담당자에게 문의해주세요.
+            관리자에게 문의해주세요.
           </p>
           <Button onClick={() => navigate("/")} variant="outline">
             홈으로 돌아가기
