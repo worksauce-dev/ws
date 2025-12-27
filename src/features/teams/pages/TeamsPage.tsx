@@ -1,56 +1,60 @@
 /**
- * 팀 대시보드 페이지
- * 사용자의 모든 팀 목록 표시
+ * 팀 관리 페이지 (리팩토링 완료)
+ * 팀 추가, 수정, 상세보기를 모두 한 페이지에서 상태관리로 처리
  */
 
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
 import { Button } from "@/shared/components/ui/Button";
 import { useUser } from "@/shared/hooks/useUser";
 import { useTeamsWithComposition } from "../hooks/useTeamsWithComposition";
-import { MdAdd, MdPeople, MdCheckCircle } from "react-icons/md";
+import { useTeamDetail } from "../hooks/useTeamDetail";
+import { useTeamModals } from "../hooks/useTeamModals";
+import { TeamCard } from "../components/TeamCard";
+import { TeamCreateModal } from "../components/TeamCreateModal";
+import { TeamEditModal } from "../components/TeamEditModal";
+import { TeamDeleteModal } from "../components/TeamDeleteModal";
+import { TeamDetailDrawer } from "../components/TeamDetailDrawer";
+import { CreateGroupLoadingModal } from "@/features/groups/components/CreateGroupLoadingModal";
+import { MdAdd, MdPeople } from "react-icons/md";
 
 export const TeamsPage = () => {
-  const navigate = useNavigate();
   const { userId, isAuthenticated } = useUser();
 
+  // 모달 관리 훅
+  const modals = useTeamModals();
+
+  // 데이터 fetching
   const { data: teams, isLoading, error } = useTeamsWithComposition(userId);
+  const { data: selectedTeam } = useTeamDetail(modals.selectedTeamId || undefined);
 
   if (!isAuthenticated) {
     return <Navigate to="/auth/login" replace />;
   }
 
-  const handleCreateTeam = () => {
-    navigate("/dashboard/teams/create");
-  };
-
-  const handleTeamClick = (teamId: string) => {
-    navigate(`/dashboard/teams/${teamId}`);
-  };
-
   return (
     <DashboardLayout
-      title="팀 관리"
-      breadcrumbs={[{ label: "대시보드", href: "/dashboard" }, { label: "팀 관리" }]}
+      title="팀 대시보드"
+      description="팀원들의 직무 실행 유형을 파악하고 관리하세요"
+      breadcrumbs={[
+        { label: "대시보드", href: "/dashboard" },
+        { label: "팀 대시보드" },
+      ]}
+      actions={
+        <button
+          onClick={modals.handleOpenCreateModal}
+          className="inline-flex items-center justify-center w-10 h-10 sm:w-auto sm:h-[52px] sm:px-6 rounded-full sm:rounded-lg font-medium text-white text-sm bg-primary-500 hover:bg-primary-600 transition-all duration-200 hover:shadow-md hover:scale-105 active:scale-95"
+        >
+          <MdAdd className="w-6 h-6 sm:w-4 sm:h-4 sm:mr-2" />
+          <span className="hidden sm:inline">새 팀 만들기</span>
+        </button>
+      }
     >
       <div className="max-w-7xl mx-auto">
-        {/* 헤더 */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-neutral-800">팀 관리</h1>
-            <p className="text-sm text-neutral-600 mt-1">
-              팀원들의 직무 실행 유형을 파악하고 관리하세요
-            </p>
-          </div>
-          <Button variant="primary" onClick={handleCreateTeam}>
-            <MdAdd className="mr-2" />새 팀 만들기
-          </Button>
-        </div>
-
         {/* 로딩 상태 */}
         {isLoading && (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
             <p className="text-neutral-600 mt-4">팀 목록을 불러오는 중...</p>
           </div>
         )}
@@ -82,79 +86,81 @@ export const TeamsPage = () => {
                 <p className="text-neutral-600 mb-6">
                   첫 번째 팀을 만들어 팀원들의 직무 유형을 파악해보세요
                 </p>
-                <Button variant="primary" onClick={handleCreateTeam}>
-                  <MdAdd className="mr-2" />
-                  첫 팀 만들기
+                <Button variant="primary" onClick={modals.handleOpenCreateModal}>
+                  <MdAdd className="mr-2" />첫 팀 만들기
                 </Button>
               </div>
             ) : (
               // 팀 카드 그리드
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {teams.map(team => (
-                  <div
+                {teams.map((team) => (
+                  <TeamCard
                     key={team.id}
-                    onClick={() => handleTeamClick(team.id)}
-                    className="bg-white rounded-xl border border-neutral-200 p-6 hover:shadow-lg transition-shadow cursor-pointer"
-                  >
-                    {/* 팀 이름 */}
-                    <h3 className="text-lg font-semibold text-neutral-800 mb-2">
-                      {team.name}
-                    </h3>
-
-                    {/* 팀 설명 */}
-                    {team.description && (
-                      <p className="text-sm text-neutral-600 mb-4 line-clamp-2">
-                        {team.description}
-                      </p>
-                    )}
-
-                    {/* 통계 */}
-                    <div className="flex items-center gap-4 mt-4 pt-4 border-t border-neutral-200">
-                      <div className="flex items-center gap-2">
-                        <MdPeople className="text-neutral-500" />
-                        <span className="text-sm text-neutral-700">
-                          {team.total_members}명
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <MdCheckCircle className="text-success-600" />
-                        <span className="text-sm text-neutral-700">
-                          {team.completed_tests}/{team.total_members} 완료
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* 진행률 바 */}
-                    <div className="mt-4">
-                      <div className="w-full bg-neutral-200 rounded-full h-2">
-                        <div
-                          className="bg-primary-500 h-2 rounded-full transition-all duration-300"
-                          style={{
-                            width: `${team.total_members > 0 ? (team.completed_tests / team.total_members) * 100 : 0}%`,
-                          }}
-                        />
-                      </div>
-                      <p className="text-xs text-neutral-500 mt-1 text-right">
-                        {team.total_members > 0
-                          ? Math.round(
-                              (team.completed_tests / team.total_members) * 100
-                            )
-                          : 0}
-                        % 진행
-                      </p>
-                    </div>
-
-                    {/* 생성일 */}
-                    <p className="text-xs text-neutral-500 mt-4">
-                      생성일:{" "}
-                      {new Date(team.created_at).toLocaleDateString("ko-KR")}
-                    </p>
-                  </div>
+                    team={team}
+                    onEdit={(teamId) => modals.handleOpenEditModal(teamId, teams)}
+                    onDelete={modals.handleDeleteClick}
+                    onDetail={modals.handleOpenDetailModal}
+                  />
                 ))}
               </div>
             )}
           </>
         )}
+
+        {/* 팀 생성 모달 */}
+        <TeamCreateModal
+          isOpen={modals.modalState === "create"}
+          onClose={modals.handleCloseModal}
+          teamName={modals.teamName}
+          teamDescription={modals.teamDescription}
+          onTeamNameChange={modals.setTeamName}
+          onTeamDescriptionChange={modals.setTeamDescription}
+          applicantManager={modals.applicantManager}
+          fileUpload={modals.fileUpload}
+          onSubmit={(e) => modals.handleSubmitCreate(e, userId!)}
+          isCreating={modals.isCreating}
+        />
+
+        {/* 팀 수정 모달 */}
+        <TeamEditModal
+          isOpen={modals.modalState === "edit"}
+          onClose={modals.handleCloseModal}
+          teamName={modals.teamName}
+          teamDescription={modals.teamDescription}
+          onTeamNameChange={modals.setTeamName}
+          onTeamDescriptionChange={modals.setTeamDescription}
+          onSubmit={modals.handleSubmitEdit}
+          isUpdating={modals.isUpdating}
+        />
+
+        {/* 팀 삭제 확인 모달 */}
+        <TeamDeleteModal
+          isOpen={modals.teamToDelete !== null}
+          onClose={modals.handleCancelDelete}
+          onConfirm={modals.handleConfirmDelete}
+          isDeleting={modals.isDeleting}
+        />
+
+        {/* 팀 상세 드로어 */}
+        <TeamDetailDrawer
+          isOpen={modals.modalState === "detail"}
+          onClose={modals.handleCloseModal}
+          team={selectedTeam || null}
+        />
+
+        {/* 팀 생성 진행 상황 모달 */}
+        <CreateGroupLoadingModal
+          isOpen={
+            modals.isCreating ||
+            modals.flowState.currentStep === "sending" ||
+            modals.flowState.currentStep === "complete"
+          }
+          currentStep={modals.flowState.currentStep}
+          applicantCount={modals.applicantManager.applicants.length}
+          successCount={modals.flowState.emailProgress.success}
+          failedCount={modals.flowState.emailProgress.failed}
+          errorMessage={modals.flowState.error}
+        />
       </div>
     </DashboardLayout>
   );

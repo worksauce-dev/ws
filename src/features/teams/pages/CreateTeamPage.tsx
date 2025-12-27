@@ -9,11 +9,12 @@ import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
 import { Button } from "@/shared/components/ui/Button";
 import { Input } from "@/shared/components/ui/Input";
 import { useUser } from "@/shared/hooks/useUser";
-import { useCreateTeam } from "../hooks/useCreateTeam";
+import { useCreateTeamFlow } from "../hooks/useCreateTeamFlow";
 import { useToast } from "@/shared/components/ui/useToast";
 import { useApplicantManager } from "@/features/groups/hooks/useApplicantManager";
 import { useFileUpload } from "@/features/groups/hooks/useFileUpload";
 import { ApplicantManager } from "@/features/groups/components/ApplicantManager";
+import { CreateGroupLoadingModal } from "@/features/groups/components/CreateGroupLoadingModal";
 import type { CreateTeamRequest } from "../types/team.types";
 
 export const CreateTeamPage = () => {
@@ -24,26 +25,15 @@ export const CreateTeamPage = () => {
   // 폼 상태
   const [teamName, setTeamName] = useState("");
   const [teamDescription, setTeamDescription] = useState("");
+  const [showRealName] = useState(true);
 
   // 멤버 관리 (ApplicantManager 재사용)
   const applicantManager = useApplicantManager();
   const fileUpload = useFileUpload(applicantManager.applicants);
 
-  // 팀 생성 mutation
-  const { mutate: createTeam, isPending } = useCreateTeam({
-    onSuccess: () => {
-      showToast({
-        type: "success",
-        message: "팀이 생성되었습니다!",
-      });
-      navigate("/dashboard/teams");
-    },
-    onError: (error: Error) => {
-      showToast({
-        type: "error",
-        message: `팀 생성 실패: ${error.message}`,
-      });
-    },
+  // 팀 생성 플로우
+  const { executeFlow, flowState, isCreating } = useCreateTeamFlow({
+    showRealName,
   });
 
   if (!isAuthenticated) {
@@ -60,18 +50,12 @@ export const CreateTeamPage = () => {
 
     // 유효성 검증
     if (!teamName.trim()) {
-      showToast({
-        type: "error",
-        message: "팀 이름을 입력해주세요.",
-      });
+      showToast("error", "입력 오류", "팀 이름을 입력해주세요.");
       return;
     }
 
     if (applicantManager.applicants.length === 0) {
-      showToast({
-        type: "error",
-        message: "최소 1명 이상의 팀원을 추가해주세요.",
-      });
+      showToast("error", "입력 오류", "최소 1명 이상의 팀원을 추가해주세요.");
       return;
     }
 
@@ -85,7 +69,7 @@ export const CreateTeamPage = () => {
       })),
     };
 
-    createTeam(request);
+    executeFlow(request);
   };
 
   return (
@@ -163,20 +147,34 @@ export const CreateTeamPage = () => {
               type="button"
               variant="secondary"
               onClick={handleBackClick}
-              disabled={isPending}
+              disabled={isCreating}
             >
               취소
             </Button>
             <Button
               type="submit"
               variant="primary"
-              disabled={isPending}
-              isLoading={isPending}
+              disabled={isCreating}
+              isLoading={isCreating}
             >
-              {isPending ? "생성 중..." : "팀 생성하기"}
+              {isCreating ? "생성 중..." : "팀 생성하기"}
             </Button>
           </div>
         </form>
+
+        {/* 팀 생성 진행 상황 모달 */}
+        <CreateGroupLoadingModal
+          isOpen={
+            isCreating ||
+            flowState.currentStep === "sending" ||
+            flowState.currentStep === "complete"
+          }
+          currentStep={flowState.currentStep}
+          applicantCount={applicantManager.applicants.length}
+          successCount={flowState.emailProgress.success}
+          failedCount={flowState.emailProgress.failed}
+          errorMessage={flowState.error}
+        />
       </div>
     </DashboardLayout>
   );
