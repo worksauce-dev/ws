@@ -76,7 +76,7 @@ export const useTeamModals = (): UseTeamModalsReturn => {
   const fileUpload = useFileUpload(applicantManager.applicants);
 
   // Mutations
-  const { executeFlow, flowState, isCreating } = useCreateTeamFlow({
+  const { executeFlow, resetFlow, flowState, isCreating } = useCreateTeamFlow({
     showRealName: true,
     onComplete: () => {
       showToast("success", "팀 생성 완료", "팀이 생성되었습니다!");
@@ -136,6 +136,7 @@ export const useTeamModals = (): UseTeamModalsReturn => {
     setTeamName("");
     setTeamDescription("");
     applicantManager.clearApplicants();
+    resetFlow(); // 팀 생성 플로우 상태 초기화
   };
 
   // Form submit handlers
