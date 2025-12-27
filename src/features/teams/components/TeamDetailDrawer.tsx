@@ -7,7 +7,7 @@ import { useState } from "react";
 import { Drawer } from "@/shared/components/ui/Drawer";
 import { Button } from "@/shared/components/ui/Button";
 import { Input } from "@/shared/components/ui/Input";
-import { MdPeople, MdAdd, MdClose } from "react-icons/md";
+import { MdPeople, MdAdd, MdClose, MdEdit, MdDelete } from "react-icons/md";
 import { TeamMemberStatusBadge } from "./TeamMemberStatusBadge";
 import WORK_TYPE_DATA from "@/features/groups/constants/workTypes";
 import { getPrimaryWorkType } from "../utils/workTypeUtils";
@@ -18,18 +18,30 @@ interface TeamDetailDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   team: TeamDetail | null;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  onRemoveMember?: (memberId: string) => void;
 }
 
 export const TeamDetailDrawer = ({
   isOpen,
   onClose,
   team,
+  onEdit,
+  onDelete,
+  onRemoveMember,
 }: TeamDetailDrawerProps) => {
   const [isAddingMember, setIsAddingMember] = useState(false);
   const [newMemberName, setNewMemberName] = useState("");
   const [newMemberEmail, setNewMemberEmail] = useState("");
 
   if (!team) return null;
+
+  const handleRemoveMember = (memberId: string, memberName: string) => {
+    if (confirm(`${memberName}님을 팀에서 제거하시겠습니까?`)) {
+      onRemoveMember?.(memberId);
+    }
+  };
 
   const handleAddMember = () => {
     // TODO: API 호출로 팀원 추가
@@ -53,6 +65,26 @@ export const TeamDetailDrawer = ({
       title={team.name}
       subtitle={team.description || undefined}
       size="xl"
+      headerActions={
+        <>
+          <button
+            onClick={onEdit}
+            className="p-2 rounded-lg hover:bg-neutral-100 transition-colors"
+            title="팀 수정"
+            aria-label="팀 수정"
+          >
+            <MdEdit className="w-5 h-5 text-neutral-600" />
+          </button>
+          <button
+            onClick={onDelete}
+            className="p-2 rounded-lg hover:bg-error-50 transition-colors"
+            title="팀 삭제"
+            aria-label="팀 삭제"
+          >
+            <MdDelete className="w-5 h-5 text-error-600" />
+          </button>
+        </>
+      }
     >
       <div className="space-y-6">
         {/* 팀 구성 차트 */}
@@ -159,6 +191,15 @@ export const TeamDetailDrawer = ({
                     <div className="flex-shrink-0">
                       <TeamMemberStatusBadge status={member.test_status} />
                     </div>
+
+                    {/* 삭제 버튼 */}
+                    <button
+                      onClick={() => handleRemoveMember(member.id, member.name)}
+                      className="flex-shrink-0 p-2 rounded-lg text-neutral-400 hover:text-error-600 hover:bg-error-50 transition-colors opacity-0 group-hover:opacity-100"
+                      title="팀원 제거"
+                    >
+                      <MdClose className="w-5 h-5" />
+                    </button>
                   </div>
                 ))}
               </div>

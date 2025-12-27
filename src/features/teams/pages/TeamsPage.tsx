@@ -35,7 +35,7 @@ export const TeamsPage = () => {
   return (
     <DashboardLayout
       title="팀 대시보드"
-      description="팀원들의 직무 실행 유형을 파악하고 관리하세요"
+      description="팀 구성을 분석하여 신규 채용에서 최적의 인재를 찾으세요"
       breadcrumbs={[
         { label: "대시보드", href: "/dashboard" },
         { label: "팀 대시보드" },
@@ -97,8 +97,6 @@ export const TeamsPage = () => {
                   <TeamCard
                     key={team.id}
                     team={team}
-                    onEdit={(teamId) => modals.handleOpenEditModal(teamId, teams)}
-                    onDelete={modals.handleDeleteClick}
                     onDetail={modals.handleOpenDetailModal}
                   />
                 ))}
@@ -146,6 +144,20 @@ export const TeamsPage = () => {
           isOpen={modals.modalState === "detail"}
           onClose={modals.handleCloseModal}
           team={selectedTeam || null}
+          onEdit={() => {
+            if (selectedTeam) {
+              modals.handleOpenEditModal(selectedTeam.id, teams || []);
+            }
+          }}
+          onDelete={() => {
+            if (selectedTeam) {
+              modals.handleDeleteClick(selectedTeam.id);
+            }
+          }}
+          onRemoveMember={(memberId) => {
+            // TODO: 팀원 삭제 API 호출
+            console.log("Remove member:", memberId);
+          }}
         />
 
         {/* 팀 생성 진행 상황 모달 */}

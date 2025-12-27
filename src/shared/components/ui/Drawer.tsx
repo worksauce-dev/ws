@@ -13,6 +13,7 @@ interface DrawerProps {
   subtitle?: string;
   children: React.ReactNode;
   size?: "sm" | "md" | "lg" | "xl";
+  headerActions?: React.ReactNode;
 }
 
 const DRAWER_WIDTHS = {
@@ -29,6 +30,7 @@ export const Drawer = ({
   subtitle,
   children,
   size = "lg",
+  headerActions,
 }: DrawerProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -97,27 +99,33 @@ export const Drawer = ({
         aria-labelledby="drawer-title"
       >
         {/* 헤더 */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-neutral-200 bg-white sticky top-0 z-10">
-          <div className="flex-1 min-w-0 pr-4">
-            <h2
-              id="drawer-title"
-              className="text-xl font-bold text-neutral-800 truncate"
-            >
-              {title}
-            </h2>
-            {subtitle && (
-              <p className="text-sm text-neutral-500 mt-1 truncate">
-                {subtitle}
-              </p>
-            )}
+        <div className="px-6 py-5 border-b border-neutral-200 bg-white sticky top-0 z-10">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <h2
+                id="drawer-title"
+                className="text-xl font-bold text-neutral-800 truncate"
+              >
+                {title}
+              </h2>
+              {subtitle && (
+                <p className="text-sm text-neutral-500 mt-1 truncate">
+                  {subtitle}
+                </p>
+              )}
+            </div>
+            <div className="flex items-center gap-1 flex-shrink-0">
+              {/* 헤더 액션 버튼 */}
+              {headerActions}
+              <button
+                onClick={onClose}
+                className="p-2 rounded-lg hover:bg-neutral-100 transition-colors"
+                aria-label="닫기"
+              >
+                <MdClose className="w-6 h-6 text-neutral-600" />
+              </button>
+            </div>
           </div>
-          <button
-            onClick={onClose}
-            className="flex-shrink-0 p-2 rounded-lg hover:bg-neutral-100 transition-colors"
-            aria-label="닫기"
-          >
-            <MdClose className="w-6 h-6 text-neutral-600" />
-          </button>
         </div>
 
         {/* 컨텐츠 */}
