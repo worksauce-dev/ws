@@ -15,10 +15,12 @@ export const useDeleteTeam = (options?: UseDeleteTeamOptions) => {
 
   return useMutation({
     mutationFn: (teamId: string) => deleteTeam(teamId),
-    onSuccess: () => {
+    onSuccess: (_, teamId) => {
       // 팀 목록 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ["teams"] });
       queryClient.invalidateQueries({ queryKey: ["teamsWithComposition"] });
+      // 삭제된 팀의 상세 정보 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ["team", teamId] });
       options?.onSuccess?.();
     },
     onError: options?.onError,

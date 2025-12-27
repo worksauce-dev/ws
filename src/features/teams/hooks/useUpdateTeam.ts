@@ -17,10 +17,12 @@ export const useUpdateTeam = (options?: UseUpdateTeamOptions) => {
   return useMutation({
     mutationFn: ({ teamId, updates }: { teamId: string; updates: UpdateTeamRequest }) =>
       updateTeam(teamId, updates),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       // 팀 목록 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ["teams"] });
       queryClient.invalidateQueries({ queryKey: ["teamsWithComposition"] });
+      // 수정된 팀의 상세 정보 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ["team", variables.teamId] });
       options?.onSuccess?.();
     },
     onError: options?.onError,

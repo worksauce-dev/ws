@@ -18,6 +18,7 @@ export const useCreateTeam = (options?: UseCreateTeamOptions) => {
     onSuccess: () => {
       // 팀 목록 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ["teams"] });
+      queryClient.invalidateQueries({ queryKey: ["teamsWithComposition"] });
       options?.onSuccess?.();
     },
     onError: options?.onError,
