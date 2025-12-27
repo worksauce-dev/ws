@@ -7,7 +7,7 @@ import { useState } from "react";
 import { Drawer } from "@/shared/components/ui/Drawer";
 import { Button } from "@/shared/components/ui/Button";
 import { Input } from "@/shared/components/ui/Input";
-import { MdPeople, MdAdd, MdClose, MdEdit, MdDelete, MdSwapHoriz } from "react-icons/md";
+import { MdPeople, MdAdd, MdClose, MdEdit, MdDelete } from "react-icons/md";
 import { TeamMemberStatusBadge } from "./TeamMemberStatusBadge";
 import WORK_TYPE_DATA from "@/features/groups/constants/workTypes";
 import { getPrimaryWorkType } from "../utils/workTypeUtils";

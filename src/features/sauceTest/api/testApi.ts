@@ -144,30 +144,47 @@ export async function submitTestResults(
       test_submitted_at: new Date().toISOString(),
     };
 
+    console.log("📤 테스트 결과 제출 시작:", { applicantId, updateData });
+
     // 1. applicants 테이블 업데이트 시도
-    const { error: applicantError } = await supabase
+    const { data: applicantData, error: applicantError } = await supabase
       .from("applicants")
       .update(updateData)
-      .eq("id", applicantId);
+      .eq("id", applicantId)
+      .select();
 
-    if (!applicantError) {
+    if (!applicantError && applicantData && applicantData.length > 0) {
+      console.log("✅ applicants 테이블 업데이트 성공:", applicantData);
       return true;
     }
 
+    if (applicantError) {
+      console.log("⚠️ applicants 테이블 업데이트 실패, team_members 시도:", applicantError);
+    } else {
+      console.log("⚠️ applicants 테이블에서 해당 ID를 찾을 수 없음, team_members 시도");
+    }
+
     // 2. team_members 테이블 업데이트 시도
-    const { error: teamMemberError } = await supabase
+    const { data: teamMemberData, error: teamMemberError } = await supabase
       .from("team_members")
       .update(updateData)
-      .eq("id", applicantId);
+      .eq("id", applicantId)
+      .select();
 
     if (teamMemberError) {
-      console.error("Submit test results error:", teamMemberError);
+      console.error("❌ team_members 테이블 업데이트 실패:", teamMemberError);
       return false;
     }
 
+    if (!teamMemberData || teamMemberData.length === 0) {
+      console.error("❌ team_members 테이블에서 해당 ID를 찾을 수 없음");
+      return false;
+    }
+
+    console.log("✅ team_members 테이블 업데이트 성공:", teamMemberData);
     return true;
   } catch (error) {
-    console.error("Submit test results error:", error);
+    console.error("❌ 테스트 결과 제출 중 예외 발생:", error);
     return false;
   }
 }
