@@ -68,13 +68,13 @@ export const TestResultPage = ({
             <div className="flex items-start gap-3">
               <div className="w-2 h-2 rounded-full bg-primary-500 mt-2 flex-shrink-0"></div>
               <p className="text-neutral-700">
-                채용 담당자가 귀하의 결과를 검토한 후 연락드릴 예정입니다.
+                담당자가 귀하의 결과를 확인한 후 필요시 연락드릴 예정입니다.
               </p>
             </div>
             <div className="flex items-start gap-3">
               <div className="w-2 h-2 rounded-full bg-primary-500 mt-2 flex-shrink-0"></div>
               <p className="text-neutral-700">
-                결과에 대한 상세한 분석은 채용 담당자가 확인할 수 있습니다.
+                결과에 대한 상세한 분석은 담당자가 확인할 수 있습니다.
               </p>
             </div>
           </div>
@@ -84,9 +84,9 @@ export const TestResultPage = ({
         <div className="bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl p-6 text-white text-center shadow-md">
           <p className="text-lg font-semibold mb-2">🎉 수고하셨습니다!</p>
           <p className="text-sm opacity-90">
-            귀하의 채용 과정에 행운이 가득하길 바랍니다.
+            테스트를 완료해주셔서 감사합니다.
             <br />
-            좋은 소식을 기다려주세요!
+            결과는 담당자에게 안전하게 전달되었습니다.
           </p>
         </div>
 
