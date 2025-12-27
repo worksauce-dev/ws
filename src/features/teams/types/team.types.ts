@@ -1,4 +1,4 @@
-import type { TeamComposition } from "@/shared/types/database.types";
+import type { TeamComposition, TestResult, TestRawData } from "@/shared/types/database.types";
 import type { WorkTypeCode } from "@/features/groups/types/workType.types";
 
 /**
@@ -8,6 +8,7 @@ export type TeamMemberTestStatus = "pending" | "in_progress" | "completed" | "ex
 
 /**
  * 팀 멤버 (team_members 테이블)
+ * applicants 테이블과 동일한 구조 유지
  */
 export interface TeamMember {
   id: string;
@@ -16,25 +17,24 @@ export interface TeamMember {
   email: string;
   test_token: string;
   test_status: TeamMemberTestStatus;
-  test_result: {
-    primaryWorkType: WorkTypeCode;
-    statementScores: Record<WorkTypeCode, number>;
-    verbTestSelections: Record<string, string[]>;
-  } | null;
-  test_url: string;
+  test_result: TestResult | null;
+  test_raw_data?: TestRawData;
+  test_submitted_at?: string;
+  email_opened_at?: string;
   created_at: string;
   updated_at: string;
 }
 
 /**
  * 팀 멤버 요약 정보 (목록 표시용)
+ * primary_work_type은 test_result에서 계산하여 사용
  */
 export interface TeamMemberSummary {
   id: string;
   name: string;
   email: string;
   test_status: TeamMemberTestStatus;
-  primary_work_type: WorkTypeCode | null;
+  test_result: TestResult | null; // primary_work_type 계산을 위해 필요
   created_at: string;
 }
 

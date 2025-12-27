@@ -14,7 +14,7 @@ import type {
   TeamMemberSummary,
 } from "../types/team.types";
 import type { TeamComposition } from "@/shared/types/database.types";
-import type { WorkTypeCode } from "@/features/groups/types/workType.types";
+import { calculateTeamComposition } from "../utils/workTypeUtils";
 
 /**
  * 팀 생성 API
@@ -41,7 +41,6 @@ export const createTeam = async (data: CreateTeamRequest) => {
   if (teamError) throw teamError;
 
   // Step 2: team_members 테이블에 각 멤버 INSERT
-  const baseUrl = import.meta.env.VITE_APP_URL || "https://worksauce.kr";
   const membersToInsert = data.members.map(member => {
     const testToken = nanoid(32);
     return {
@@ -50,7 +49,6 @@ export const createTeam = async (data: CreateTeamRequest) => {
       email: member.email,
       test_token: testToken,
       test_status: "pending",
-      test_url: `${baseUrl}/test/${testToken}`,
     };
   });
 
@@ -121,7 +119,7 @@ export const getTeamWithMembers = async (
     name: member.name,
     email: member.email,
     test_status: member.test_status,
-    primary_work_type: member.test_result?.primaryWorkType || null,
+    test_result: member.test_result, // primary_work_type 계산을 위해 필요
     created_at: member.created_at,
   }));
 
@@ -131,13 +129,7 @@ export const getTeamWithMembers = async (
 
   const teamComposition: TeamComposition | null =
     completedMembers.length > 0
-      ? completedMembers.reduce((acc, member) => {
-          const workType = member.test_result?.primaryWorkType as WorkTypeCode;
-          if (workType) {
-            acc[workType] = (acc[workType] || 0) + 1;
-          }
-          return acc;
-        }, {} as Record<WorkTypeCode, number>)
+      ? calculateTeamComposition(completedMembers.map(m => m.test_result))
       : null;
 
   return {
@@ -204,7 +196,6 @@ export const addMembersToTeam = async (
   teamId: string,
   members: { name: string; email: string }[]
 ): Promise<TeamMember[]> => {
-  const baseUrl = import.meta.env.VITE_APP_URL || "https://worksauce.kr";
   const membersToInsert = members.map(member => {
     const testToken = nanoid(32);
     return {
@@ -213,7 +204,6 @@ export const addMembersToTeam = async (
       email: member.email,
       test_token: testToken,
       test_status: "pending",
-      test_url: `${baseUrl}/test/${testToken}`,
     };
   });
 

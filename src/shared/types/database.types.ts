@@ -98,7 +98,6 @@ export interface TeamMember {
   test_token: string;
   test_status: TeamMemberTestStatus;
   test_result: TestResult | null;
-  test_url: string;
   created_at: string;
   updated_at: string;
 }
