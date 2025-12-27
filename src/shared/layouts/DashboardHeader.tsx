@@ -116,6 +116,11 @@ export const DashboardHeader = ({
   // 사용자 드롭다운 메뉴 아이템 (데스크톱)
   const userMenuItems: UserMenuItem[] = [
     {
+      icon: <MdPeople className="w-4 h-4" />,
+      label: "팀 대시보드",
+      onClick: () => navigate("/dashboard/teams"),
+    },
+    {
       icon: <MdSettings className="w-4 h-4" />,
       label: "설정",
       onClick: () => navigate("/dashboard/settings"),

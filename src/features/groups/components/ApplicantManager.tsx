@@ -21,11 +21,20 @@ import type { UseFileUploadReturn } from "../types/fileUpload.types";
 interface ApplicantManagerProps {
   applicantManager: UseApplicantManagerReturn;
   fileUpload: UseFileUploadReturn;
+  /**
+   * 레이블 오버라이드 - 기본값은 "지원자"
+   * 팀 대시보드에서는 "팀원"으로 변경 가능
+   */
+  labelOverride?: {
+    singular: string; // 단수형: "지원자" 또는 "팀원"
+    plural: string;   // 복수형: "지원자" 또는 "팀원"
+  };
 }
 
 export const ApplicantManager = ({
   applicantManager,
   fileUpload,
+  labelOverride = { singular: "지원자", plural: "지원자" },
 }: ApplicantManagerProps) => {
   const { showToast } = useToast();
 
@@ -45,7 +54,7 @@ export const ApplicantManager = ({
 
     showToast(
       "success",
-      "지원자 추가 완료",
+      `${labelOverride.singular} 추가 완료`,
       `${applicantManager.newApplicant.name}님이 추가되었습니다.`
     );
   };
@@ -96,7 +105,7 @@ export const ApplicantManager = ({
 
     if (
       confirm(
-        `선택된 ${applicantManager.selectedApplicants.length}명의 지원자를 삭제하시겠습니까?`
+        `선택된 ${applicantManager.selectedApplicants.length}명의 ${labelOverride.plural}를 삭제하시겠습니까?`
       )
     ) {
       applicantManager.handleDeleteSelected();
@@ -109,7 +118,7 @@ export const ApplicantManager = ({
     <div className="xl:col-span-1">
       <div className="bg-white rounded-xl p-6 border border-neutral-200 sticky top-8">
         <h2 className="text-lg font-semibold text-neutral-800 mb-6">
-          지원자 관리
+          {labelOverride.singular} 관리
         </h2>
 
         {/* 지원자 추가 폼 */}
@@ -130,7 +139,7 @@ export const ApplicantManager = ({
           {/* 개별 추가 폼 */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
-              지원자 이름
+              {labelOverride.singular} 이름
             </label>
             <div className="relative">
               <MdPerson className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-500" />
@@ -151,7 +160,7 @@ export const ApplicantManager = ({
 
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
-              지원자 이메일
+              {labelOverride.singular} 이메일
             </label>
             <div className="relative">
               <MdEmail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-500" />
@@ -178,7 +187,7 @@ export const ApplicantManager = ({
             className="w-full"
           >
             <MdAdd className="w-4 h-4 mr-2" />
-            지원자 추가
+            {labelOverride.singular} 추가
           </Button>
         </div>
 
@@ -186,7 +195,7 @@ export const ApplicantManager = ({
         <div>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-md font-medium text-neutral-800">
-              지원자 목록
+              {labelOverride.singular} 목록
             </h3>
 
             {/* 선택 관련 컨트롤들 */}
@@ -205,7 +214,7 @@ export const ApplicantManager = ({
                         전체선택 ({applicantManager.filteredApplicants.length})
                       </span>
                     }
-                    title="표시된 모든 지원자 선택/해제"
+                    title={`표시된 모든 ${labelOverride.plural} 선택/해제`}
                     className="w-4 h-4"
                   />
                 </div>
@@ -238,10 +247,10 @@ export const ApplicantManager = ({
             <div className="text-center py-6 bg-neutral-50 rounded-lg">
               <MdPerson className="w-6 h-6 mx-auto mb-2 text-neutral-400" />
               <p className="text-sm text-neutral-600">
-                추가된 지원자가 없습니다
+                추가된 {labelOverride.singular}가 없습니다
               </p>
               <p className="text-xs text-neutral-500 mt-1">
-                지원자를 추가해보세요
+                {labelOverride.singular}를 추가해보세요
               </p>
             </div>
           ) : (
@@ -283,7 +292,7 @@ export const ApplicantManager = ({
               <div className="space-y-2 max-h-80 overflow-y-auto scrollbar-hide">
                 {applicantManager.filteredApplicants.length === 0 ? (
                   <div className="text-center py-4 text-neutral-500 text-sm">
-                    검색 조건에 맞는 지원자가 없습니다
+                    검색 조건에 맞는 {labelOverride.singular}가 없습니다
                   </div>
                 ) : (
                   applicantManager.filteredApplicants.map(applicant => (
@@ -328,7 +337,7 @@ export const ApplicantManager = ({
                           applicantManager.removeApplicant(applicant.id)
                         }
                         className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors duration-200 flex-shrink-0"
-                        title="지원자 삭제"
+                        title={`${labelOverride.singular} 삭제`}
                       >
                         <MdDelete className="w-3 h-3" />
                       </button>

@@ -99,6 +99,43 @@ export const GroupInfoForm = ({
               className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary focus:ring-opacity-50 focus:outline-none text-sm resize-none"
             />
           </div>
+
+          {/* 팀 비교 선택 */}
+          {availableTeams && availableTeams.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-2">
+                팀 적합도 분석
+              </label>
+              <SelectDropdown
+                value={teamComposition ?
+                  availableTeams.find(t =>
+                    JSON.stringify(t.team_composition) === JSON.stringify(teamComposition)
+                  )?.id || ""
+                  : ""
+                }
+                placeholder="선택 안 함"
+                options={[
+                  { value: "", label: "선택 안 함" },
+                  ...availableTeams
+                    .filter(team => team.team_composition && team.completed_tests > 0)
+                    .map(team => ({
+                      value: team.id,
+                      label: `${team.name} (완료: ${team.completed_tests}/${team.total_members}명)`
+                    }))
+                ]}
+                onChange={value => {
+                  if (value && onSelectTeam) {
+                    onSelectTeam(value);
+                  } else {
+                    onTeamCompositionChange(null);
+                  }
+                }}
+              />
+              <p className="text-xs text-neutral-500 mt-2">
+                팀을 선택하면 지원자 분석 시 해당 팀과의 적합도를 비교합니다
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -207,91 +244,6 @@ export const GroupInfoForm = ({
             </p>
           </div>
 
-          {/* 현재 팀 구성 (선택 사항) */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-medium text-neutral-700">
-                현재 팀 구성
-              </label>
-              <button
-                type="button"
-                onClick={handleToggleTeamComposition}
-                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 ${
-                  teamComposition !== null
-                    ? "bg-primary-100 text-primary-700 hover:bg-primary-200"
-                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-                }`}
-              >
-                {teamComposition !== null ? "입력 중" : "입력하기"}
-              </button>
-            </div>
-
-            {/* 기존 팀에서 가져오기 (팀이 있는 경우에만 표시) */}
-            {availableTeams && availableTeams.length > 0 && teamComposition !== null && (
-              <div className="mb-4 p-3 bg-info-50 border border-info-200 rounded-lg">
-                <p className="text-xs font-medium text-info-800 mb-2">
-                  💡 기존 팀에서 가져오기
-                </p>
-                <select
-                  onChange={e => {
-                    const teamId = e.target.value;
-                    if (teamId && onSelectTeam) {
-                      onSelectTeam(teamId);
-                    }
-                  }}
-                  className="w-full px-3 py-2 text-sm border border-info-300 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none bg-white"
-                  defaultValue=""
-                >
-                  <option value="">팀을 선택하세요</option>
-                  {availableTeams
-                    .filter(team => team.team_composition && team.completed_tests > 0)
-                    .map(team => (
-                      <option key={team.id} value={team.id}>
-                        {team.name} ({team.completed_tests}/{team.total_members} 완료)
-                      </option>
-                    ))}
-                </select>
-                <p className="text-xs text-info-600 mt-2">
-                  기존 팀의 구성 데이터를 자동으로 가져올 수 있습니다
-                </p>
-              </div>
-            )}
-
-            {teamComposition !== null && (
-              <div className="space-y-3 p-4 bg-neutral-50 rounded-lg border border-neutral-200">
-                <p className="text-xs text-neutral-600 mb-2">
-                  각 유형별로 현재 팀원 수를 입력해주세요
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {WORK_TYPE_KEYWORDS.map(type => (
-                    <WorkTypeCounter
-                      key={type.code}
-                      workTypeName={type.type}
-                      code={type.code}
-                      count={teamComposition[type.code] || 0}
-                      onChange={handleTeamCountChange}
-                    />
-                  ))}
-                </div>
-                <div className="mt-3 pt-3 border-t border-neutral-200">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium text-neutral-700">총 팀원 수</span>
-                    <span className="font-semibold text-primary">
-                      {Object.values(teamComposition).reduce((sum, count) => sum + count, 0)}명
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {teamComposition === null && (
-              <div className="p-4 bg-neutral-50 rounded-lg border border-dashed border-neutral-300">
-                <p className="text-xs text-neutral-500 text-center">
-                  선택 사항입니다. 입력하지 않아도 채용 진행에 문제없습니다.
-                </p>
-              </div>
-            )}
-          </div>
         </div>
       </div>
 
