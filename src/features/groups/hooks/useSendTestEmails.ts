@@ -19,6 +19,7 @@ interface SendEmailsParams {
   group: Pick<Group, "id" | "deadline">;
   showRealName?: boolean;
   onProgress?: (progress: { success: number; failed: number }) => void;
+  recipientLabel?: "지원자" | "팀원"; // 수신자 레이블 (기본값: "지원자")
 }
 
 interface SendEmailsResult {
@@ -53,7 +54,7 @@ export const useSendTestEmails = () => {
   );
 
   /**
-   * 지원자들에게 소스테스트 이메일 발송
+   * 지원자 또는 팀원에게 소스테스트 이메일 발송
    */
   const sendEmails = useCallback(
     async ({
@@ -61,6 +62,7 @@ export const useSendTestEmails = () => {
       group,
       showRealName = true,
       onProgress,
+      recipientLabel = "지원자",
     }: SendEmailsParams): Promise<SendEmailsResult> => {
       setIsLoading(true);
 
@@ -72,12 +74,13 @@ export const useSendTestEmails = () => {
           business_name: businessName,
           showRealName,
           finalUserName: senderName,
+          recipientLabel,
         });
 
         let successCount = 0;
         let failedCount = 0;
 
-        // 각 지원자에게 순차적으로 이메일 발송
+        // 각 수신자에게 순차적으로 이메일 발송
         for (const applicant of applicants) {
           try {
             const result = await sendSauceTestEmail({
@@ -109,7 +112,7 @@ export const useSendTestEmails = () => {
           showToast(
             "success",
             "이메일 발송 완료",
-            `${successCount}명의 지원자에게 소스테스트 이메일을 발송했습니다.`
+            `${successCount}명의 ${recipientLabel}에게 소스테스트 이메일을 발송했습니다.`
           );
         } else if (successCount === 0) {
           showToast(

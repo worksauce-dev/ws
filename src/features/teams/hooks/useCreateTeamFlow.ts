@@ -86,6 +86,7 @@ export const useCreateTeamFlow = (
             deadline: deadline.toISOString().split("T")[0],
           },
           showRealName: options.showRealName ?? true,
+          recipientLabel: "팀원", // 팀 생성 시에는 "팀원"으로 표시
           onProgress: progress => {
             setFlowState(prev => ({
               ...prev,
