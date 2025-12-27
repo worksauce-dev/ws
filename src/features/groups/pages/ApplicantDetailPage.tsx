@@ -10,6 +10,8 @@ import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
 import { useGroupDetail } from "../hooks/useGroupDetail";
 import { useUpdateApplicantStatus } from "../hooks/useUpdateApplicantStatus";
 import { useToast } from "@/shared/components/ui/useToast";
+import { useAuth } from "@/shared/contexts/useAuth";
+import { useTeamsWithComposition } from "@/features/teams/hooks/useTeamsWithComposition";
 import {
   analyzeTestResult,
   calculateJobFitScore,
@@ -31,9 +33,16 @@ export const ApplicantDetailPage = () => {
   }>();
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const { user } = useAuth();
 
   // 그룹 상세 정보 조회 (지원자 데이터 포함)
   const { data, isLoading, isError, error } = useGroupDetail(groupId || "");
+
+  // 사용 가능한 팀 목록 조회
+  const { data: availableTeams } = useTeamsWithComposition(user?.id);
+
+  // 팀 선택 상태 (null = 선택 안 함)
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
 
   // 지원자 상태 업데이트 mutation
   const { mutate: updateStatus, isPending: isUpdating } =
@@ -103,16 +112,22 @@ export const ApplicantDetailPage = () => {
     [data?.group]
   );
 
-  // 팀 적합도 분석 (현재 팀 구성이 있는 경우에만)
+  // 선택된 팀 찾기
+  const selectedTeam = useMemo(
+    () => availableTeams?.find(team => team.id === selectedTeamId),
+    [availableTeams, selectedTeamId]
+  );
+
+  // 팀 적합도 분석 (팀이 선택된 경우에만)
   const teamFitAnalysis = useMemo(
     () =>
-      analyzedResult && data?.group?.current_team_composition
+      analyzedResult && selectedTeam?.team_composition
         ? calculateTeamFitScore(
             analyzedResult.primaryType.code,
-            data.group.current_team_composition
+            selectedTeam.team_composition
           )
         : null,
-    [analyzedResult, data?.group?.current_team_composition]
+    [analyzedResult, selectedTeam?.team_composition]
   );
 
   // 상태 관리 (초기값을 applicant 데이터에서 가져오기)
@@ -304,12 +319,47 @@ export const ApplicantDetailPage = () => {
           </div>
         </div>
 
-        {/* 팀 적합도 분석 (현재 팀 구성이 있는 경우에만 표시) */}
-        {teamFitAnalysis && (
-          <div className="bg-white rounded-xl border border-neutral-200 p-4 sm:p-6">
-            <h3 className="text-base sm:text-lg font-semibold text-neutral-800 mb-4">
+        {/* 팀 적합도 분석 */}
+        <div className="bg-white rounded-xl border border-neutral-200 p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <h3 className="text-base sm:text-lg font-semibold text-neutral-800">
               팀 적합도 분석
             </h3>
+
+            {/* 팀 선택 드롭다운 */}
+            <div className="flex-shrink-0 w-full sm:w-64">
+              <select
+                value={selectedTeamId || ""}
+                onChange={(e) => setSelectedTeamId(e.target.value || null)}
+                className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
+              >
+                <option value="">팀을 선택하세요</option>
+                {availableTeams?.map((team) => (
+                  <option key={team.id} value={team.id}>
+                    {team.name} ({team.completed_tests}/{team.total_members}명 완료)
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {!selectedTeamId && (
+            <div className="text-center py-12">
+              <MdGroups className="w-16 h-16 mx-auto text-neutral-300 mb-4" />
+              <p className="text-neutral-600 mb-2">
+                팀을 선택하면 해당 팀과의 적합도를 분석할 수 있습니다.
+              </p>
+              <p className="text-sm text-neutral-500">
+                {availableTeams && availableTeams.length > 0
+                  ? "위의 드롭다운에서 팀을 선택해주세요."
+                  : "먼저 팀 관리 페이지에서 팀을 생성해주세요."}
+              </p>
+            </div>
+          )}
+
+          {teamFitAnalysis && selectedTeamId && (
+            <>
+
 
             {/* 점수 표시 */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -388,8 +438,9 @@ export const ApplicantDetailPage = () => {
                 afterComposition={teamFitAnalysis.afterComposition}
               />
             </div>
-          </div>
-        )}
+            </>
+          )}
+        </div>
 
         {/* 채용 상태 관리 */}
         <div className="bg-white rounded-xl border border-neutral-200 p-4 sm:p-6 no-pdf">

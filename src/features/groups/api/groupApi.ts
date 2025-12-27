@@ -36,7 +36,6 @@ export const createGroup = async (data: CreateGroupRequest) => {
       deadline: data.deadline,
       auto_reminder: data.auto_reminder,
       status: data.status || "active", // 기본값
-      current_team_composition: data.current_team_composition, // 현재 팀 구성 (선택 사항)
       applicants: data.applicants, // JSONB 필드에 지원자 배열 저장
     })
     .select()

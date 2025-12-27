@@ -6,60 +6,20 @@ import {
 } from "@/shared/components/ui/Dropdown";
 import { Tooltip } from "@/shared/components/ui/Tooltip";
 import { MdCheckCircle } from "react-icons/md";
-import { WorkTypeCounter } from "./WorkTypeCounter";
 import type { UseGroupFormReturn } from "../types/group.types";
 import type { PositionOption } from "../types/group.types";
-import type { WorkTypeCode } from "../constants/workTypeKeywords";
-import type { TeamComposition } from "@/shared/types/database.types";
-import type { TeamDetail } from "@/features/teams/types/team.types";
 
 interface GroupInfoFormProps {
   groupForm: UseGroupFormReturn;
   customPositionList: PositionOption[];
   onPositionChange: (value: string) => void;
-  teamComposition: TeamComposition | null;
-  onTeamCompositionChange: (composition: TeamComposition | null) => void;
-  availableTeams?: TeamDetail[]; // 선택 가능한 팀 목록
-  onSelectTeam?: (teamId: string) => void; // 팀 선택 핸들러
 }
 
 export const GroupInfoForm = ({
   groupForm,
   customPositionList,
   onPositionChange,
-  teamComposition,
-  onTeamCompositionChange,
-  availableTeams,
-  onSelectTeam,
 }: GroupInfoFormProps) => {
-  // 팀 구성 토글 핸들러
-  const handleToggleTeamComposition = () => {
-    if (teamComposition === null) {
-      // 활성화: 빈 객체로 초기화
-      onTeamCompositionChange({});
-    } else {
-      // 비활성화: null로 설정
-      onTeamCompositionChange(null);
-    }
-  };
-
-  // 팀 구성 카운터 변경 핸들러
-  const handleTeamCountChange = (code: WorkTypeCode, newCount: number) => {
-    if (teamComposition === null) return;
-
-    if (newCount === 0) {
-      // 0이면 해당 키 제거
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { [code]: _, ...rest } = teamComposition;
-      onTeamCompositionChange(rest);
-    } else {
-      // 값 업데이트
-      onTeamCompositionChange({
-        ...teamComposition,
-        [code]: newCount,
-      });
-    }
-  };
 
   return (
     <div className="xl:col-span-2 space-y-8">
@@ -99,43 +59,6 @@ export const GroupInfoForm = ({
               className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary focus:ring-opacity-50 focus:outline-none text-sm resize-none"
             />
           </div>
-
-          {/* 팀 비교 선택 */}
-          {availableTeams && availableTeams.length > 0 && (
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                팀 적합도 분석
-              </label>
-              <SelectDropdown
-                value={teamComposition ?
-                  availableTeams.find(t =>
-                    JSON.stringify(t.team_composition) === JSON.stringify(teamComposition)
-                  )?.id || ""
-                  : ""
-                }
-                placeholder="선택 안 함"
-                options={[
-                  { value: "", label: "선택 안 함" },
-                  ...availableTeams
-                    .filter(team => team.team_composition && team.completed_tests > 0)
-                    .map(team => ({
-                      value: team.id,
-                      label: `${team.name} (완료: ${team.completed_tests}/${team.total_members}명)`
-                    }))
-                ]}
-                onChange={value => {
-                  if (value && onSelectTeam) {
-                    onSelectTeam(value);
-                  } else {
-                    onTeamCompositionChange(null);
-                  }
-                }}
-              />
-              <p className="text-xs text-neutral-500 mt-2">
-                팀을 선택하면 지원자 분석 시 해당 팀과의 적합도를 비교합니다
-              </p>
-            </div>
-          )}
         </div>
       </div>
 

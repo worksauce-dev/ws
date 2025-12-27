@@ -74,7 +74,6 @@ export interface Group {
   deadline: string;
   auto_reminder: boolean;
   status: string;
-  current_team_composition: TeamComposition | null; // 현재 팀 구성 (선택 사항)
   created_at: string;
   updated_at: string;
 }

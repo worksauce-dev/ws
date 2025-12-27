@@ -21,6 +21,26 @@
 
 ---
 
+### 2. `remove_current_team_composition_from_groups.sql`
+**목적**: `groups` 테이블에서 불필요한 `current_team_composition` 컬럼을 제거합니다.
+
+**배경**:
+- 기존에는 그룹 생성 시 팀을 선택하여 `current_team_composition`에 저장
+- 이 방식은 한 그룹당 하나의 팀만 비교 가능한 비효율적인 구조
+- 개선: 지원자 상세 페이지에서 여러 팀을 자유롭게 선택하여 비교 가능
+
+**변경사항**:
+- `groups` 테이블에서 `current_team_composition` JSONB 컬럼 제거
+- 팀 적합도 분석은 `ApplicantDetailPage`에서 팀 선택 드롭다운으로 처리
+- 더 유연하고 직관적인 UX 제공
+
+**실행 방법**:
+```sql
+ALTER TABLE groups DROP COLUMN IF EXISTS current_team_composition;
+```
+
+---
+
 ## 🚀 설치 방법
 
 ### Supabase Dashboard에서 실행
