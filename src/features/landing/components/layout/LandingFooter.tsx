@@ -197,7 +197,7 @@ export const LandingFooter = () => {
           transition={{ duration: 0.5 }}
         >
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 sm:mb-6 gap-4 sm:gap-6">
-            <div className="flex flex-col items-start sm:items-center gap-2 sm:gap-4">
+            {/* <div className="flex flex-col items-start sm:items-center gap-2 sm:gap-4">
               <div>
                 <p className="caption text-neutral-500">
                   <span className="font-medium">{COMPANY_INFO.name}</span> |
@@ -213,7 +213,7 @@ export const LandingFooter = () => {
                   </a>
                 </p>
               </div>
-            </div>
+            </div> */}
 
             <div className="flex space-x-3 mt-3 sm:mt-0">
               <motion.a
