@@ -7,6 +7,7 @@ import {
   MdSchedule,
 } from "react-icons/md";
 import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
+import { SelectDropdown } from "@/shared/components/ui/Dropdown";
 import { useGroupDetail } from "../hooks/useGroupDetail";
 import { useUpdateApplicantStatus } from "../hooks/useUpdateApplicantStatus";
 import { useToast } from "@/shared/components/ui/useToast";
@@ -328,18 +329,18 @@ export const ApplicantDetailPage = () => {
 
             {/* 팀 선택 드롭다운 */}
             <div className="flex-shrink-0 w-full sm:w-64">
-              <select
+              <SelectDropdown
                 value={selectedTeamId || ""}
-                onChange={(e) => setSelectedTeamId(e.target.value || null)}
-                className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
-              >
-                <option value="">팀을 선택하세요</option>
-                {availableTeams?.map((team) => (
-                  <option key={team.id} value={team.id}>
-                    {team.name} ({team.completed_tests}/{team.total_members}명 완료)
-                  </option>
-                ))}
-              </select>
+                placeholder="팀을 선택하세요"
+                options={[
+                  { value: "", label: "팀을 선택하세요" },
+                  ...(availableTeams?.map((team) => ({
+                    value: team.id,
+                    label: `${team.name} (${team.completed_tests}/${team.total_members}명 완료)`,
+                  })) || []),
+                ]}
+                onChange={(value) => setSelectedTeamId(value || null)}
+              />
             </div>
           </div>
 
