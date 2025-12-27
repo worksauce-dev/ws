@@ -38,7 +38,7 @@ export const TestResultPage = ({
 
           <div className="text-center mb-8">
             <p className="text-sm font-medium text-neutral-600 mb-2">
-              귀하의 업무 유형은
+              {applicantName}님의 업무 유형은
             </p>
             <div
               className="inline-block px-6 py-3 rounded-full text-2xl font-bold mb-4"
@@ -62,13 +62,13 @@ export const TestResultPage = ({
             <div className="flex items-start gap-3">
               <div className="w-2 h-2 rounded-full bg-primary-500 mt-2 flex-shrink-0"></div>
               <p className="text-neutral-700">
-                이 결과는 귀하의 업무 성향과 강점을 파악하기 위한 것이에요.
+                이 결과는 {applicantName}님의 업무 성향과 강점을 파악하기 위한 것이에요.
               </p>
             </div>
             <div className="flex items-start gap-3">
               <div className="w-2 h-2 rounded-full bg-primary-500 mt-2 flex-shrink-0"></div>
               <p className="text-neutral-700">
-                담당자가 귀하의 결과를 확인한 후 필요시 연락드릴 예정이에요.
+                담당자가 {applicantName}님의 결과를 확인한 후 필요시 연락드릴 예정이에요.
               </p>
             </div>
             <div className="flex items-start gap-3">
