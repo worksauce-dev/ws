@@ -158,6 +158,17 @@ export const TeamsPage = () => {
             // TODO: 팀원 삭제 API 호출
             console.log("Remove member:", memberId);
           }}
+          onBulkRemoveMembers={(memberIds) => {
+            // TODO: 일괄 팀원 삭제 API 호출
+            console.log("Bulk remove members:", memberIds);
+          }}
+          onBulkMoveMembers={(memberIds, targetTeamId) => {
+            // TODO: 일괄 팀원 이동 API 호출
+            console.log("Bulk move members:", memberIds, "to team:", targetTeamId);
+          }}
+          availableTeams={
+            teams?.map((t) => ({ id: t.id, name: t.name })) || []
+          }
         />
 
         {/* 팀 생성 진행 상황 모달 */}
