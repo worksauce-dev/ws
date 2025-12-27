@@ -9,7 +9,7 @@ import { teamApi } from "../api/teamApi";
  */
 export const useTeamsWithComposition = (userId: string | undefined) => {
   return useQuery({
-    queryKey: ["teams-with-composition", userId],
+    queryKey: ["teamsWithComposition", userId],
     queryFn: () => {
       if (!userId) throw new Error("User ID is required");
       return teamApi.getTeamsWithComposition(userId);
