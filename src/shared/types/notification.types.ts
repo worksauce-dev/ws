@@ -6,13 +6,18 @@ export type NotificationType =
   | "test_completed"
   | "test_started"
   | "group_created"
-  | "test_expired";
+  | "test_expired"
+  | "team_member_test_completed"; // 팀원 테스트 완료
 
 export interface NotificationData {
   applicant_id?: string;
   applicant_name?: string;
   group_id?: string;
   group_name?: string;
+  team_id?: string; // 팀 ID
+  team_name?: string; // 팀 이름
+  team_member_id?: string; // 팀원 ID
+  team_member_name?: string; // 팀원 이름
   [key: string]: any;
 }
 

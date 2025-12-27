@@ -63,30 +63,48 @@ export async function updateEmailOpenedAt(
   applicantId: string
 ): Promise<boolean> {
   try {
-    // 1. applicants 테이블 업데이트 시도
-    const { error: applicantError } = await supabase
-      .from("applicants")
-      .update({ email_opened_at: new Date().toISOString() })
-      .eq("id", applicantId);
+    const timestamp = new Date().toISOString();
+    console.log("📧 이메일 열람 시간 업데이트 시작:", { applicantId, timestamp });
 
-    if (!applicantError) {
+    // 1. applicants 테이블 업데이트 시도
+    const { data: applicantData, error: applicantError } = await supabase
+      .from("applicants")
+      .update({ email_opened_at: timestamp })
+      .eq("id", applicantId)
+      .select();
+
+    if (!applicantError && applicantData && applicantData.length > 0) {
+      console.log("✅ applicants 테이블 email_opened_at 업데이트 성공:", applicantData);
       return true;
     }
 
+    if (applicantError) {
+      console.log("⚠️ applicants 테이블 업데이트 실패, team_members 시도:", applicantError);
+    } else {
+      console.log("⚠️ applicants 테이블에서 해당 ID를 찾을 수 없음, team_members 시도");
+    }
+
     // 2. team_members 테이블 업데이트 시도
-    const { error: teamMemberError } = await supabase
+    const { data: teamMemberData, error: teamMemberError } = await supabase
       .from("team_members")
-      .update({ email_opened_at: new Date().toISOString() })
-      .eq("id", applicantId);
+      .update({ email_opened_at: timestamp })
+      .eq("id", applicantId)
+      .select();
 
     if (teamMemberError) {
-      console.error("Update email_opened_at error:", teamMemberError);
+      console.error("❌ team_members 테이블 email_opened_at 업데이트 실패:", teamMemberError);
       return false;
     }
 
+    if (!teamMemberData || teamMemberData.length === 0) {
+      console.error("❌ team_members 테이블에서 해당 ID를 찾을 수 없음");
+      return false;
+    }
+
+    console.log("✅ team_members 테이블 email_opened_at 업데이트 성공:", teamMemberData);
     return true;
   } catch (error) {
-    console.error("Update email_opened_at error:", error);
+    console.error("❌ 이메일 열람 시간 업데이트 중 예외 발생:", error);
     return false;
   }
 }
@@ -99,30 +117,47 @@ export async function updateTestStatusToInProgress(
   applicantId: string
 ): Promise<boolean> {
   try {
+    console.log("🚀 테스트 상태 업데이트 시작 (in_progress):", { applicantId });
+
     // 1. applicants 테이블 업데이트 시도
-    const { error: applicantError } = await supabase
+    const { data: applicantData, error: applicantError } = await supabase
       .from("applicants")
       .update({ test_status: "in_progress" })
-      .eq("id", applicantId);
+      .eq("id", applicantId)
+      .select();
 
-    if (!applicantError) {
+    if (!applicantError && applicantData && applicantData.length > 0) {
+      console.log("✅ applicants 테이블 test_status 업데이트 성공:", applicantData);
       return true;
     }
 
+    if (applicantError) {
+      console.log("⚠️ applicants 테이블 업데이트 실패, team_members 시도:", applicantError);
+    } else {
+      console.log("⚠️ applicants 테이블에서 해당 ID를 찾을 수 없음, team_members 시도");
+    }
+
     // 2. team_members 테이블 업데이트 시도
-    const { error: teamMemberError } = await supabase
+    const { data: teamMemberData, error: teamMemberError } = await supabase
       .from("team_members")
       .update({ test_status: "in_progress" })
-      .eq("id", applicantId);
+      .eq("id", applicantId)
+      .select();
 
     if (teamMemberError) {
-      console.error("Update test_status to in_progress error:", teamMemberError);
+      console.error("❌ team_members 테이블 test_status 업데이트 실패:", teamMemberError);
       return false;
     }
 
+    if (!teamMemberData || teamMemberData.length === 0) {
+      console.error("❌ team_members 테이블에서 해당 ID를 찾을 수 없음");
+      return false;
+    }
+
+    console.log("✅ team_members 테이블 test_status 업데이트 성공:", teamMemberData);
     return true;
   } catch (error) {
-    console.error("Update test_status to in_progress error:", error);
+    console.error("❌ 테스트 상태 업데이트 중 예외 발생:", error);
     return false;
   }
 }

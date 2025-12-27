@@ -15,8 +15,9 @@ export const useTeamsWithComposition = (userId: string | undefined) => {
       return teamApi.getTeamsWithComposition(userId);
     },
     enabled: !!userId,
-    staleTime: 1000 * 60 * 5, // 5분
+    staleTime: 1000 * 60, // 1분 (5분에서 단축: 팀원 테스트 완료 시 빠른 반영)
     gcTime: 1000 * 60 * 10, // 10분
+    refetchInterval: 1000 * 30, // 30초마다 자동 갱신 (팀원 테스트 완료 시 실시간 반영)
     retry: 2,
   });
 };

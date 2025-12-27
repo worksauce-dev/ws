@@ -73,6 +73,14 @@ export const NotificationDropdown = ({
         navigate(`/dashboard/groups/${group_id}`);
         onClose();
       }
+    } else if (notification.type === "team_member_test_completed") {
+      const { team_id } = notification.data || {};
+
+      if (team_id) {
+        // 팀 상세 페이지로 이동
+        navigate(`/dashboard/teams/${team_id}`);
+        onClose();
+      }
     }
   };
 
