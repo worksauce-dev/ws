@@ -98,6 +98,9 @@ export const useTeamModals = (): UseTeamModalsReturn => {
     onSuccess: () => {
       showToast("success", "팀 삭제 완료", "팀이 삭제되었습니다!");
       setTeamToDelete(null);
+      // Drawer 닫기
+      setModalState("closed");
+      setSelectedTeamId(null);
     },
     onError: (error: Error) => {
       showToast("error", "팀 삭제 실패", error.message);
