@@ -154,10 +154,6 @@ export const TeamsPage = () => {
               modals.handleDeleteClick(selectedTeam.id);
             }
           }}
-          onRemoveMember={(memberId) => {
-            // TODO: 팀원 삭제 API 호출
-            console.log("Remove member:", memberId);
-          }}
           onBulkRemoveMembers={(memberIds) => {
             // TODO: 일괄 팀원 삭제 API 호출
             console.log("Bulk remove members:", memberIds);

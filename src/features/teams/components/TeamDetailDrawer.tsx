@@ -20,7 +20,6 @@ interface TeamDetailDrawerProps {
   team: TeamDetail | null;
   onEdit?: () => void;
   onDelete?: () => void;
-  onRemoveMember?: (memberId: string) => void;
   onBulkRemoveMembers?: (memberIds: string[]) => void;
   onBulkMoveMembers?: (memberIds: string[], targetTeamId: string) => void;
   availableTeams?: Array<{ id: string; name: string }>;
@@ -32,7 +31,6 @@ export const TeamDetailDrawer = ({
   team,
   onEdit,
   onDelete,
-  onRemoveMember,
   onBulkRemoveMembers,
   onBulkMoveMembers,
   availableTeams = [],
@@ -41,7 +39,7 @@ export const TeamDetailDrawer = ({
   const [newMemberName, setNewMemberName] = useState("");
   const [newMemberEmail, setNewMemberEmail] = useState("");
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set());
-  const [showBulkActions, setShowBulkActions] = useState(false);
+  const [bulkActionMode, setBulkActionMode] = useState<"none" | "move" | "delete">("none");
 
   if (!team) return null;
 
@@ -68,7 +66,7 @@ export const TeamDetailDrawer = ({
 
   const clearSelection = () => {
     setSelectedMembers(new Set());
-    setShowBulkActions(false);
+    setBulkActionMode("none");
   };
 
   // 일괄 삭제
@@ -90,12 +88,6 @@ export const TeamDetailDrawer = ({
     ) {
       onBulkMoveMembers?.(Array.from(selectedMembers), targetTeamId);
       clearSelection();
-    }
-  };
-
-  const handleRemoveMember = (memberId: string, memberName: string) => {
-    if (confirm(`${memberName}님을 팀에서 제거하시겠습니까?`)) {
-      onRemoveMember?.(memberId);
     }
   };
 
@@ -206,22 +198,41 @@ export const TeamDetailDrawer = ({
               </span>
             </h3>
 
-            {/* 선택 모드 토글 */}
+            {/* 팀원 관리 버튼 */}
             {team.members.length > 0 && (
-              <button
-                onClick={() => {
-                  setShowBulkActions(!showBulkActions);
-                  if (showBulkActions) clearSelection();
-                }}
-                className="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors"
-              >
-                {showBulkActions ? "취소" : "선택"}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    if (bulkActionMode === "move") {
+                      clearSelection();
+                    } else {
+                      setBulkActionMode("move");
+                      setSelectedMembers(new Set());
+                    }
+                  }}
+                  className="text-sm px-3 py-1.5 font-medium text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-colors"
+                >
+                  {bulkActionMode === "move" ? "취소" : "팀원 이동"}
+                </button>
+                <button
+                  onClick={() => {
+                    if (bulkActionMode === "delete") {
+                      clearSelection();
+                    } else {
+                      setBulkActionMode("delete");
+                      setSelectedMembers(new Set());
+                    }
+                  }}
+                  className="text-sm px-3 py-1.5 font-medium text-error-600 hover:text-error-700 hover:bg-error-50 rounded-lg transition-colors"
+                >
+                  {bulkActionMode === "delete" ? "취소" : "팀원 삭제"}
+                </button>
+              </div>
             )}
           </div>
 
-          {/* 일괄 작업 바 */}
-          {showBulkActions && selectedMembers.size > 0 && (
+          {/* 일괄 작업 바 - 팀원 이동 모드 */}
+          {bulkActionMode === "move" && selectedMembers.size > 0 && (
             <div className="mb-4 p-4 bg-primary-50 border border-primary-200 rounded-xl flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <span className="text-sm font-semibold text-primary-700">
@@ -256,19 +267,35 @@ export const TeamDetailDrawer = ({
                       ))}
                   </select>
                 )}
-                {/* 일괄 삭제 버튼 */}
-                <button
-                  onClick={handleBulkRemove}
-                  className="text-sm px-3 py-1.5 bg-error-500 hover:bg-error-600 text-white rounded-lg transition-colors font-medium"
-                >
-                  삭제
-                </button>
               </div>
             </div>
           )}
 
+          {/* 일괄 작업 바 - 팀원 삭제 모드 */}
+          {bulkActionMode === "delete" && selectedMembers.size > 0 && (
+            <div className="mb-4 p-4 bg-error-50 border border-error-200 rounded-xl flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-semibold text-error-700">
+                  {selectedMembers.size}명 선택됨
+                </span>
+                <button
+                  onClick={clearSelection}
+                  className="text-xs text-error-600 hover:text-error-700 underline"
+                >
+                  선택 해제
+                </button>
+              </div>
+              <button
+                onClick={handleBulkRemove}
+                className="text-sm px-3 py-1.5 bg-error-500 hover:bg-error-600 text-white rounded-lg transition-colors font-medium"
+              >
+                삭제
+              </button>
+            </div>
+          )}
+
           {/* 전체 선택 체크박스 */}
-          {showBulkActions && team.members.length > 0 && (
+          {bulkActionMode !== "none" && team.members.length > 0 && (
             <label className="flex items-center gap-2 p-3 mb-3 bg-neutral-100 rounded-lg cursor-pointer hover:bg-neutral-200 transition-colors">
               <input
                 type="checkbox"
@@ -298,7 +325,7 @@ export const TeamDetailDrawer = ({
                     className="group flex items-center gap-4 p-4 bg-neutral-50 hover:bg-gradient-to-r hover:from-primary-50 hover:to-transparent rounded-xl border border-neutral-200 hover:border-primary-200 transition-all duration-200"
                   >
                     {/* 체크박스 (선택 모드일 때만 표시) */}
-                    {showBulkActions && (
+                    {bulkActionMode !== "none" && (
                       <input
                         type="checkbox"
                         checked={selectedMembers.has(member.id)}
@@ -334,17 +361,6 @@ export const TeamDetailDrawer = ({
                     <div className="flex-shrink-0">
                       <TeamMemberStatusBadge status={member.test_status} />
                     </div>
-
-                    {/* 삭제 버튼 (선택 모드가 아닐 때만 표시) */}
-                    {!showBulkActions && (
-                      <button
-                        onClick={() => handleRemoveMember(member.id, member.name)}
-                        className="flex-shrink-0 p-2 rounded-lg text-neutral-400 hover:text-error-600 hover:bg-error-50 transition-colors opacity-0 group-hover:opacity-100"
-                        title="팀원 제거"
-                      >
-                        <MdClose className="w-5 h-5" />
-                      </button>
-                    )}
                   </div>
                 ))}
               </div>
