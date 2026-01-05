@@ -6,7 +6,6 @@ import { Button } from "@/shared/components/ui/Button";
 import { useApplicant } from "../hooks/useApplicant";
 import { VerifyApplicant } from "../components/VerifyApplicant";
 import { TestSession } from "../components/TestSession";
-import { getTestLabels } from "../constants/testLabels";
 
 export const SauceTestPage = () => {
   const { testToken } = useParams<{ testToken: string }>();
@@ -16,9 +15,6 @@ export const SauceTestPage = () => {
   const { data: applicant, isLoading: isLoadingApplicant } = useApplicant(
     testToken!
   );
-
-  // 컨텍스트별 레이블 가져오기
-  const labels = getTestLabels(applicant?.context);
 
   const handleVerifySuccess = () => {
     setIsVerified(true);

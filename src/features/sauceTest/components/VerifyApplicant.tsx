@@ -13,7 +13,6 @@ import {
   updateEmailOpenedAt,
   updateTestStatusToInProgress,
 } from "../api/testApi";
-import { getTestLabels } from "../constants/testLabels";
 
 // 폼 검증 스키마
 const verifySchema = z.object({
@@ -34,9 +33,6 @@ export const VerifyApplicant = ({
 }: VerifyApplicantProps) => {
   const { showToast } = useToast();
   const [isVerifying, setIsVerifying] = useState(false);
-
-  // 컨텍스트별 레이블 가져오기
-  const labels = getTestLabels(applicant.context);
 
   // React Hook Form 설정
   const {

@@ -19,6 +19,7 @@ import type { TestRawData } from "@/shared/types/database.types";
 interface TestSessionProps {
   applicant: Applicant;
   testToken: string;
+  testId?: string; // Optional for backward compatibility
 }
 
 // 동사 테스트 결과 타입
@@ -55,7 +56,7 @@ const groupAnswersByWorkType = (
   return grouped as AnswersByWorkType;
 };
 
-export const TestSession = ({ applicant, testId }: TestSessionProps) => {
+export const TestSession = ({ applicant, testToken }: TestSessionProps) => {
   const [currentTest, setCurrentTest] = useState<
     "verb" | "statement" | "completed"
   >("verb");
@@ -65,6 +66,9 @@ export const TestSession = ({ applicant, testId }: TestSessionProps) => {
   const [statementTestResult, setStatementTestResult] =
     useState<StatementTestResult | null>(null);
   const [showSaveMessage, setShowSaveMessage] = useState(false);
+
+  // Use testToken as unique identifier for localStorage
+  const testId = testToken;
 
   // 컴포넌트 마운트 시 로컬스토리지에서 전체 상태 복원 (개발 모드 전용)
   useEffect(() => {

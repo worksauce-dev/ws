@@ -14,7 +14,7 @@ export async function getApplicantByToken(
 ): Promise<Applicant | null> {
   try {
     // 1. applicants 테이블에서 조회 시도
-    const { data: applicant, error: applicantError } = await supabase
+    const { data: applicant } = await supabase
       .from("applicants")
       .select("id, name, email, group_id, test_token, test_status")
       .eq("test_token", testToken)
@@ -28,7 +28,7 @@ export async function getApplicantByToken(
     }
 
     // 2. team_members 테이블에서 조회 시도
-    const { data: teamMember, error: teamMemberError } = await supabase
+    const { data: teamMember } = await supabase
       .from("team_members")
       .select("id, name, email, team_id, test_token, test_status")
       .eq("test_token", testToken)
