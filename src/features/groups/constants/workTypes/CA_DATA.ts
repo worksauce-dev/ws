@@ -138,7 +138,7 @@ export const CA_DATA: WorkTypeData = {
       approach: "대화와 소통을 통해 프로젝트의 방향과 역할 합의",
     },
     advance: {
-      strength: "협력적 분위기 속에서 팀의 시너지 창출",
+      strength: "협력적 분위기 속에서 팀의 상호작용 활성화",
       focus: "구성원들의 동기 부여와 긍정적 분위기 유지",
       approach: "지속적인 소통과 피드백으로 협력적 발전 추구",
     },

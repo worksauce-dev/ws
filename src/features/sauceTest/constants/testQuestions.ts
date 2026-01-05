@@ -238,7 +238,7 @@ export const QUESTIONS_BY_TYPE: Record<WorkTypeCode, Question[]> = {
     },
     {
       id: 10,
-      text: "나는 업무에서 팀의 다양성과 창의력을 바탕으로 집단의 시너지를 만들어내는 것을 중요하게 생각한다.",
+      text: "나는 업무에서 팀의 다양성과 창의력을 바탕으로 집단의 상호작용을 활성화하는 것을 중요하게 생각한다.",
       workType: "AF",
     },
   ],

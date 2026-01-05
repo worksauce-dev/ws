@@ -148,7 +148,7 @@ export const AF_DATA: WorkTypeData = {
     utility: {
       strength: "다양한 분야의 자원을 융합하여 활용",
       focus: "네트워크를 통해 필요한 자원과 역량 확보",
-      approach: "외부 자원과 내부 강점을 결합하여 시너지 창출",
+      approach: "외부 자원과 내부 강점을 결합하여 상호보완적 성과 창출",
     },
     communicate: {
       strength: "융합적 비전을 다양한 이해관계자에게 전달",
