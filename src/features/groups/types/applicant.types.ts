@@ -1,6 +1,9 @@
 import type { Applicant as ValidatorApplicant } from "../utils/applicantValidator";
 import type { Applicant } from "@/shared/types/database.types";
 
+// Re-export Applicant from validator for use in other modules
+export type { Applicant } from "../utils/applicantValidator";
+
 export interface NewApplicantForm {
   name: string;
   email: string;

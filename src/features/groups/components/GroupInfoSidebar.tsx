@@ -41,7 +41,7 @@ export const GroupInfoSidebar = ({
           <div className="flex-1">
             <p className="text-xs text-neutral-500 mb-1">경력 수준</p>
             <p className="text-sm font-medium text-neutral-800">
-              {getExperienceLevelLabel(group.experience_level)}
+              {getExperienceLevelLabel(group.experience_level || "")}
             </p>
           </div>
         </div>

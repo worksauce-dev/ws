@@ -1,4 +1,3 @@
-import { MdAssignment } from "react-icons/md";
 import type { WorkTypeCode } from "@/features/groups/constants/workTypeKeywords";
 
 interface WorkTypeDistributionItem {
