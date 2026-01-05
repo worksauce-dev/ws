@@ -10,6 +10,7 @@ import {
 } from "../types/workType.types";
 import WORK_TYPE_DATA from "../constants/workTypes"; // 모든 유형 데이터
 import type { TeamComposition } from "@/shared/types/database.types";
+import type { JobProfile, JobFitAnalysis } from "../types/jobProfile.types";
 
 export interface AnalyzedResult {
   // 기본 정보
@@ -208,11 +209,13 @@ export const calculateJobFitScore = (
 };
 
 /**
- * 팀 적합도 분석 결과
+ * 팀 구성 비교 결과 (팩트 기반)
+ * 주관적 점수나 판단을 배제하고 객관적 정보만 제공
  */
-export interface TeamFitAnalysis {
-  // 팀 밸런스 점수 (0-100)
-  balanceScore: number;
+export interface TeamCompositionComparison {
+  // 지원자의 유형
+  applicantType: WorkTypeCode;
+  applicantTypeName: string;
 
   // 현재 팀 구성
   currentComposition: Record<WorkTypeCode, number>;
@@ -220,10 +223,31 @@ export interface TeamFitAnalysis {
   // 지원자 합류 후 팀 구성
   afterComposition: Record<WorkTypeCode, number>;
 
-  // 팀 다양성 점수 (0-100)
-  diversityScore: number;
+  // 현재 팀에서 해당 유형 인원 수
+  existingCount: number;
 
-  // 추천 메시지
+  // 현재 팀 총 인원
+  totalMembers: number;
+
+  // 합류 전 해당 유형 비율 (0-100%)
+  percentageBefore: number;
+
+  // 합류 후 해당 유형 비율 (0-100%)
+  percentageAfter: number;
+
+  // 새로운 유형인지 여부 (현재 팀에 없는 유형)
+  isNewType: boolean;
+}
+
+/**
+ * @deprecated 주관적 점수 및 판단이 포함되어 있어 사용을 권장하지 않습니다.
+ * TeamCompositionComparison을 사용하세요.
+ */
+export interface TeamFitAnalysis {
+  balanceScore: number;
+  currentComposition: Record<WorkTypeCode, number>;
+  afterComposition: Record<WorkTypeCode, number>;
+  diversityScore: number;
   recommendation: {
     level: "excellent" | "good" | "neutral" | "caution";
     message: string;
@@ -232,6 +256,59 @@ export interface TeamFitAnalysis {
 }
 
 /**
+ * 팀 구성 비교 정보 생성 (팩트 기반)
+ * 주관적 점수나 판단 없이 객관적인 팀 구성 변화만 제공
+ *
+ * @param applicantPrimaryType - 지원자의 주 유형
+ * @param currentTeamComposition - 현재 팀 구성 (유형별 인원수)
+ * @returns 팀 구성 비교 결과 (객관적 정보만 포함)
+ */
+export const getTeamCompositionComparison = (
+  applicantPrimaryType: WorkTypeCode,
+  currentTeamComposition: TeamComposition | null
+): TeamCompositionComparison | null => {
+  // 팀 구성 정보가 없는 경우, null 반환
+  if (!currentTeamComposition || Object.keys(currentTeamComposition).length === 0) {
+    return null;
+  }
+
+  // 현재 팀 총 인원
+  const totalMembers = Object.values(currentTeamComposition).reduce((sum, count) => sum + count, 0);
+
+  // 현재 팀에서 해당 유형 인원 수
+  const existingCount = currentTeamComposition[applicantPrimaryType] || 0;
+
+  // 지원자 합류 후 팀 구성
+  const afterComposition = { ...currentTeamComposition };
+  afterComposition[applicantPrimaryType] = existingCount + 1;
+
+  // 비율 계산 (0-100%)
+  const percentageBefore = totalMembers > 0 ? Math.round((existingCount / totalMembers) * 100) : 0;
+  const percentageAfter = Math.round(((existingCount + 1) / (totalMembers + 1)) * 100);
+
+  // 새로운 유형인지 확인
+  const isNewType = existingCount === 0;
+
+  // 지원자 유형 이름
+  const applicantTypeName = WORK_TYPE_DATA[applicantPrimaryType].name;
+
+  return {
+    applicantType: applicantPrimaryType,
+    applicantTypeName,
+    currentComposition: currentTeamComposition as Record<WorkTypeCode, number>,
+    afterComposition: afterComposition as Record<WorkTypeCode, number>,
+    existingCount,
+    totalMembers,
+    percentageBefore,
+    percentageAfter,
+    isNewType,
+  };
+};
+
+/**
+ * @deprecated 주관적 점수 및 판단이 포함되어 있어 사용을 권장하지 않습니다.
+ * getTeamCompositionComparison()을 사용하세요.
+ *
  * 팀 적합도 계산
  * 현재 팀 구성과 지원자의 유형을 고려하여 팀 밸런스를 분석
  *
@@ -324,6 +401,186 @@ export const calculateTeamFitScore = (
       level,
       message,
       reasons,
+    },
+  };
+};
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Phase 3: 직무 프로필 기반 적합도 분석
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/**
+ * 직무 프로필 기반 적합도 분석 (개선된 알고리즘)
+ *
+ * 기존 calculateJobFitScore와 달리:
+ * 1. 직무별 역량 가중치 반영
+ * 2. 최소 요구 점수 미달 시 명확한 경고
+ * 3. 강점/약점을 직무 맥락으로 설명
+ * 4. 면접 체크포인트 제공
+ *
+ * @param scoreDistribution - 지원자의 전체 유형별 점수 분포
+ * @param jobProfile - 직무 프로필 (역량 요구사항 포함)
+ * @returns 직무 적합도 분석 결과
+ */
+export const calculateJobFitScoreV2 = (
+  scoreDistribution: AnalyzedResult["scoreDistribution"],
+  jobProfile: JobProfile
+): JobFitAnalysis => {
+  // 1. 점수 맵 생성 (빠른 조회용)
+  const scoreMap: Partial<Record<WorkTypeCode, number>> = {};
+  scoreDistribution.forEach(item => {
+    scoreMap[item.code] = item.score;
+  });
+
+  // 2. 역량별 점수 계산 및 분류
+  const strengths: JobFitAnalysis["strengths"] = [];
+  const weaknesses: JobFitAnalysis["weaknesses"] = [];
+  const adequateCompetencies: JobFitAnalysis["adequateCompetencies"] = [];
+
+  let totalWeightedScore = 0;
+  let totalWeight = 0;
+  let criticalFailures = 0; // Critical 역량 미달 횟수
+
+  jobProfile.competencies.forEach(competency => {
+    const applicantScore = scoreMap[competency.workType] || 0;
+    const workTypeName = WORK_TYPE_DATA[competency.workType].name;
+
+    // 가중치 계산 (critical: 3, important: 2, preferred: 1)
+    const weightValue = competency.weight === "critical" ? 3 : competency.weight === "important" ? 2 : 1;
+
+    // 가중 점수 누적
+    totalWeightedScore += applicantScore * weightValue;
+    totalWeight += weightValue;
+
+    // 역량 분류
+    if (applicantScore >= competency.optimalScore) {
+      // 강점: optimal 이상
+      strengths.push({
+        workType: competency.workType,
+        workTypeName,
+        score: applicantScore,
+        weight: competency.weight,
+        description: competency.description,
+      });
+    } else if (applicantScore < competency.minScore) {
+      // 약점: min 미만
+      weaknesses.push({
+        workType: competency.workType,
+        workTypeName,
+        score: applicantScore,
+        weight: competency.weight,
+        minScore: competency.minScore,
+        description: competency.description,
+        interviewCheckpoints: competency.interviewCheckpoints,
+      });
+
+      // Critical 역량 미달 체크
+      if (competency.weight === "critical") {
+        criticalFailures++;
+      }
+    } else {
+      // 적정 수준: min 이상 optimal 미만
+      adequateCompetencies.push({
+        workType: competency.workType,
+        workTypeName,
+        score: applicantScore,
+        weight: competency.weight,
+      });
+    }
+  });
+
+  // 3. 종합 점수 계산 (0-100)
+  const overallScore = totalWeight > 0 ? Math.round(totalWeightedScore / totalWeight) : 0;
+
+  // 4. 적합도 수준 결정
+  let fitLevel: JobFitAnalysis["fitLevel"];
+  let fitLevelLabel: string;
+
+  if (criticalFailures > 0) {
+    // Critical 역량 미달이 하나라도 있으면 낮은 적합도
+    fitLevel = "low";
+    fitLevelLabel = "면접 집중 확인 필요";
+  } else if (overallScore >= 85) {
+    fitLevel = "excellent";
+    fitLevelLabel = "높은 매칭도";
+  } else if (overallScore >= 70) {
+    fitLevel = "good";
+    fitLevelLabel = "양호한 매칭도";
+  } else if (overallScore >= 60) {
+    fitLevel = "moderate";
+    fitLevelLabel = "보통 매칭도";
+  } else {
+    fitLevel = "low";
+    fitLevelLabel = "면접 집중 확인 필요";
+  }
+
+  // 5. 채용 의사결정 가이드 생성
+  let recommendationLevel: JobFitAnalysis["hiringRecommendation"]["level"];
+  let recommendationLevelLabel: string;
+  let reasoning: string;
+  const criticalCheckpoints: string[] = [];
+
+  if (fitLevel === "excellent" && weaknesses.length === 0) {
+    // 최고 등급: 모든 역량 우수
+    recommendationLevel = "strongly_recommended";
+    recommendationLevelLabel = "높은 매칭도";
+    reasoning = `${jobProfile.jobTitle} 직무의 필수 역량을 모두 충족하며, 핵심 영역에서 우수한 점수를 보입니다.`;
+  } else if (fitLevel === "excellent" || (fitLevel === "good" && criticalFailures === 0)) {
+    // 권장: 핵심 역량 충족, 일부 보완 필요
+    recommendationLevel = "recommended";
+    recommendationLevelLabel = "양호한 매칭도";
+
+    if (weaknesses.length === 0) {
+      reasoning = `${jobProfile.jobTitle} 직무의 핵심 역량을 충족합니다. 전반적으로 균형잡힌 역량 분포를 보입니다.`;
+    } else {
+      const weakCompetencies = weaknesses.map(w => w.workTypeName).join(", ");
+      reasoning = `${jobProfile.jobTitle} 직무의 필수 역량을 충족합니다. ${weakCompetencies} 영역은 기준보다 낮은 점수를 보이므로, 면접에서 실무 경험을 중점적으로 확인하세요.`;
+
+      // 약점 역량의 면접 체크포인트 추가
+      weaknesses.forEach(weakness => {
+        criticalCheckpoints.push(...weakness.interviewCheckpoints);
+      });
+    }
+  } else if (fitLevel === "moderate" && criticalFailures === 0) {
+    // 조건부: 필수 역량은 충족하나 전반적으로 평균 수준
+    recommendationLevel = "conditional";
+    recommendationLevelLabel = "면접 확인 필요";
+
+    const weakCompetencies = weaknesses.map(w => w.workTypeName).join(", ");
+    reasoning = `${jobProfile.jobTitle} 직무의 필수 역량은 최소 기준을 충족하나, ${weakCompetencies} 영역이 평균 수준입니다. 면접에서 실무 경험, 성장 가능성, 학습 의지를 집중적으로 확인하세요.`;
+
+    // 모든 약점 역량의 면접 체크포인트 추가
+    weaknesses.forEach(weakness => {
+      criticalCheckpoints.push(...weakness.interviewCheckpoints);
+    });
+  } else {
+    // 주의 필요: Critical 역량 미달
+    recommendationLevel = "not_recommended";
+    recommendationLevelLabel = "면접 집중 확인";
+
+    const criticalWeaknesses = weaknesses.filter(w => w.weight === "critical");
+    const criticalCompetencies = criticalWeaknesses.map(w => w.workTypeName).join(", ");
+
+    reasoning = `${jobProfile.jobTitle} 직무의 필수 역량인 ${criticalCompetencies} 영역에서 기준 점수에 미달합니다. 면접에서 관련 경험을 깊이 있게 검증하고, 온보딩 시 추가 지원이 필요할 수 있습니다.`;
+
+    // Critical 약점의 면접 체크포인트 추가
+    criticalWeaknesses.forEach(weakness => {
+      criticalCheckpoints.push(...weakness.interviewCheckpoints);
+    });
+  }
+
+  return {
+    overallScore,
+    fitLevel,
+    fitLevelLabel,
+    strengths,
+    weaknesses,
+    adequateCompetencies,
+    hiringRecommendation: {
+      level: recommendationLevel,
+      levelLabel: recommendationLevelLabel,
+      reasoning,
+      criticalCheckpoints,
     },
   };
 };
