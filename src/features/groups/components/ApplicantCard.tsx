@@ -1,13 +1,21 @@
 import { MdStar, MdStarBorder } from "react-icons/md";
-import type { ApplicantSummary } from "@/shared/types/database.types";
+import type { Applicant } from "@/shared/types/database.types";
 import type { WorkTypeCode } from "@/features/groups/constants/workTypeKeywords";
-import { getStatusIcon, getStatusLabel, getStatusColor } from "../utils/testStatusHelpers";
-import { getWorkTypeName, getSecondaryWorkType, convertToScoreDistribution } from "../utils/workTypeHelpers";
+import {
+  getStatusIcon,
+  getStatusLabel,
+  getStatusColor,
+} from "../utils/testStatusHelpers";
+import {
+  getWorkTypeName,
+  getSecondaryWorkType,
+  convertToScoreDistribution,
+} from "../utils/workTypeHelpers";
 import { formatDate, getScoreColorClass } from "../utils/formatHelpers";
 import { calculateJobFitScore } from "../utils/analyzeTestResult";
 
 interface ApplicantCardProps {
-  applicant: ApplicantSummary;
+  applicant: Applicant;
   preferredWorkTypes: WorkTypeCode[];
   onToggleStar: (applicantId: string) => void;
   onClick: (applicantId: string) => void;
@@ -81,11 +89,15 @@ export const ApplicantCard = ({
             <span className="truncate">{applicant.email}</span>
             <div className="flex items-center gap-3 sm:gap-4">
               <span className="hidden sm:inline">•</span>
-              <span className="text-xs sm:text-sm">지원일: {formatDate(applicant.created_at)}</span>
+              <span className="text-xs sm:text-sm">
+                지원일: {formatDate(applicant.created_at)}
+              </span>
               {applicant.test_submitted_at && (
                 <>
                   <span>•</span>
-                  <span className="text-xs sm:text-sm">완료일: {formatDate(applicant.test_submitted_at)}</span>
+                  <span className="text-xs sm:text-sm">
+                    완료일: {formatDate(applicant.test_submitted_at)}
+                  </span>
                 </>
               )}
             </div>

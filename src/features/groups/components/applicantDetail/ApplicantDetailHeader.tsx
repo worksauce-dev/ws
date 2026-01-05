@@ -6,15 +6,23 @@ import {
   MdTrendingUp,
   MdWork,
 } from "react-icons/md";
-import type { ApplicantSummary, Group } from "@/shared/types/database.types";
+import type {
+  Applicant,
+  Group,
+  TestStatus,
+} from "@/shared/types/database.types";
 import type { WorkTypeCode } from "@/features/groups/constants/workTypeKeywords";
 import type { WorkTypeData } from "@/features/groups/types/workType.types";
 import WORK_TYPE_DATA from "@/features/groups/constants/workTypes";
 import { getScoreColorClass } from "../../utils/formatHelpers";
-import { getStatusIcon, getStatusLabel, getStatusColor } from "../../utils/testStatusHelpers";
+import {
+  getStatusIcon,
+  getStatusLabel,
+  getStatusColor,
+} from "../../utils/testStatusHelpers";
 
 interface ApplicantDetailHeaderProps {
-  applicant: ApplicantSummary;
+  applicant: Applicant;
   group: Group;
   workTypeData: WorkTypeData;
   matchScore: number;
@@ -32,13 +40,13 @@ export const ApplicantDetailHeader = ({
   isStarred,
   onToggleStar,
 }: ApplicantDetailHeaderProps) => {
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: TestStatus) => {
     return (
       <span
-        className={`inline-flex items-center gap-1 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-medium border ${getStatusColor(status as any)}`}
+        className={`inline-flex items-center gap-1 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-medium border ${getStatusColor(status)}`}
       >
-        {getStatusIcon(status as any)}
-        {getStatusLabel(status as any)}
+        {getStatusIcon(status)}
+        {getStatusLabel(status)}
       </span>
     );
   };

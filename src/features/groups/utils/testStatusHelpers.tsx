@@ -1,9 +1,4 @@
-import {
-  MdCheckCircle,
-  MdCancel,
-  MdPending,
-  MdStar,
-} from "react-icons/md";
+import { MdCheckCircle, MdCancel, MdPending, MdStar } from "react-icons/md";
 import { type TestStatus } from "@/shared/types/database.types";
 
 /**
