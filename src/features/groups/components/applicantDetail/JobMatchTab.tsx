@@ -140,82 +140,98 @@ export const JobMatchTab = ({
                 </ul>
               </div>
 
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
-                <div className="flex items-center gap-2 px-3 py-2 bg-warning-50 border border-warning-200 rounded-lg">
-                  <span className="text-2xl">💳</span>
-                  <div className="text-sm">
-                    <span className="font-semibold text-warning-800">
-                      크레딧 1 소모
-                    </span>
-                    <span className="text-neutral-600 ml-1">
-                      (분석 후 재조회는 무료)
-                    </span>
+              {/* 분석 안내 및 버튼 섹션 - 통합 디자인 */}
+              <div className="space-y-3">
+                {/* 크레딧 안내 */}
+                <div className="flex items-start gap-3 p-3 bg-warning-50 border border-warning-200 rounded-lg">
+                  <span className="text-xl flex-shrink-0 mt-0.5">💳</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-warning-900 leading-relaxed">
+                      <span className="font-semibold">크레딧 1 소모</span>
+                      <span className="text-neutral-700 ml-1">
+                        (분석 후 재조회는 무료)
+                      </span>
+                    </p>
                   </div>
                 </div>
-              </div>
 
-              <div className="bg-info-50 border border-info-200 rounded-lg p-3 mb-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-info-600 text-lg mt-0.5">ℹ️</span>
-                  <p className="text-xs sm:text-sm text-info-900 leading-relaxed">
-                    <strong>중요:</strong> AI는 "적합/부적합"을 판단하지
-                    않습니다. 실행 방식의 차이를 객관적으로 해석하고, 관리 시
-                    고려할 점을 제공합니다.
-                  </p>
-                </div>
-              </div>
-
-              {/* 분석 버튼 - 상태에 따라 다르게 표시 */}
-              {aiAnalysisStatus === "idle" && (
-                <>
-                  <button
-                    disabled
-                    className="w-full sm:w-auto px-6 py-3 bg-neutral-200 text-neutral-500 rounded-xl font-semibold text-sm sm:text-base cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    <MdAutoAwesome className="w-5 h-5" />
-                    <span>분석 시작 (준비 중)</span>
-                  </button>
-                  <p className="mt-3 text-xs text-neutral-500">
-                    * AI Agent 구현 예정 기능입니다. 곧 만나보실 수 있습니다!
-                  </p>
-                </>
-              )}
-
-              {aiAnalysisStatus === "pending" && (
-                <div className="flex items-center gap-3 px-6 py-3 bg-primary-50 border border-primary-200 rounded-xl">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600" />
-                  <span className="text-sm sm:text-base font-medium text-primary-800">
-                    AI가 분석 중입니다... (약 10-15초 소요)
-                  </span>
-                </div>
-              )}
-
-              {aiAnalysisStatus === "completed" && (
-                <div className="flex items-center gap-2 px-4 py-2 bg-success-50 border border-success-200 rounded-lg">
-                  <span className="text-success-600">✓</span>
-                  <span className="text-sm font-medium text-success-800">
-                    분석 완료
-                  </span>
-                </div>
-              )}
-
-              {aiAnalysisStatus === "failed" && onRetry && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 px-4 py-2 bg-error-50 border border-error-200 rounded-lg">
-                    <span className="text-error-600">⚠️</span>
-                    <span className="text-sm font-medium text-error-800">
-                      분석에 실패했습니다. 크레딧은 차감되지 않았습니다.
-                    </span>
+                {/* 중요 안내 */}
+                <div className="flex items-start gap-3 p-3 bg-info-50 border border-info-200 rounded-lg">
+                  <span className="text-xl flex-shrink-0 mt-0.5">ℹ️</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-info-900 leading-relaxed">
+                      <span className="font-semibold">중요:</span> AI는
+                      "적합/부적합"을 판단하지 않습니다. 실행 방식의 차이를
+                      객관적으로 해석하고, 관리 시 고려할 점을 제공합니다.
+                    </p>
                   </div>
-                  <button
-                    onClick={onRetry}
-                    className="w-full sm:w-auto px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-semibold text-sm sm:text-base transition-colors flex items-center justify-center gap-2"
-                  >
-                    <MdAutoAwesome className="w-5 h-5" />
-                    <span>다시 시도</span>
-                  </button>
                 </div>
-              )}
+
+                {/* 분석 버튼 - 상태에 따라 다르게 표시 */}
+                {aiAnalysisStatus === "idle" && (
+                  <div className="space-y-2">
+                    <button
+                      disabled
+                      className="w-full px-6 py-3 bg-neutral-200 text-neutral-500 rounded-lg font-semibold text-sm sm:text-base cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
+                    >
+                      <MdAutoAwesome className="w-5 h-5" />
+                      <span>분석 시작 (준비 중)</span>
+                    </button>
+                    <p className="text-xs text-center text-neutral-500">
+                      AI Agent 구현 예정 기능입니다
+                    </p>
+                  </div>
+                )}
+
+                {aiAnalysisStatus === "pending" && (
+                  <div className="flex items-start gap-3 p-3 bg-primary-50 border border-primary-200 rounded-lg">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-primary-900 leading-relaxed">
+                      <span className="font-semibold">AI가 분석 중입니다</span>
+                      <span className="text-primary-700 ml-1">
+                        (약 10-15초 소요)
+                      </span>
+                    </p>
+                  </div>
+                )}
+
+                {aiAnalysisStatus === "completed" && (
+                  <div className="flex items-start gap-3 p-3 bg-success-50 border border-success-200 rounded-lg">
+                    <span className="text-xl flex-shrink-0 mt-0.5">✓</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-success-900 leading-relaxed">
+                        <span className="font-semibold">분석 완료</span>
+                        <span className="text-success-700 ml-1">
+                          아래에서 결과를 확인하세요
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {aiAnalysisStatus === "failed" && onRetry && (
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3 p-3 bg-error-50 border border-error-200 rounded-lg">
+                      <span className="text-xl flex-shrink-0 mt-0.5">⚠️</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-error-900 leading-relaxed">
+                          <span className="font-semibold">분석 실패</span>
+                          <span className="text-error-700 ml-1">
+                            크레딧은 차감되지 않았습니다
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={onRetry}
+                      className="w-full px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-semibold text-sm sm:text-base transition-colors flex items-center justify-center gap-2"
+                    >
+                      <MdAutoAwesome className="w-5 h-5" />
+                      <span>다시 시도</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
