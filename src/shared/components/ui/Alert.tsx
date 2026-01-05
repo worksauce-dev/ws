@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { MdCheckCircle, MdError, MdWarning, MdInfo, MdClose } from "react-icons/md";
 import { clsx } from "clsx";
 

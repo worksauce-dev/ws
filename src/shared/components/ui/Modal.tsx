@@ -1,4 +1,4 @@
-import { useEffect, ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { MdClose } from "react-icons/md";
 import { clsx } from "clsx";
 
