@@ -1,19 +1,38 @@
 import { MdWorkOutline, MdAutoAwesome } from "react-icons/md";
 import type { JobFitAnalysis } from "../../utils/analyzeTestResult";
+import type { AIComparisonAnalysis } from "../../types/aiJobMatching.types";
 import { JobMatchAnalysisSection } from "./JobMatchAnalysisSection";
+
+/**
+ * AI 분석 상태
+ * - idle: 분석 전 (버튼 활성화)
+ * - pending: API 호출 중 (로딩 스피너)
+ * - completed: 성공 (결과 렌더링)
+ * - failed: 실패 (에러 메시지 + 재시도)
+ */
+export type AIAnalysisStatus = "idle" | "pending" | "completed" | "failed";
 
 interface JobMatchTabProps {
   jobFitAnalysis: JobFitAnalysis | null;
   positionLabel: string;
-  hasAIAnalysis: boolean;
-  setHasAIAnalysis: (value: boolean) => void;
+  aiAnalysisStatus: AIAnalysisStatus;
+  aiAnalysisResult?: AIComparisonAnalysis;
+  onRequestAnalysis: () => void;
+  onRetry?: () => void;
 }
 
 export const JobMatchTab = ({
   jobFitAnalysis,
   positionLabel,
-  hasAIAnalysis,
+  aiAnalysisStatus,
+  aiAnalysisResult,
+  onRequestAnalysis,
+  onRetry,
 }: JobMatchTabProps) => {
+  // TODO: n8n Agent 연동 시 onRequestAnalysis를 버튼에 연결
+  // 현재는 버튼이 disabled 상태이므로 임시로 void 처리
+  void onRequestAnalysis;
+
   return (
     <div className="space-y-6">
       {/* 기본 직무 매칭 분석 */}
@@ -146,23 +165,63 @@ export const JobMatchTab = ({
                 </div>
               </div>
 
-              <button
-                disabled
-                className="w-full sm:w-auto px-6 py-3 bg-neutral-200 text-neutral-500 rounded-xl font-semibold text-sm sm:text-base cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                <MdAutoAwesome className="w-5 h-5" />
-                <span>분석 시작 (준비 중)</span>
-              </button>
+              {/* 분석 버튼 - 상태에 따라 다르게 표시 */}
+              {aiAnalysisStatus === "idle" && (
+                <>
+                  <button
+                    disabled
+                    className="w-full sm:w-auto px-6 py-3 bg-neutral-200 text-neutral-500 rounded-xl font-semibold text-sm sm:text-base cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    <MdAutoAwesome className="w-5 h-5" />
+                    <span>분석 시작 (준비 중)</span>
+                  </button>
+                  <p className="mt-3 text-xs text-neutral-500">
+                    * AI Agent 구현 예정 기능입니다. 곧 만나보실 수 있습니다!
+                  </p>
+                </>
+              )}
 
-              <p className="mt-3 text-xs text-neutral-500">
-                * AI Agent 구현 예정 기능입니다. 곧 만나보실 수 있습니다!
-              </p>
+              {aiAnalysisStatus === "pending" && (
+                <div className="flex items-center gap-3 px-6 py-3 bg-primary-50 border border-primary-200 rounded-xl">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600" />
+                  <span className="text-sm sm:text-base font-medium text-primary-800">
+                    AI가 분석 중입니다... (약 10-15초 소요)
+                  </span>
+                </div>
+              )}
+
+              {aiAnalysisStatus === "completed" && (
+                <div className="flex items-center gap-2 px-4 py-2 bg-success-50 border border-success-200 rounded-lg">
+                  <span className="text-success-600">✓</span>
+                  <span className="text-sm font-medium text-success-800">
+                    분석 완료
+                  </span>
+                </div>
+              )}
+
+              {aiAnalysisStatus === "failed" && onRetry && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 px-4 py-2 bg-error-50 border border-error-200 rounded-lg">
+                    <span className="text-error-600">⚠️</span>
+                    <span className="text-sm font-medium text-error-800">
+                      분석에 실패했습니다. 크레딧은 차감되지 않았습니다.
+                    </span>
+                  </div>
+                  <button
+                    onClick={onRetry}
+                    className="w-full sm:w-auto px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-semibold text-sm sm:text-base transition-colors flex items-center justify-center gap-2"
+                  >
+                    <MdAutoAwesome className="w-5 h-5" />
+                    <span>다시 시도</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         {/* 분석 전: 개념적 미리보기 */}
-        {!hasAIAnalysis && (
+        {(aiAnalysisStatus === "idle" || aiAnalysisStatus === "pending") && (
           <div className="bg-gradient-to-br from-purple-50 to-primary-50 rounded-xl border border-purple-200 p-6 mt-6">
             <h5 className="text-base sm:text-lg font-semibold text-neutral-800 mb-4 flex items-center gap-2">
               <span>🔍</span>
@@ -227,12 +286,166 @@ export const JobMatchTab = ({
           </div>
         )}
 
-        {/* 분석 후: 상세 결과 */}
-        {hasAIAnalysis && (
+        {/* 분석 후: 상세 결과 (실제 데이터) */}
+        {aiAnalysisStatus === "completed" && aiAnalysisResult && (
           <div className="bg-neutral-50 rounded-xl border border-neutral-200 p-6 mt-6">
             <h5 className="text-base sm:text-lg font-semibold text-neutral-800 mb-4 flex items-center gap-2">
               <span>📊</span>
-              <span>분석 결과</span>
+              <span>AI 분석 결과</span>
+            </h5>
+
+            {/* 전체 요약 */}
+            <div className="bg-white rounded-lg p-4 border border-neutral-200 mb-4">
+              <h6 className="text-sm font-semibold text-neutral-800 mb-2">
+                전체 요약
+              </h6>
+              <p className="text-sm text-neutral-700 leading-relaxed">
+                {aiAnalysisResult.overallSummary.interpretationSummary}
+              </p>
+            </div>
+
+            {/* 축별 차이 분석 */}
+            <div className="space-y-4">
+              {aiAnalysisResult.axisDifferences.map((diff) => (
+                <div
+                  key={diff.axis}
+                  className="bg-white rounded-lg p-4 border border-neutral-200"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-semibold text-neutral-700">
+                      {diff.axisName}
+                    </span>
+                    <span
+                      className={`text-xs font-medium px-2 py-1 rounded ${
+                        diff.gapLevel === "critical"
+                          ? "text-error-700 bg-error-50"
+                          : diff.gapLevel === "significant"
+                            ? "text-warning-700 bg-warning-50"
+                            : diff.gapLevel === "moderate"
+                              ? "text-info-700 bg-info-50"
+                              : "text-success-700 bg-success-50"
+                      }`}
+                    >
+                      {diff.gapLevel === "critical"
+                        ? "큰 차이"
+                        : diff.gapLevel === "significant"
+                          ? "유의미한 차이"
+                          : diff.gapLevel === "moderate"
+                            ? "보통 차이"
+                            : "작은 차이"}
+                    </span>
+                  </div>
+                  <div className="space-y-2 mb-3">
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs text-neutral-600">
+                          직무 요구
+                        </span>
+                        <span className="text-xs font-medium text-primary-700">
+                          {diff.jobScore}점
+                        </span>
+                      </div>
+                      <div className="h-2 bg-neutral-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary-500"
+                          style={{ width: `${diff.jobScore}%` }}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs text-neutral-600">
+                          지원자
+                        </span>
+                        <span className="text-xs font-medium text-purple-700">
+                          {diff.applicantScore}점
+                        </span>
+                      </div>
+                      <div className="h-2 bg-neutral-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-purple-500"
+                          style={{ width: `${diff.applicantScore}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-sm text-neutral-600 mt-3 italic">
+                    💡 {diff.interpretation}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* 협업/관리 포인트 */}
+            {aiAnalysisResult.managementPoints.length > 0 && (
+              <div className="mt-4 space-y-3">
+                <h6 className="text-sm font-semibold text-neutral-800">
+                  협업/관리 포인트
+                </h6>
+                {aiAnalysisResult.managementPoints.map((point, index) => (
+                  <div
+                    key={index}
+                    className={`rounded-lg p-4 border ${
+                      point.priority === "high"
+                        ? "bg-success-50 border-success-200"
+                        : point.priority === "medium"
+                          ? "bg-info-50 border-info-200"
+                          : "bg-neutral-50 border-neutral-200"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-lg">
+                        {point.priority === "high"
+                          ? "✅"
+                          : point.priority === "medium"
+                            ? "💡"
+                            : "📝"}
+                      </span>
+                      <span
+                        className={`text-sm font-semibold ${
+                          point.priority === "high"
+                            ? "text-success-800"
+                            : point.priority === "medium"
+                              ? "text-info-800"
+                              : "text-neutral-800"
+                        }`}
+                      >
+                        {point.categoryLabel}
+                        {point.priority === "high" && " (높은 우선순위)"}
+                      </span>
+                    </div>
+                    <p
+                      className={`text-sm leading-relaxed ${
+                        point.priority === "high"
+                          ? "text-success-900"
+                          : point.priority === "medium"
+                            ? "text-info-900"
+                            : "text-neutral-700"
+                      }`}
+                    >
+                      {point.point}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* 크레딧 정보 */}
+            <div className="mt-4 pt-4 border-t border-neutral-200">
+              <p className="text-xs text-neutral-500">
+                이 분석은 크레딧 {aiAnalysisResult.creditsUsed}개를 소모했습니다.
+                재조회는 무료입니다.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* 분석 후: Mock 결과 표시 (개발 중 - aiAnalysisResult가 없을 때) */}
+        {aiAnalysisStatus === "completed" && !aiAnalysisResult && (
+          <div className="bg-neutral-50 rounded-xl border border-neutral-200 p-6 mt-6">
+            <h5 className="text-base sm:text-lg font-semibold text-neutral-800 mb-4 flex items-center gap-2">
+              <span>📊</span>
+              <span>분석 결과 (Mock)</span>
             </h5>
             <div className="space-y-4">
               <div className="bg-white rounded-lg p-4 border border-neutral-200">

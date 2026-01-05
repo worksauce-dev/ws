@@ -123,9 +123,27 @@ export const ApplicantDetailPage = () => {
     "analysis" | "team" | "interview" | "jobmatch"
   >("analysis");
 
-  // AI 분석 상태 (TODO: 실제 분석 완료 시 true로 변경)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [hasAIAnalysis, setHasAIAnalysis] = useState(false);
+  // AI 분석 상태 관리 (개선된 상태 머신)
+  const [aiAnalysisStatus, setAiAnalysisStatus] = useState<
+    "idle" | "pending" | "completed" | "failed"
+  >("idle");
+  const [aiAnalysisResult, setAiAnalysisResult] = useState<
+    import("../types/aiJobMatching.types").AIComparisonAnalysis | undefined
+  >();
+
+  // AI 분석 요청 핸들러 (n8n Agent 연동 시 사용)
+  const handleRequestAnalysis = () => {
+    // TODO: n8n Agent API 호출
+    setAiAnalysisStatus("pending");
+    // API 호출 후 결과에 따라 setAiAnalysisStatus("completed" | "failed")
+    // 성공 시 setAiAnalysisResult(result)
+  };
+
+  // AI 분석 재시도 핸들러
+  const handleRetryAnalysis = () => {
+    setAiAnalysisStatus("idle");
+    setAiAnalysisResult(undefined);
+  };
 
   const handleBackClick = () => {
     navigate(`/dashboard/groups/${groupId}`);
@@ -329,8 +347,10 @@ export const ApplicantDetailPage = () => {
               <JobMatchTab
                 jobFitAnalysis={jobFitAnalysis}
                 positionLabel={positionLabel}
-                hasAIAnalysis={hasAIAnalysis}
-                setHasAIAnalysis={setHasAIAnalysis}
+                aiAnalysisStatus={aiAnalysisStatus}
+                aiAnalysisResult={aiAnalysisResult}
+                onRequestAnalysis={handleRequestAnalysis}
+                onRetry={handleRetryAnalysis}
               />
             )}
           </div>
