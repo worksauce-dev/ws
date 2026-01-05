@@ -10,6 +10,7 @@ import { TeamMemberStatusBadge } from "./TeamMemberStatusBadge";
 import WORK_TYPE_DATA from "@/features/groups/constants/workTypes";
 import type { TeamDetail } from "../types/team.types";
 import type { WorkTypeCode } from "@/features/groups/types/workType.types";
+import { getPrimaryWorkType } from "../utils/workTypeUtils";
 
 interface TeamDetailModalProps {
   isOpen: boolean;
@@ -166,11 +167,14 @@ export const TeamDetailModal = ({
                       {member.name}
                     </h4>
                     <p className="text-sm text-neutral-600 truncate">{member.email}</p>
-                    {member.primary_work_type && (
-                      <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary-100 text-primary-700 rounded-md text-xs font-medium">
-                        {WORK_TYPE_DATA[member.primary_work_type as WorkTypeCode]?.name}
-                      </div>
-                    )}
+                    {(() => {
+                      const primaryType = getPrimaryWorkType(member.test_result);
+                      return primaryType ? (
+                        <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary-100 text-primary-700 rounded-md text-xs font-medium">
+                          {WORK_TYPE_DATA[primaryType]?.name}
+                        </div>
+                      ) : null;
+                    })()}
                   </div>
                   <div className="ml-4 flex-shrink-0">
                     <TeamMemberStatusBadge status={member.test_status} />

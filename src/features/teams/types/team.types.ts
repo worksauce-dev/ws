@@ -1,5 +1,4 @@
 import type { TeamComposition, TestResult, TestRawData } from "@/shared/types/database.types";
-import type { WorkTypeCode } from "@/features/groups/types/workType.types";
 
 /**
  * 팀 멤버 테스트 상태

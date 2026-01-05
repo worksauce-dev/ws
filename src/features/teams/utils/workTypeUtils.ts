@@ -9,11 +9,11 @@ import type { WorkTypeCode } from "@/features/groups/types/workType.types";
  * test_result에서 primary work type(가장 높은 점수의 유형)을 계산
  */
 export function getPrimaryWorkType(testResult: TestResult | null): WorkTypeCode | null {
-  if (!testResult?.work_types) {
+  if (!testResult?.statementScores) {
     return null;
   }
 
-  const workTypes = testResult.work_types;
+  const workTypes = testResult.statementScores;
   const entries = Object.entries(workTypes) as [WorkTypeCode, number][];
 
   if (entries.length === 0) {

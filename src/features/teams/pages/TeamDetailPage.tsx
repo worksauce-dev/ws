@@ -11,6 +11,7 @@ import { useTeamDetail } from "../hooks/useTeamDetail";
 import { MdPeople, MdCheckCircle, MdPending, MdEmail } from "react-icons/md";
 import WORK_TYPE_DATA from "@/features/groups/constants/workTypes";
 import type { WorkTypeCode } from "@/features/groups/types/workType.types";
+import { getPrimaryWorkType } from "../utils/workTypeUtils";
 
 export const TeamDetailPage = () => {
   const navigate = useNavigate();
@@ -220,14 +221,14 @@ export const TeamDetailPage = () => {
                         <p className="text-sm text-neutral-600">
                           {member.email}
                         </p>
-                        {member.primary_work_type && (
-                          <p className="text-sm text-primary-600 mt-1">
-                            {
-                              WORK_TYPE_DATA[member.primary_work_type as WorkTypeCode]
-                                ?.name
-                            }
-                          </p>
-                        )}
+                        {(() => {
+                          const primaryType = getPrimaryWorkType(member.test_result);
+                          return primaryType ? (
+                            <p className="text-sm text-primary-600 mt-1">
+                              {WORK_TYPE_DATA[primaryType]?.name}
+                            </p>
+                          ) : null;
+                        })()}
                       </div>
                       <div>{getStatusBadge(member.test_status)}</div>
                     </div>
