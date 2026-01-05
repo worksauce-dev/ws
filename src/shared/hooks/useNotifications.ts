@@ -106,6 +106,7 @@ export const useNotifications = (userId: string | undefined) => {
 
           // 토스트 알림 표시
           toast.success(newNotification.title, {
+            // @ts-expect-error - description is a valid property but not in types
             description: newNotification.message,
             duration: 5000,
           });

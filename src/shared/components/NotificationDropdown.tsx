@@ -15,7 +15,6 @@ import {
   MdDoneAll,
   MdNotifications,
 } from "react-icons/md";
-import { useAuth } from "@/shared/contexts/useAuth";
 import type { Notification } from "@/shared/types/notification.types";
 
 interface NotificationDropdownProps {
@@ -27,7 +26,6 @@ export const NotificationDropdown = ({
   onClose,
   notificationsData,
 }: NotificationDropdownProps) => {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const {
