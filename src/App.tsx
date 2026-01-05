@@ -81,11 +81,12 @@ const BusinessVerificationsManagementPage = lazy(() =>
     default: module.BusinessVerificationsManagementPage,
   }))
 );
-const TeamsPage = lazy(() =>
-  import("@/features/teams/pages/TeamsPage").then(module => ({
-    default: module.TeamsPage,
-  }))
-);
+// 팀 관리 기능 - MVP 범위에서 제외 (Phase 5 이후 재활성화 예정)
+// const TeamsPage = lazy(() =>
+//   import("@/features/teams/pages/TeamsPage").then(module => ({
+//     default: module.TeamsPage,
+//   }))
+// );
 
 // React Query 클라이언트 설정
 const queryClient = new QueryClient({
@@ -208,14 +209,15 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
-                  <Route
+                  {/* 팀 관리 기능 - MVP 범위에서 제외 (Phase 5 이후 재활성화 예정) */}
+                  {/* <Route
                     path="/dashboard/teams"
                     element={
                       <ProtectedRoute>
                         <TeamsPage />
                       </ProtectedRoute>
                     }
-                  />
+                  /> */}
                   <Route
                     path="/admin"
                     element={

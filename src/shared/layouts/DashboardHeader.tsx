@@ -10,7 +10,7 @@ import {
   MdMenu,
   MdClose,
   MdNotifications,
-  MdPeople,
+  // MdPeople, // 팀 관리 기능 - MVP 범위에서 제외
 } from "react-icons/md";
 import { clsx } from "clsx";
 import { useAuth } from "@/shared/contexts/useAuth";
@@ -101,10 +101,11 @@ export const DashboardHeader = ({
     closeMobileMenu();
   };
 
-  const handleTeamsClick = () => {
-    navigate("/dashboard/teams");
-    closeMobileMenu();
-  };
+  // 팀 관리 기능 - MVP 범위에서 제외 (Phase 5 이후 재활성화 예정)
+  // const handleTeamsClick = () => {
+  //   navigate("/dashboard/teams");
+  //   closeMobileMenu();
+  // };
 
   const handleCreditClickMobile = () => {
     if (onCreditClick) {
@@ -115,11 +116,12 @@ export const DashboardHeader = ({
 
   // 사용자 드롭다운 메뉴 아이템 (데스크톱)
   const userMenuItems: UserMenuItem[] = [
-    {
-      icon: <MdPeople className="w-4 h-4" />,
-      label: "팀 대시보드",
-      onClick: () => navigate("/dashboard/teams"),
-    },
+    // 팀 관리 기능 - MVP 범위에서 제외 (Phase 5 이후 재활성화 예정)
+    // {
+    //   icon: <MdPeople className="w-4 h-4" />,
+    //   label: "팀 대시보드",
+    //   onClick: () => navigate("/dashboard/teams"),
+    // },
     {
       icon: <MdSettings className="w-4 h-4" />,
       label: "설정",
@@ -350,14 +352,14 @@ export const DashboardHeader = ({
 
                   <hr className="my-1" />
 
-                  {/* 팀 관리 */}
-                  <button
+                  {/* 팀 관리 기능 - MVP 범위에서 제외 (Phase 5 이후 재활성화 예정) */}
+                  {/* <button
                     onClick={handleTeamsClick}
                     className="w-full flex items-center space-x-2 px-4 py-3 text-neutral-700 hover:bg-neutral-50"
                   >
                     <MdPeople className="w-5 h-5" />
                     <span>팀 관리</span>
-                  </button>
+                  </button> */}
 
                   {/* 설정 */}
                   <button
