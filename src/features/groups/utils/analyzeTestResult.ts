@@ -12,6 +12,9 @@ import WORK_TYPE_DATA from "../constants/workTypes"; // 모든 유형 데이터
 import type { TeamComposition } from "@/shared/types/database.types";
 import type { JobProfile, JobFitAnalysis } from "../types/jobProfile.types";
 
+// Re-export for convenience
+export type { JobFitAnalysis } from "../types/jobProfile.types";
+
 export interface AnalyzedResult {
   // 기본 정보
   primaryType: {
