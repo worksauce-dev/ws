@@ -7,7 +7,8 @@ export type NotificationType =
   | "test_started"
   | "group_created"
   | "test_expired"
-  | "team_member_test_completed"; // 팀원 테스트 완료
+  | "team_member_test_completed" // 팀원 테스트 완료
+  | "ai_analysis_complete"; // AI 분석 완료
 
 export interface NotificationData {
   applicant_id?: string;

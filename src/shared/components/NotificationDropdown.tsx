@@ -71,6 +71,18 @@ export const NotificationDropdown = ({
         navigate(`/dashboard/groups/${group_id}`);
         onClose();
       }
+    } else if (notification.type === "ai_analysis_complete") {
+      // AI 분석 완료 알림 - data 필드가 JSON 문자열로 저장되어 있음
+      const data = typeof notification.data === "string"
+        ? JSON.parse(notification.data)
+        : notification.data;
+      const { groupId, applicantId } = data || {};
+
+      if (groupId && applicantId) {
+        // 지원자 상세 페이지로 이동
+        navigate(`/dashboard/groups/${groupId}/applicants/${applicantId}`);
+        onClose();
+      }
     } else if (notification.type === "team_member_test_completed") {
       const { team_id } = notification.data || {};
 
