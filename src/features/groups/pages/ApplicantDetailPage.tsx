@@ -10,11 +10,12 @@ import {
 import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
 import { useGroupDetail } from "../hooks/useGroupDetail";
 import { useUpdateApplicantStatus } from "../hooks/useUpdateApplicantStatus";
+import { useAiAnalysis } from "../hooks/useAiAnalysis";
+import { useAiAnalysisRequest } from "../hooks/useAiAnalysisRequest";
 import { useToast } from "@/shared/components/ui/useToast";
 import {
   analyzeTestResult,
   calculateJobFitScore,
-  calculateJobFitScoreV2,
 } from "../utils/analyzeTestResult";
 import WORK_TYPE_DATA from "../constants/workTypes";
 import { POSITION_OPTIONS } from "../constants/positionOptions";
@@ -24,6 +25,8 @@ import { WorkTypeAnalysisTab } from "../components/applicantDetail/WorkTypeAnaly
 import { TeamSynergyTab } from "../components/applicantDetail/TeamSynergyTab";
 import { InterviewGuideTab } from "../components/applicantDetail/InterviewGuideTab";
 import { JobMatchTab } from "../components/applicantDetail/JobMatchTab";
+import { StatusActionButton } from "../components/applicantDetail/StatusActionButton";
+import { STATUS_LABELS, STATUS_BADGE_STYLES } from "@/shared/constants/applicantStatus";
 import type { ApplicantStatus } from "@/shared/types/database.types";
 
 export const ApplicantDetailPage = () => {
@@ -36,6 +39,17 @@ export const ApplicantDetailPage = () => {
 
   // 그룹 상세 정보 조회 (지원자 데이터 포함)
   const { data, isLoading, isError, error } = useGroupDetail(groupId || "");
+
+  // AI 분석 결과 조회 (Supabase에서 가져오기)
+  const {
+    data: aiAnalysisData,
+    isLoading: isLoadingAiAnalysis,
+    isError: isAiAnalysisError,
+    refetch: refetchAiAnalysis,
+  } = useAiAnalysis(applicantId);
+
+  // AI 분석 요청 훅
+  const { requestAnalysis } = useAiAnalysisRequest();
 
   // 지원자 상태 업데이트 mutation
   const { mutate: updateStatus, isPending: isUpdating } =
@@ -105,15 +119,19 @@ export const ApplicantDetailPage = () => {
     [data?.group]
   );
 
-  // 직무 프로필 기반 분석 (Phase 3)
-  const jobFitAnalysis = useMemo(() => {
-    if (!analyzedResult || !data?.group) return null;
+  // jobDescription 우선순위: 그룹 description > 직무 프로필 description
+  const jobDescription = useMemo(() => {
+    if (!data?.group) return undefined;
 
+    // 1순위: 그룹에 입력된 description
+    if (data.group.description) {
+      return data.group.description;
+    }
+
+    // 2순위: 직무 프로필의 기본 description
     const jobProfile = getJobProfile(data.group.position);
-    if (!jobProfile) return null;
-
-    return calculateJobFitScoreV2(analyzedResult.scoreDistribution, jobProfile);
-  }, [analyzedResult, data?.group]);
+    return jobProfile?.description;
+  }, [data?.group]);
 
   // 상태 관리 (초기값을 applicant 데이터에서 가져오기)
   const [isStarred, setIsStarred] = useState(
@@ -123,26 +141,38 @@ export const ApplicantDetailPage = () => {
     "analysis" | "team" | "interview" | "jobmatch"
   >("analysis");
 
-  // AI 분석 상태 관리 (개선된 상태 머신)
-  const [aiAnalysisStatus, setAiAnalysisStatus] = useState<
-    "idle" | "pending" | "completed" | "failed"
-  >("idle");
-  const [aiAnalysisResult, setAiAnalysisResult] = useState<
-    import("../types/aiJobMatching.types").AIComparisonAnalysis | undefined
-  >();
+  // AI 분석 상태 관리 (Supabase 데이터 기반)
+  const aiAnalysisStatus: "idle" | "pending" | "completed" | "failed" =
+    isLoadingAiAnalysis
+      ? "pending"
+      : isAiAnalysisError
+        ? "failed"
+        : aiAnalysisData
+          ? "completed"
+          : "idle";
 
-  // AI 분석 요청 핸들러 (n8n Agent 연동 시 사용)
-  const handleRequestAnalysis = () => {
-    // TODO: n8n Agent API 호출
-    setAiAnalysisStatus("pending");
-    // API 호출 후 결과에 따라 setAiAnalysisStatus("completed" | "failed")
-    // 성공 시 setAiAnalysisResult(result)
+  const aiAnalysisResult = aiAnalysisData || undefined;
+
+  // AI 분석 요청 핸들러
+  const handleRequestAnalysis = async (additionalContext?: string) => {
+    if (!data?.group || !currentApplicant || !analyzedResult) {
+      showToast("error", "분석 실패", "분석에 필요한 데이터가 없습니다.");
+      return;
+    }
+
+    await requestAnalysis({
+      applicant: currentApplicant,
+      group: data.group,
+      positionLabel,
+      analyzedResult,
+      additionalContext,
+      onSuccess: refetchAiAnalysis,
+    });
   };
 
   // AI 분석 재시도 핸들러
   const handleRetryAnalysis = () => {
-    setAiAnalysisStatus("idle");
-    setAiAnalysisResult(undefined);
+    refetchAiAnalysis();
   };
 
   const handleBackClick = () => {
@@ -345,8 +375,7 @@ export const ApplicantDetailPage = () => {
             )}
             {activeTab === "jobmatch" && (
               <JobMatchTab
-                jobFitAnalysis={jobFitAnalysis}
-                positionLabel={positionLabel}
+                jobDescription={jobDescription}
                 aiAnalysisStatus={aiAnalysisStatus}
                 aiAnalysisResult={aiAnalysisResult}
                 onRequestAnalysis={handleRequestAnalysis}
@@ -373,94 +402,64 @@ export const ApplicantDetailPage = () => {
                 <span className="text-sm text-neutral-600">현재 상태:</span>
                 <span
                   className={`px-3 py-1.5 rounded-full text-sm font-medium ${
-                    currentApplicant.status === "pending"
-                      ? "bg-neutral-100 text-neutral-700"
-                      : currentApplicant.status === "shortlisted"
-                        ? "bg-info-50 text-info-700 border border-info-200"
-                        : currentApplicant.status === "interview"
-                          ? "bg-warning-50 text-warning-700 border border-warning-200"
-                          : currentApplicant.status === "rejected"
-                            ? "bg-error-50 text-error-700 border border-error-200"
-                            : "bg-success-50 text-success-700 border border-success-200"
+                    STATUS_BADGE_STYLES[currentApplicant.status as ApplicantStatus]
                   }`}
                 >
-                  {currentApplicant.status === "pending"
-                    ? "검토 대기"
-                    : currentApplicant.status === "shortlisted"
-                      ? "서류 합격"
-                      : currentApplicant.status === "interview"
-                        ? "면접 예정"
-                        : currentApplicant.status === "rejected"
-                          ? "불합격"
-                          : "최종 합격"}
+                  {STATUS_LABELS[currentApplicant.status as ApplicantStatus]}
                 </span>
               </div>
             </div>
 
             {/* 상태 변경 버튼들 */}
             <div className="flex flex-col sm:flex-row items-stretch gap-2">
-              <button
+              <StatusActionButton
+                status="shortlisted"
+                label="서류 합격"
+                currentStatus={currentApplicant.status}
+                isUpdating={isUpdating}
                 onClick={() => {
                   if (applicantId) {
                     updateStatus({ applicantId, status: "shortlisted" });
                   }
                 }}
-                disabled={
-                  currentApplicant.status === "shortlisted" || isUpdating
-                }
-                className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  currentApplicant.status === "shortlisted" || isUpdating
-                    ? "bg-neutral-100 text-neutral-400 cursor-not-allowed"
-                    : "border border-info text-info hover:bg-info-50"
-                }`}
-              >
-                {isUpdating ? "처리 중..." : "서류 합격"}
-              </button>
-              <button
+                variant="info"
+              />
+              <StatusActionButton
+                status="interview"
+                label="면접 예정"
+                currentStatus={currentApplicant.status}
+                isUpdating={isUpdating}
                 onClick={() => {
                   if (applicantId) {
                     updateStatus({ applicantId, status: "interview" });
                   }
                 }}
-                disabled={currentApplicant.status === "interview" || isUpdating}
-                className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  currentApplicant.status === "interview" || isUpdating
-                    ? "bg-neutral-100 text-neutral-400 cursor-not-allowed"
-                    : "border border-warning text-warning hover:bg-warning-50"
-                }`}
-              >
-                {isUpdating ? "처리 중..." : "면접 예정"}
-              </button>
-              <button
+                variant="warning"
+              />
+              <StatusActionButton
+                status="passed"
+                label="최종 합격"
+                currentStatus={currentApplicant.status}
+                isUpdating={isUpdating}
                 onClick={() => {
                   if (applicantId) {
                     updateStatus({ applicantId, status: "passed" });
                   }
                 }}
-                disabled={currentApplicant.status === "passed" || isUpdating}
-                className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  currentApplicant.status === "passed" || isUpdating
-                    ? "bg-neutral-100 text-neutral-400 cursor-not-allowed"
-                    : "bg-primary-500 text-white hover:bg-primary-600"
-                }`}
-              >
-                {isUpdating ? "처리 중..." : "최종 합격"}
-              </button>
-              <button
+                variant="success"
+              />
+              <StatusActionButton
+                status="rejected"
+                label="불합격"
+                currentStatus={currentApplicant.status}
+                isUpdating={isUpdating}
                 onClick={() => {
                   if (applicantId) {
                     updateStatus({ applicantId, status: "rejected" });
                   }
                 }}
-                disabled={currentApplicant.status === "rejected" || isUpdating}
-                className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  currentApplicant.status === "rejected" || isUpdating
-                    ? "bg-neutral-100 text-neutral-400 cursor-not-allowed"
-                    : "border border-error text-error hover:bg-error-50"
-                }`}
-              >
-                {isUpdating ? "처리 중..." : "불합격"}
-              </button>
+                variant="error"
+              />
             </div>
           </div>
         </div>
