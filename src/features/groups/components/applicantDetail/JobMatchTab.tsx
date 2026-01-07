@@ -1,7 +1,6 @@
-import { MdWorkOutline, MdAutoAwesome } from "react-icons/md";
-import type { JobFitAnalysis } from "../../utils/analyzeTestResult";
+import { useState } from "react";
+import { MdAutoAwesome } from "react-icons/md";
 import type { AIComparisonAnalysis } from "../../types/aiJobMatching.types";
-import { JobMatchAnalysisSection } from "./JobMatchAnalysisSection";
 
 /**
  * AI 분석 상태
@@ -13,58 +12,25 @@ import { JobMatchAnalysisSection } from "./JobMatchAnalysisSection";
 export type AIAnalysisStatus = "idle" | "pending" | "completed" | "failed";
 
 interface JobMatchTabProps {
-  jobFitAnalysis: JobFitAnalysis | null;
-  positionLabel: string;
+  jobDescription?: string; // 그룹의 description (선택)
   aiAnalysisStatus: AIAnalysisStatus;
   aiAnalysisResult?: AIComparisonAnalysis;
-  onRequestAnalysis: () => void;
+  onRequestAnalysis: (additionalContext?: string) => void;
   onRetry?: () => void;
 }
 
 export const JobMatchTab = ({
-  jobFitAnalysis,
-  positionLabel,
+  jobDescription,
   aiAnalysisStatus,
   aiAnalysisResult,
   onRequestAnalysis,
   onRetry,
 }: JobMatchTabProps) => {
-  // TODO: n8n Agent 연동 시 onRequestAnalysis를 버튼에 연결
-  // 현재는 버튼이 disabled 상태이므로 임시로 void 처리
-  void onRequestAnalysis;
+  // 추가 직무 설명 입력 상태
+  const [additionalContext, setAdditionalContext] = useState("");
 
   return (
     <div className="space-y-6">
-      {/* 기본 직무 매칭 분석 */}
-      {jobFitAnalysis && (
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <MdWorkOutline className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-            <h3 className="text-lg sm:text-xl font-bold text-neutral-800">
-              기본 직무 매칭 분석
-            </h3>
-          </div>
-          <JobMatchAnalysisSection
-            analysis={jobFitAnalysis}
-            jobTitle={positionLabel}
-          />
-        </div>
-      )}
-
-      {/* 구분선 - 기본 직무 매칭 분석이 있을 때만 표시 */}
-      {jobFitAnalysis && (
-        <div className="relative my-8">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-neutral-200" />
-          </div>
-          <div className="relative flex justify-center">
-            <span className="px-4 bg-white text-sm text-neutral-500 font-medium">
-              고급 분석
-            </span>
-          </div>
-        </div>
-      )}
-
       {/* AI 심층 분석 */}
       <div>
         <div className="mb-4">
@@ -85,100 +51,104 @@ export const JobMatchTab = ({
           </div>
         </div>
 
-        {/* AI 분석 트리거 카드 */}
-        <div className="bg-gradient-to-br from-primary-50 via-white to-purple-50 rounded-2xl border-2 border-primary-200 p-6 sm:p-8">
-          <div className="flex items-start gap-4">
-            <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center shadow-lg">
-              <MdAutoAwesome className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h4 className="text-base sm:text-lg font-bold text-neutral-800 mb-2">
-                5개 실행 축으로 심층 분석
-              </h4>
-              <p className="text-sm sm:text-base text-neutral-700 mb-4 leading-relaxed">
-                직무 실행 요구사항과 지원자의 업무 스타일 차이를 해석하고,
-                관리 시 고려할 점을 제공합니다.
-              </p>
-
-              <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 mb-4 border border-neutral-200">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs font-semibold text-primary-700 uppercase tracking-wide">
-                    분석 항목
-                  </span>
-                </div>
-                <ul className="space-y-2 text-sm text-neutral-700">
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary mt-0.5">•</span>
-                    <span>
-                      <strong>의사결정 속도:</strong> 빠른 판단 vs 신중한 검토
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary mt-0.5">•</span>
-                    <span>
-                      <strong>불확실성 내성:</strong> 애매한 상황 수용도
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary mt-0.5">•</span>
-                    <span>
-                      <strong>자율성:</strong> 독립적 업무 선호도
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary mt-0.5">•</span>
-                    <span>
-                      <strong>관계 중심성:</strong> 협업 vs 개인 작업
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary mt-0.5">•</span>
-                    <span>
-                      <strong>정확성 요구도:</strong> 디테일 집중도
-                    </span>
-                  </li>
-                </ul>
+        {/* AI 분석 트리거 카드 - completed 상태가 아닐 때만 표시 */}
+        {aiAnalysisStatus !== "completed" && (
+          <div className="bg-gradient-to-br from-primary-50 via-white to-purple-50 rounded-2xl border-2 border-primary-200 p-6 sm:p-8">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center shadow-lg">
+                <MdAutoAwesome className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
               </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="text-base sm:text-lg font-bold text-neutral-800 mb-2">
+                  5개 실행 축으로 심층 분석
+                </h4>
+                <p className="text-sm sm:text-base text-neutral-700 mb-4 leading-relaxed">
+                  직무 실행 요구사항과 지원자의 업무 스타일 차이를 해석하고, 관리
+                  시 고려할 점을 제공합니다.
+                </p>
 
-              {/* 분석 안내 및 버튼 섹션 - 통합 디자인 */}
-              <div className="space-y-3">
-                {/* 크레딧 안내 */}
-                <div className="flex items-start gap-3 p-3 bg-warning-50 border border-warning-200 rounded-lg">
-                  <span className="text-xl flex-shrink-0 mt-0.5">💳</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-warning-900 leading-relaxed">
-                      <span className="font-semibold">크레딧 1 소모</span>
-                      <span className="text-neutral-700 ml-1">
-                        (분석 후 재조회는 무료)
+                <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 mb-4 border border-neutral-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs font-semibold text-primary-700 uppercase tracking-wide">
+                      분석 항목
+                    </span>
+                  </div>
+                  <ul className="space-y-2 text-sm text-neutral-700">
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5">•</span>
+                      <span>
+                        <strong>의사결정 속도:</strong> 빠른 판단 vs 신중한 검토
                       </span>
-                    </p>
-                  </div>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5">•</span>
+                      <span>
+                        <strong>불확실성 내성:</strong> 애매한 상황 수용도
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5">•</span>
+                      <span>
+                        <strong>자율성:</strong> 독립적 업무 선호도
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5">•</span>
+                      <span>
+                        <strong>관계 중심성:</strong> 협업 vs 개인 작업
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5">•</span>
+                      <span>
+                        <strong>정확성 요구도:</strong> 디테일 집중도
+                      </span>
+                    </li>
+                  </ul>
                 </div>
 
-                {/* 중요 안내 */}
-                <div className="flex items-start gap-3 p-3 bg-info-50 border border-info-200 rounded-lg">
-                  <span className="text-xl flex-shrink-0 mt-0.5">ℹ️</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-info-900 leading-relaxed">
-                      <span className="font-semibold">중요:</span> AI는
-                      "적합/부적합"을 판단하지 않습니다. 실행 방식의 차이를
-                      객관적으로 해석하고, 관리 시 고려할 점을 제공합니다.
-                    </p>
-                  </div>
-                </div>
-
-                {/* 분석 버튼 - 상태에 따라 다르게 표시 */}
+                {/* 분석 섹션 */}
                 {aiAnalysisStatus === "idle" && (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
+                    {/* 추가 설명 입력 - 항상 표시 */}
+                    <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-4">
+                      <label className="block text-sm font-medium text-neutral-700 mb-2">
+                        추가 직무 설명 (선택)
+                      </label>
+                      <textarea
+                        value={additionalContext}
+                        onChange={e => setAdditionalContext(e.target.value)}
+                        placeholder="예: 현장 대응이 많은 직무입니다 / 반복 업무 비중이 높은 편입니다 / 고객 클레임 응대가 중요합니다"
+                        className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+                        rows={2}
+                      />
+                      <p className="mt-1 text-xs text-neutral-500">
+                        AI가 직무 특성을 더 잘 이해할 수 있도록 도와주세요
+                      </p>
+                    </div>
+
+                    {/* 분석 시작 버튼 */}
                     <button
-                      disabled
-                      className="w-full px-6 py-3 bg-neutral-200 text-neutral-500 rounded-lg font-semibold text-sm sm:text-base cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
+                      onClick={() => {
+                        // jobDescription이 있으면 공백 추가해서 구분
+                        const context = jobDescription
+                          ? `${jobDescription} ${additionalContext}`.trim()
+                          : additionalContext || undefined;
+                        onRequestAnalysis(context);
+                      }}
+                      className="w-full sm:w-auto px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-semibold text-sm sm:text-base flex items-center justify-center gap-2 transition-colors"
                     >
                       <MdAutoAwesome className="w-5 h-5" />
-                      <span>분석 시작 (준비 중)</span>
+                      <span>AI 분석 시작</span>
                     </button>
-                    <p className="text-xs text-center text-neutral-500">
-                      AI Agent 구현 예정 기능입니다
+
+                    {/* 크레딧 안내 */}
+                    <p className="text-xs text-neutral-600 flex items-center gap-1.5">
+                      <span>💳</span>
+                      <span>
+                        크레딧 1 소모{" "}
+                        <span className="text-neutral-500">· 재조회 무료</span>
+                      </span>
                     </p>
                   </div>
                 )}
@@ -192,20 +162,6 @@ export const JobMatchTab = ({
                         (약 10-15초 소요)
                       </span>
                     </p>
-                  </div>
-                )}
-
-                {aiAnalysisStatus === "completed" && (
-                  <div className="flex items-start gap-3 p-3 bg-success-50 border border-success-200 rounded-lg">
-                    <span className="text-xl flex-shrink-0 mt-0.5">✓</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-success-900 leading-relaxed">
-                        <span className="font-semibold">분석 완료</span>
-                        <span className="text-success-700 ml-1">
-                          아래에서 결과를 확인하세요
-                        </span>
-                      </p>
-                    </div>
                   </div>
                 )}
 
@@ -224,7 +180,7 @@ export const JobMatchTab = ({
                     </div>
                     <button
                       onClick={onRetry}
-                      className="w-full px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-semibold text-sm sm:text-base transition-colors flex items-center justify-center gap-2"
+                      className="w-full sm:w-auto px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-semibold text-sm sm:text-base transition-colors flex items-center justify-center gap-2"
                     >
                       <MdAutoAwesome className="w-5 h-5" />
                       <span>다시 시도</span>
@@ -234,7 +190,7 @@ export const JobMatchTab = ({
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* 분석 전: 개념적 미리보기 */}
         {(aiAnalysisStatus === "idle" || aiAnalysisStatus === "pending") && (
@@ -268,8 +224,8 @@ export const JobMatchTab = ({
                     온보딩 및 일상 업무 관리 포인트
                   </h6>
                   <p className="text-xs sm:text-sm text-neutral-600">
-                    실행 방식 차이를 고려한 구체적인 관리 가이드와
-                    주의사항을 제공합니다.
+                    실행 방식 차이를 고려한 구체적인 관리 가이드와 주의사항을
+                    제공합니다.
                   </p>
                 </div>
               </div>
@@ -294,8 +250,8 @@ export const JobMatchTab = ({
               <p className="text-xs text-neutral-600 flex items-center gap-2">
                 <span>💡</span>
                 <span>
-                  분석 후에는 실제 데이터 기반의 상세한 해석 결과를 확인하실
-                  수 있습니다.
+                  분석 후에는 실제 데이터 기반의 상세한 해석 결과를 확인하실 수
+                  있습니다.
                 </span>
               </p>
             </div>
@@ -322,7 +278,7 @@ export const JobMatchTab = ({
 
             {/* 축별 차이 분석 */}
             <div className="space-y-4">
-              {aiAnalysisResult.axisDifferences.map((diff) => (
+              {aiAnalysisResult.axisDifferences.map(diff => (
                 <div
                   key={diff.axis}
                   className="bg-white rounded-lg p-4 border border-neutral-200"
@@ -370,9 +326,7 @@ export const JobMatchTab = ({
                     </div>
                     <div>
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs text-neutral-600">
-                          지원자
-                        </span>
+                        <span className="text-xs text-neutral-600">지원자</span>
                         <span className="text-xs font-medium text-purple-700">
                           {diff.applicantScore}점
                         </span>
@@ -449,8 +403,8 @@ export const JobMatchTab = ({
             {/* 크레딧 정보 */}
             <div className="mt-4 pt-4 border-t border-neutral-200">
               <p className="text-xs text-neutral-500">
-                이 분석은 크레딧 {aiAnalysisResult.creditsUsed}개를 소모했습니다.
-                재조회는 무료입니다.
+                이 분석은 크레딧 {aiAnalysisResult.creditsUsed}개를
+                소모했습니다. 재조회는 무료입니다.
               </p>
             </div>
           </div>
@@ -476,7 +430,9 @@ export const JobMatchTab = ({
                 <div className="space-y-2 mb-3">
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-neutral-600">직무 요구</span>
+                      <span className="text-xs text-neutral-600">
+                        직무 요구
+                      </span>
                       <span className="text-xs font-medium text-primary-700">
                         빠른 판단 경향
                       </span>
@@ -517,8 +473,8 @@ export const JobMatchTab = ({
                   </span>
                 </div>
                 <p className="text-sm text-success-900 leading-relaxed">
-                  장애 대응 매뉴얼과 의사결정 트리를 미리 제공하여 신속한
-                  판단을 지원하세요.
+                  장애 대응 매뉴얼과 의사결정 트리를 미리 제공하여 신속한 판단을
+                  지원하세요.
                 </p>
               </div>
             </div>
