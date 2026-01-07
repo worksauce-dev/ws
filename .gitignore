@@ -25,8 +25,7 @@ dist-ssr
 
 
 .env.local
-CLAUDE.md
 
 # Database schema (local reference only)
-DATABASE_SCHEMA.md
-NOTIFICATION_IMPLEMENTATION_PLAN.md
+*.md
+*.sql
