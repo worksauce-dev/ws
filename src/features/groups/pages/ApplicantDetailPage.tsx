@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   MdPsychology,
@@ -141,15 +141,20 @@ export const ApplicantDetailPage = () => {
     "analysis" | "team" | "interview" | "jobmatch"
   >("analysis");
 
-  // AI 분석 상태 관리 (Supabase 데이터 기반)
+  // AI 분석 진행 중 상태 관리 (로컬 상태)
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  // AI 분석 상태 관리 (Supabase 데이터 기반 + 로컬 상태)
   const aiAnalysisStatus: "idle" | "pending" | "completed" | "failed" =
-    isLoadingAiAnalysis
-      ? "pending"
-      : isAiAnalysisError
-        ? "failed"
-        : aiAnalysisData
-          ? "completed"
-          : "idle";
+    isAnalyzing
+      ? "pending" // 분석 요청 후 결과 대기 중
+      : isLoadingAiAnalysis
+        ? "pending" // Supabase 조회 중
+        : isAiAnalysisError
+          ? "failed"
+          : aiAnalysisData
+            ? "completed"
+            : "idle";
 
   const aiAnalysisResult = aiAnalysisData || undefined;
 
@@ -160,13 +165,18 @@ export const ApplicantDetailPage = () => {
       return;
     }
 
+    setIsAnalyzing(true); // 분석 시작 상태로 전환
+
     await requestAnalysis({
       applicant: currentApplicant,
       group: data.group,
       positionLabel,
       analyzedResult,
       additionalContext,
-      onSuccess: refetchAiAnalysis,
+      onSuccess: () => {
+        // n8n 응답 받은 직후에는 isAnalyzing 유지 (백그라운드 분석 진행 중)
+        // 알림이 오면 사용자가 페이지를 다시 방문하거나 새로고침할 것
+      },
     });
   };
 
@@ -174,6 +184,13 @@ export const ApplicantDetailPage = () => {
   const handleRetryAnalysis = () => {
     refetchAiAnalysis();
   };
+
+  // AI 분석 완료 시 isAnalyzing 상태 해제
+  useEffect(() => {
+    if (aiAnalysisData) {
+      setIsAnalyzing(false);
+    }
+  }, [aiAnalysisData]);
 
   const handleBackClick = () => {
     navigate(`/dashboard/groups/${groupId}`);

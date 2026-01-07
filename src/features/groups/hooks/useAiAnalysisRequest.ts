@@ -102,6 +102,7 @@ export const useAiAnalysisRequest = () => {
           id: applicant.id,
           name: applicant.name,
           email: applicant.email,
+          test_result: applicant.test_result,
         },
         testResult: {
           statementScores: applicant.test_result.statementScores,
@@ -122,31 +123,31 @@ export const useAiAnalysisRequest = () => {
       logger.log("👤 지원자:", requestPayload.applicant.name);
       logger.log("🔬 주 유형:", requestPayload.testResult.primaryType);
 
-      // 5. n8n Webhook 호출
+      // 5. n8n Webhook 호출 (Fire-and-forget)
       const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_URL;
       if (!webhookUrl) {
         throw new Error("VITE_N8N_WEBHOOK_URL 환경 변수가 설정되지 않았습니다.");
       }
 
-      const response = await fetch(webhookUrl, {
+      // 응답을 기다리지 않고 요청만 전송 (백그라운드 처리)
+      fetch(webhookUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(requestPayload),
+      }).catch((error) => {
+        logger.error("❌ n8n webhook 호출 실패 (백그라운드):", error);
       });
 
-      if (!response.ok) {
-        throw new Error(
-          `n8n webhook 호출 실패: ${response.status} ${response.statusText}`
-        );
-      }
+      logger.log("🚀 AI 분석 요청 전송 완료 (백그라운드 처리 중)");
 
-      const result = await response.json();
-      logger.log("✅ n8n 응답 받음:", result);
-
-      // 6. 성공 처리
-      showToast("success", "분석 완료", "AI 분석이 완료되었습니다.");
+      // 6. 즉시 사용자에게 피드백 제공
+      showToast(
+        "info",
+        "분석 시작",
+        "AI 분석을 진행 중입니다. 완료되면 알림으로 안내드립니다."
+      );
       onSuccess?.();
     } catch (error) {
       logger.error("❌ AI 분석 요청 실패:", error);
