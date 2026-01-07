@@ -5,6 +5,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { getGroupsWithApplicants } from "../api/dashboardApi";
+import { CACHE_TIMES } from "@/shared/constants/cache";
 import type { Group } from "@/features/groups/types/group.types";
 
 export const useGroups = () => {
@@ -17,8 +18,8 @@ export const useGroups = () => {
   } = useQuery<Group[]>({
     queryKey: ["groups"],
     queryFn: getGroupsWithApplicants,
-    staleTime: 5 * 60 * 1000, // 5분간 fresh 상태 유지
-    gcTime: 10 * 60 * 1000, // 10분간 캐시 유지
+    staleTime: CACHE_TIMES.FIVE_MINUTES,
+    gcTime: CACHE_TIMES.TEN_MINUTES,
     refetchOnWindowFocus: true, // 창 포커스 시 자동 새로고침
     retry: 2, // 실패 시 2번 재시도
   });
