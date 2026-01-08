@@ -198,10 +198,19 @@ export const ApplicantDetailPage = () => {
     navigate(`/dashboard/groups/${groupId}`);
   };
 
+  // 크레딧 클릭 처리
+  const handleCreditClick = () => {
+    showToast(
+      "info",
+      "크레딧 충전",
+      "크레딧 충전 기능은 곧 제공될 예정입니다."
+    );
+  };
+
   // 로딩 상태
   if (isLoading) {
     return (
-      <DashboardLayout title="로딩 중..." description="" credits={credits}>
+      <DashboardLayout title="로딩 중..." description="" credits={credits} onCreditClick={handleCreditClick}>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="w-16 h-16 mx-auto mb-4 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
@@ -217,7 +226,7 @@ export const ApplicantDetailPage = () => {
   // 에러 상태
   if (isError || !data?.group || !currentApplicant) {
     return (
-      <DashboardLayout title="오류" description="" credits={credits}>
+      <DashboardLayout title="오류" description="" credits={credits} onCreditClick={handleCreditClick}>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <p className="text-error text-lg mb-4">
@@ -240,6 +249,7 @@ export const ApplicantDetailPage = () => {
     return (
       <DashboardLayout
         credits={credits}
+        onCreditClick={handleCreditClick}
         breadcrumbs={[
           { label: "대시보드", href: "/dashboard" },
           { label: data.group.name, href: `/dashboard/groups/${groupId}` },
@@ -267,6 +277,7 @@ export const ApplicantDetailPage = () => {
   return (
     <DashboardLayout
       credits={credits}
+      onCreditClick={handleCreditClick}
       breadcrumbs={[
         { label: "대시보드", href: "/dashboard" },
         { label: data.group.name, href: `/dashboard/groups/${groupId}` },
