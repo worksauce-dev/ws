@@ -30,7 +30,7 @@ type ViewMode = "grid" | "calendar";
 export const DashboardPage = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { credits, isAuthenticated } = useUser();
+  const { isAuthenticated } = useUser();
 
   // 데이터 페칭
   const { groups, isLoading, error, refetch } = useGroups();
@@ -121,7 +121,6 @@ export const DashboardPage = () => {
 
   return (
     <DashboardLayout
-      credits={credits}
       onCreditClick={handleCreditClick}
       isMobileMenuOpen={isMobileMenuOpen}
       onMobileMenuToggle={setIsMobileMenuOpen}

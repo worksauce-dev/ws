@@ -8,7 +8,6 @@ import {
   MdWorkOutline,
 } from "react-icons/md";
 import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
-import { useUser } from "@/shared/hooks/useUser";
 import { useGroupDetail } from "../hooks/useGroupDetail";
 import { useUpdateApplicantStatus } from "../hooks/useUpdateApplicantStatus";
 import { useAiAnalysis } from "../hooks/useAiAnalysis";
@@ -27,7 +26,10 @@ import { TeamSynergyTab } from "../components/applicantDetail/TeamSynergyTab";
 import { InterviewGuideTab } from "../components/applicantDetail/InterviewGuideTab";
 import { JobMatchTab } from "../components/applicantDetail/JobMatchTab";
 import { StatusActionButton } from "../components/applicantDetail/StatusActionButton";
-import { STATUS_LABELS, STATUS_BADGE_STYLES } from "@/shared/constants/applicantStatus";
+import {
+  STATUS_LABELS,
+  STATUS_BADGE_STYLES,
+} from "@/shared/constants/applicantStatus";
 import type { ApplicantStatus } from "@/shared/types/database.types";
 
 export const ApplicantDetailPage = () => {
@@ -37,7 +39,6 @@ export const ApplicantDetailPage = () => {
   }>();
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const { credits } = useUser();
 
   // 그룹 상세 정보 조회 (지원자 데이터 포함)
   const { data, isLoading, isError, error } = useGroupDetail(groupId || "");
@@ -210,7 +211,11 @@ export const ApplicantDetailPage = () => {
   // 로딩 상태
   if (isLoading) {
     return (
-      <DashboardLayout title="로딩 중..." description="" credits={credits} onCreditClick={handleCreditClick}>
+      <DashboardLayout
+        title="로딩 중..."
+        description=""
+        onCreditClick={handleCreditClick}
+      >
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="w-16 h-16 mx-auto mb-4 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
@@ -226,7 +231,11 @@ export const ApplicantDetailPage = () => {
   // 에러 상태
   if (isError || !data?.group || !currentApplicant) {
     return (
-      <DashboardLayout title="오류" description="" credits={credits} onCreditClick={handleCreditClick}>
+      <DashboardLayout
+        title="오류"
+        description=""
+        onCreditClick={handleCreditClick}
+      >
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <p className="text-error text-lg mb-4">
@@ -248,7 +257,6 @@ export const ApplicantDetailPage = () => {
   if (!currentApplicant.test_result) {
     return (
       <DashboardLayout
-        credits={credits}
         onCreditClick={handleCreditClick}
         breadcrumbs={[
           { label: "대시보드", href: "/dashboard" },
@@ -276,7 +284,6 @@ export const ApplicantDetailPage = () => {
 
   return (
     <DashboardLayout
-      credits={credits}
       onCreditClick={handleCreditClick}
       breadcrumbs={[
         { label: "대시보드", href: "/dashboard" },
@@ -426,7 +433,9 @@ export const ApplicantDetailPage = () => {
                 <span className="text-sm text-neutral-600">현재 상태:</span>
                 <span
                   className={`px-3 py-1.5 rounded-full text-sm font-medium ${
-                    STATUS_BADGE_STYLES[currentApplicant.status as ApplicantStatus]
+                    STATUS_BADGE_STYLES[
+                      currentApplicant.status as ApplicantStatus
+                    ]
                   }`}
                 >
                   {STATUS_LABELS[currentApplicant.status as ApplicantStatus]}

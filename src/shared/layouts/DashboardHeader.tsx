@@ -1,7 +1,6 @@
 import { type ReactNode, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  MdArrowBack,
   MdChevronRight,
   MdSettings,
   MdLogout,
@@ -34,8 +33,6 @@ interface DashboardHeaderProps {
   title: string;
   description?: string;
   breadcrumbs?: BreadcrumbItem[];
-  showBackButton?: boolean;
-  onBackClick?: () => void;
   actions?: ReactNode;
   statusBadge?: ReactNode;
   userProfile?: UserProfile;
@@ -50,8 +47,6 @@ export const DashboardHeader = ({
   title,
   description,
   breadcrumbs,
-  showBackButton = false,
-  onBackClick,
   actions,
   statusBadge,
   userProfile,
@@ -137,61 +132,33 @@ export const DashboardHeader = ({
   return (
     <div className="bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Breadcrumbs (only when breadcrumbs exist) */}
-        {breadcrumbs && breadcrumbs.length > 0 && (
-          <div className="py-3 border-b border-gray-100">
-            <div className="flex items-center justify-between">
-              {/* Logo */}
-              <Logo variant="header" linkTo="/" className="flex-shrink-0" />
-
-              {/* Breadcrumbs */}
-              <nav className="flex items-center space-x-2 text-sm flex-1 ml-4">
-                {breadcrumbs.map((item, index) => (
-                  <div key={index} className="flex items-center">
-                    {index > 0 && (
-                      <MdChevronRight className="w-4 h-4 text-neutral-400 mx-2" />
-                    )}
-
-                    {/* href가 있으면 Link, onClick만 있으면 button, 둘 다 없으면 span */}
-                    {item.href ? (
-                      <Link to={item.href} className={linkClassName}>
-                        {item.label}
-                      </Link>
-                    ) : item.onClick ? (
-                      <button onClick={item.onClick} className={linkClassName}>
-                        {item.label}
-                      </button>
-                    ) : (
-                      <span className={currentClassName}>{item.label}</span>
-                    )}
-                  </div>
-                ))}
-              </nav>
-            </div>
-          </div>
-        )}
-
         {/* Main Header */}
         <div className="flex items-center justify-between py-6">
           <div className="flex items-center min-w-0 flex-1">
-            {/* Logo (only when no breadcrumbs) */}
-            {(!breadcrumbs || breadcrumbs.length === 0) && (
-              <Logo
-                variant="header"
-                linkTo="/"
-                className="mr-4 flex-shrink-0"
-              />
-            )}
+            {/* Logo  */}
+            <Logo variant="header" linkTo="/" className="mr-4 flex-shrink-0" />
+            {/* Breadcrumbs */}
+            <nav className="flex items-center space-x-2 text-sm flex-1 ml-4">
+              {breadcrumbs?.map((item, index) => (
+                <div key={index} className="flex items-center">
+                  {index > 0 && (
+                    <MdChevronRight className="w-4 h-4 text-neutral-400 mx-2" />
+                  )}
 
-            {/* Back Button */}
-            {showBackButton && (
-              <button
-                onClick={onBackClick}
-                className="mr-4 p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex-shrink-0"
-              >
-                <MdArrowBack className="w-5 h-5 text-neutral-500" />
-              </button>
-            )}
+                  {item.href ? (
+                    <Link to={item.href} className={linkClassName}>
+                      {item.label}
+                    </Link>
+                  ) : item.onClick ? (
+                    <button onClick={item.onClick} className={linkClassName}>
+                      {item.label}
+                    </button>
+                  ) : (
+                    <span className={currentClassName}>{item.label}</span>
+                  )}
+                </div>
+              )) ?? null}
+            </nav>
 
             {/* Title Section */}
             <div className="min-w-0 flex-1">

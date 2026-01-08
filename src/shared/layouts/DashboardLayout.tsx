@@ -13,13 +13,10 @@ interface DashboardLayoutProps {
   title?: string;
   description?: string;
   breadcrumbs?: BreadcrumbItem[];
-  showBackButton?: boolean;
-  onBackClick?: () => void;
   actions?: ReactNode;
   statusBadge?: ReactNode;
   maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl" | "7xl";
   padding?: "sm" | "md" | "lg";
-  credits?: number;
   onCreditClick?: () => void;
   creditsLoading?: boolean;
   isMobileMenuOpen?: boolean;
@@ -31,13 +28,10 @@ export const DashboardLayout = ({
   title,
   description,
   breadcrumbs,
-  showBackButton = false,
-  onBackClick,
   actions,
   statusBadge,
   maxWidth = "7xl",
   padding = "lg",
-  credits,
   onCreditClick,
   creditsLoading = false,
   isMobileMenuOpen,
@@ -75,7 +69,7 @@ export const DashboardLayout = ({
     }
   };
 
-  const { userName, userEmail, isAuthenticated } = useUser();
+  const { userName, userEmail, isAuthenticated, credits } = useUser();
 
   if (!isAuthenticated) {
     return null;
@@ -88,8 +82,6 @@ export const DashboardLayout = ({
         title={title || ""}
         description={description}
         breadcrumbs={breadcrumbs}
-        showBackButton={showBackButton}
-        onBackClick={onBackClick}
         actions={actions}
         statusBadge={statusBadge}
         userProfile={{

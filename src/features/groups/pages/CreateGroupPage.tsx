@@ -81,13 +81,10 @@ export const CreateGroupPage = () => {
 
   return (
     <DashboardLayout
-      title="새 채용 그룹 만들기"
       breadcrumbs={[
         { label: "대시보드", href: "/dashboard" },
         { label: "새 그룹 생성" },
       ]}
-      showBackButton={true}
-      onBackClick={handleBackClick}
     >
       <div className="max-w-7xl mx-auto">
         <form onSubmit={handleSubmit} noValidate>
@@ -173,7 +170,8 @@ export const CreateGroupPage = () => {
                 onClick={() =>
                   customPosition.addPositionWithValidation(
                     customPosition.customPosition,
-                    position => groupForm.handleInputChange("position", position)
+                    position =>
+                      groupForm.handleInputChange("position", position)
                   )
                 }
               >

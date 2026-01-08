@@ -19,10 +19,6 @@ import { GroupInfoSidebar } from "../components/GroupInfoSidebar";
 import { WorkTypeDistribution } from "../components/WorkTypeDistribution";
 import { GroupPageSkeleton } from "../components/GroupPageSkeleton";
 import {
-  getGroupStatusColor,
-  getGroupStatusText,
-} from "../utils/groupStatusHelpers";
-import {
   getWorkTypeName,
   getWorkTypeColor,
   convertToScoreDistribution,
@@ -40,7 +36,13 @@ export const GroupPage = () => {
   const { calculateDday, getDdayColor } = useDdayCalculator();
 
   const [selectedTab, setSelectedTab] = useState<
-    "all" | "completed" | "pending" | "shortlisted" | "interview" | "rejected" | "passed"
+    | "all"
+    | "completed"
+    | "pending"
+    | "shortlisted"
+    | "interview"
+    | "rejected"
+    | "passed"
   >("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddApplicantModalOpen, setIsAddApplicantModalOpen] = useState(false);
@@ -214,21 +216,10 @@ export const GroupPage = () => {
 
   return (
     <DashboardLayout
-      title={currentGroup.name}
-      description={currentGroup.description || ""}
-      showBackButton={true}
-      onBackClick={handleBackClick}
       breadcrumbs={[
         { label: "대시보드", href: "/dashboard" },
         { label: currentGroup.name },
       ]}
-      statusBadge={
-        <span
-          className={`hidden sm:inline-flex px-2 py-1 rounded-md text-xs font-medium border ${getGroupStatusColor(currentGroup)}`}
-        >
-          {getGroupStatusText(currentGroup)}
-        </span>
-      }
     >
       {/* 지원자 추가 모달 */}
       <AddApplicantModal
@@ -244,7 +235,9 @@ export const GroupPage = () => {
               <MdPerson className="w-4 h-4 sm:w-6 sm:h-6 text-info" />
             </div>
             <div>
-              <p className="text-xs sm:text-sm font-medium text-neutral-600">총 지원자</p>
+              <p className="text-xs sm:text-sm font-medium text-neutral-600">
+                총 지원자
+              </p>
               <p className="text-lg sm:text-2xl font-bold text-neutral-800">
                 {applicants.length}명
               </p>
@@ -281,7 +274,9 @@ export const GroupPage = () => {
               <MdTrendingUp className="w-4 h-4 sm:w-6 sm:h-6 text-warning" />
             </div>
             <div>
-              <p className="text-xs sm:text-sm font-medium text-neutral-600">추천 후보</p>
+              <p className="text-xs sm:text-sm font-medium text-neutral-600">
+                추천 후보
+              </p>
               <div className="flex items-baseline gap-1 sm:gap-2">
                 <p className="text-lg sm:text-2xl font-bold text-neutral-800">
                   {recommendedCount}명

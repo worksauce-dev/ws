@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
 import { SettingsSidebar } from "../components/SettingsSidebar";
 import { ProfileSection } from "../components/ProfileSection";
@@ -8,12 +7,7 @@ import { NotificationsSection } from "../components/NotificationsSection";
 import type { SettingsTab } from "../types/settings.types";
 
 export const SettingsPage = () => {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
-
-  const handleBackClick = () => {
-    navigate("/dashboard");
-  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -30,10 +24,6 @@ export const SettingsPage = () => {
 
   return (
     <DashboardLayout
-      title="설정"
-      description="계정 및 앱 설정을 관리하세요"
-      showBackButton={true}
-      onBackClick={handleBackClick}
       breadcrumbs={[
         { label: "대시보드", href: "/dashboard" },
         { label: "설정" },
