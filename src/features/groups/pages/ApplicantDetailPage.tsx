@@ -8,6 +8,7 @@ import {
   MdWorkOutline,
 } from "react-icons/md";
 import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
+import { useUser } from "@/shared/hooks/useUser";
 import { useGroupDetail } from "../hooks/useGroupDetail";
 import { useUpdateApplicantStatus } from "../hooks/useUpdateApplicantStatus";
 import { useAiAnalysis } from "../hooks/useAiAnalysis";
@@ -36,6 +37,7 @@ export const ApplicantDetailPage = () => {
   }>();
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const { credits } = useUser();
 
   // 그룹 상세 정보 조회 (지원자 데이터 포함)
   const { data, isLoading, isError, error } = useGroupDetail(groupId || "");
@@ -199,7 +201,7 @@ export const ApplicantDetailPage = () => {
   // 로딩 상태
   if (isLoading) {
     return (
-      <DashboardLayout title="로딩 중..." description="">
+      <DashboardLayout title="로딩 중..." description="" credits={credits}>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="w-16 h-16 mx-auto mb-4 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
@@ -215,7 +217,7 @@ export const ApplicantDetailPage = () => {
   // 에러 상태
   if (isError || !data?.group || !currentApplicant) {
     return (
-      <DashboardLayout title="오류" description="">
+      <DashboardLayout title="오류" description="" credits={credits}>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <p className="text-error text-lg mb-4">
@@ -239,6 +241,7 @@ export const ApplicantDetailPage = () => {
       <DashboardLayout
         title={currentApplicant.name}
         description={currentApplicant.email}
+        credits={credits}
         showBackButton={true}
         onBackClick={handleBackClick}
         breadcrumbs={[
@@ -269,6 +272,7 @@ export const ApplicantDetailPage = () => {
     <DashboardLayout
       title={currentApplicant.name}
       description="소스테스트 결과 기반 채용 의사결정 지원"
+      credits={credits}
       showBackButton={true}
       onBackClick={handleBackClick}
       breadcrumbs={[
