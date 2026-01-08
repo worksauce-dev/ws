@@ -239,11 +239,7 @@ export const ApplicantDetailPage = () => {
   if (!currentApplicant.test_result) {
     return (
       <DashboardLayout
-        title={currentApplicant.name}
-        description={currentApplicant.email}
         credits={credits}
-        showBackButton={true}
-        onBackClick={handleBackClick}
         breadcrumbs={[
           { label: "대시보드", href: "/dashboard" },
           { label: data.group.name, href: `/dashboard/groups/${groupId}` },
@@ -270,11 +266,7 @@ export const ApplicantDetailPage = () => {
 
   return (
     <DashboardLayout
-      title={currentApplicant.name}
-      description="소스테스트 결과 기반 채용 의사결정 지원"
       credits={credits}
-      showBackButton={true}
-      onBackClick={handleBackClick}
       breadcrumbs={[
         { label: "대시보드", href: "/dashboard" },
         { label: data.group.name, href: `/dashboard/groups/${groupId}` },
