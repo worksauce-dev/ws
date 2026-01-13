@@ -111,13 +111,20 @@ export const useNotifications = (userId: string | undefined) => {
             duration: 5000,
           });
 
-          // React Query 캐시 무효화 (최신 데이터 다시 조회)
-          queryClient.invalidateQueries({
-            queryKey: ["notifications", userId],
-          });
-          queryClient.invalidateQueries({
-            queryKey: ["notifications", "unread", userId],
-          });
+          // 즉시 캐시에 새 알림 추가 (Optimistic Update)
+          queryClient.setQueryData<Notification[]>(
+            ["notifications", userId],
+            (oldData) => {
+              if (!oldData) return [newNotification];
+              return [newNotification, ...oldData];
+            }
+          );
+
+          // 읽지 않은 알림 개수 증가
+          queryClient.setQueryData<number>(
+            ["notifications", "unread", userId],
+            (oldCount) => (oldCount || 0) + 1
+          );
 
           // AI 분석 완료 알림인 경우, AI 분석 캐시도 무효화
           if (newNotification.type === "ai_analysis_complete") {
