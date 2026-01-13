@@ -108,8 +108,6 @@ export const AdminPage = () => {
 
   return (
     <DashboardLayout
-      title="관리자 대시보드"
-      description="시스템 관리 및 모니터링"
       breadcrumbs={[
         { label: "대시보드", href: "/dashboard" },
         { label: "관리자" },

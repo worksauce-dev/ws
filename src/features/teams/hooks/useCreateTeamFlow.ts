@@ -41,6 +41,9 @@ export const useCreateTeamFlow = (
   // 팀 생성 mutation (onSuccess/onError 없이)
   const { mutate: createTeamMutation, isPending: isCreating } = useCreateTeam();
 
+  // options를 구조분해하여 의존성 배열에 개별 값 추가
+  const { showRealName = true, onComplete } = options;
+
   /**
    * 전체 플로우 실행
    */
@@ -85,7 +88,7 @@ export const useCreateTeamFlow = (
             id: data.team.id,
             deadline: deadline.toISOString().split("T")[0],
           },
-          showRealName: options.showRealName ?? true,
+          showRealName,
           recipientLabel: "팀원", // 팀 생성 시에는 "팀원"으로 표시
           onProgress: progress => {
             setFlowState(prev => ({
@@ -103,9 +106,9 @@ export const useCreateTeamFlow = (
 
         // Step 4: 완료 후 처리 (1.5초 후)
         setTimeout(() => {
-          if (options.onComplete) {
+          if (onComplete) {
             // 커스텀 완료 핸들러가 있으면 실행 (모달 닫기 등)
-            options.onComplete();
+            onComplete();
           } else {
             // 없으면 페이지 이동 (CreateTeamPage에서 사용)
             navigate("/dashboard/teams");
@@ -124,7 +127,7 @@ export const useCreateTeamFlow = (
         showToast("error", "생성 실패", errorMessage);
       }
     },
-    [createTeamMutation, sendEmails, navigate, showToast, options.showRealName, options.onComplete]
+    [createTeamMutation, sendEmails, navigate, showToast, showRealName, onComplete]
   );
 
   /**

@@ -155,8 +155,6 @@ export const SurveysManagementPage = () => {
 
   return (
     <DashboardLayout
-      title="설문조사 관리"
-      description="미니 테스트 설문조사 응답 현황"
       breadcrumbs={[
         { label: "대시보드", href: "/dashboard" },
         { label: "관리자", href: "/admin" },

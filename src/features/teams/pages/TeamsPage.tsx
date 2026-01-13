@@ -26,7 +26,9 @@ export const TeamsPage = () => {
 
   // 데이터 fetching
   const { data: teams, isLoading, error } = useTeamsWithComposition(userId);
-  const { data: selectedTeam } = useTeamDetail(modals.selectedTeamId || undefined);
+  const { data: selectedTeam } = useTeamDetail(
+    modals.selectedTeamId || undefined
+  );
 
   if (!isAuthenticated) {
     return <Navigate to="/auth/login" replace />;
@@ -34,8 +36,6 @@ export const TeamsPage = () => {
 
   return (
     <DashboardLayout
-      title="팀 대시보드"
-      description="팀 구성을 분석하여 신규 채용에서 최적의 인재를 찾으세요"
       breadcrumbs={[
         { label: "대시보드", href: "/dashboard" },
         { label: "팀 대시보드" },
@@ -86,14 +86,17 @@ export const TeamsPage = () => {
                 <p className="text-neutral-600 mb-6">
                   첫 번째 팀을 만들어 팀원들의 직무 유형을 파악해보세요
                 </p>
-                <Button variant="primary" onClick={modals.handleOpenCreateModal}>
+                <Button
+                  variant="primary"
+                  onClick={modals.handleOpenCreateModal}
+                >
                   <MdAdd className="mr-2" />첫 팀 만들기
                 </Button>
               </div>
             ) : (
               // 팀 카드 그리드
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {teams.map((team) => (
+                {teams.map(team => (
                   <TeamCard
                     key={team.id}
                     team={team}
@@ -115,7 +118,7 @@ export const TeamsPage = () => {
           onTeamDescriptionChange={modals.setTeamDescription}
           applicantManager={modals.applicantManager}
           fileUpload={modals.fileUpload}
-          onSubmit={(e) => modals.handleSubmitCreate(e, userId!)}
+          onSubmit={e => modals.handleSubmitCreate(e, userId!)}
           isCreating={modals.isCreating}
         />
 
@@ -154,17 +157,20 @@ export const TeamsPage = () => {
               modals.handleDeleteClick(selectedTeam.id);
             }
           }}
-          onBulkRemoveMembers={(memberIds) => {
+          onBulkRemoveMembers={memberIds => {
             // TODO: 일괄 팀원 삭제 API 호출
             console.log("Bulk remove members:", memberIds);
           }}
           onBulkMoveMembers={(memberIds, targetTeamId) => {
             // TODO: 일괄 팀원 이동 API 호출
-            console.log("Bulk move members:", memberIds, "to team:", targetTeamId);
+            console.log(
+              "Bulk move members:",
+              memberIds,
+              "to team:",
+              targetTeamId
+            );
           }}
-          availableTeams={
-            teams?.map((t) => ({ id: t.id, name: t.name })) || []
-          }
+          availableTeams={teams?.map(t => ({ id: t.id, name: t.name })) || []}
         />
 
         {/* 팀 생성 진행 상황 모달 */}

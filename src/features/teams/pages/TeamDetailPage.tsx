@@ -57,14 +57,11 @@ export const TeamDetailPage = () => {
 
   return (
     <DashboardLayout
-      title={team?.name || "팀 상세"}
       breadcrumbs={[
         { label: "대시보드", href: "/dashboard" },
         { label: "팀 관리", href: "/dashboard/teams" },
         { label: team?.name || "팀 상세" },
       ]}
-      showBackButton={true}
-      onBackClick={handleBackClick}
     >
       <div className="max-w-7xl mx-auto">
         {/* 로딩 상태 */}
@@ -222,7 +219,9 @@ export const TeamDetailPage = () => {
                           {member.email}
                         </p>
                         {(() => {
-                          const primaryType = getPrimaryWorkType(member.test_result);
+                          const primaryType = getPrimaryWorkType(
+                            member.test_result
+                          );
                           return primaryType ? (
                             <p className="text-sm text-primary-600 mt-1">
                               {WORK_TYPE_DATA[primaryType]?.name}

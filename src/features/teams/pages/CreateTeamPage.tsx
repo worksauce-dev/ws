@@ -74,14 +74,11 @@ export const CreateTeamPage = () => {
 
   return (
     <DashboardLayout
-      title="새 팀 만들기"
       breadcrumbs={[
         { label: "대시보드", href: "/dashboard" },
         { label: "팀 관리", href: "/dashboard/teams" },
         { label: "새 팀 생성" },
       ]}
-      showBackButton={true}
-      onBackClick={handleBackClick}
     >
       <div className="max-w-7xl mx-auto">
         <form onSubmit={handleSubmit} noValidate>
