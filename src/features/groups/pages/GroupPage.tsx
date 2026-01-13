@@ -18,6 +18,7 @@ import { ApplicantCard } from "../components/ApplicantCard";
 import { GroupInfoSidebar } from "../components/GroupInfoSidebar";
 import { WorkTypeDistribution } from "../components/WorkTypeDistribution";
 import { GroupPageSkeleton } from "../components/GroupPageSkeleton";
+import { DeletedResourceNotice } from "@/shared/components/DeletedResourceNotice";
 import {
   getWorkTypeName,
   getWorkTypeColor,
@@ -30,7 +31,7 @@ export const GroupPage = () => {
   const navigate = useNavigate();
 
   // 그룹 상세 정보 조회
-  const { data, isLoading, isError, error } = useGroupDetail(groupId || "");
+  const { data, isLoading, isError } = useGroupDetail(groupId || "");
 
   // D-day 계산 훅
   const { calculateDday, getDdayColor } = useDdayCalculator();
@@ -76,10 +77,6 @@ export const GroupPage = () => {
   const toggleStar = (candidateId: string) => {
     // Mock function - 실제 구현에서는 상태 업데이트 로직 추가
     console.log("Toggle star for candidate:", candidateId);
-  };
-
-  const handleBackClick = () => {
-    navigate("/dashboard");
   };
 
   const handleApplicantClick = (applicantId: string) => {
@@ -196,20 +193,10 @@ export const GroupPage = () => {
   // 에러 상태
   if (isError || !currentGroup) {
     return (
-      <DashboardLayout title="오류">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <p className="text-error text-lg mb-4">
-              {error?.message || "그룹을 찾을 수 없습니다."}
-            </p>
-            <button
-              onClick={handleBackClick}
-              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-600"
-            >
-              대시보드로 돌아가기
-            </button>
-          </div>
-        </div>
+      <DashboardLayout
+        breadcrumbs={[{ label: "대시보드", href: "/dashboard" }]}
+      >
+        <DeletedResourceNotice resourceType="group" />
       </DashboardLayout>
     );
   }

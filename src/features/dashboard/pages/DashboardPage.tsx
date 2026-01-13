@@ -23,6 +23,7 @@ import { Pagination } from "../components/Pagination";
 import { EmptyState } from "../components/EmptyState";
 import { CalendarView } from "../components/CalendarView";
 import { OnboardingTour } from "../components/OnboardingTour";
+import { ExtendDeadlineModal } from "../components/ExtendDeadlineModal";
 import { GROUP_STATUS_FILTER_OPTIONS } from "../constants/groupStyles";
 
 type ViewMode = "grid" | "calendar";
@@ -53,6 +54,11 @@ export const DashboardPage = () => {
     handleCreateGroup,
     handleGroupMenuAction,
     handleCreditClick,
+    // 마감일 연장 관련
+    extendDeadlineModal,
+    handleExtendDeadline,
+    closeExtendDeadlineModal,
+    isUpdating,
   } = useGroupActions(groups);
 
   const stats = useDashboardStats(groups);
@@ -97,6 +103,9 @@ export const DashboardPage = () => {
     handleStatusChange("all");
     handlePageChange(1);
   };
+
+  // 현재 선택된 그룹 찾기 (마감일 연장 모달용)
+  const selectedGroup = groups.find(g => g.id === extendDeadlineModal.groupId);
 
   // 로딩 상태
   if (showLoading) {
@@ -217,6 +226,18 @@ export const DashboardPage = () => {
           onComplete={completeTour}
           onSkip={skipTour}
           onMobileMenuToggle={setIsMobileMenuOpen}
+        />
+      )}
+
+      {/* 마감일 연장 모달 */}
+      {selectedGroup && (
+        <ExtendDeadlineModal
+          isOpen={extendDeadlineModal.isOpen}
+          onClose={closeExtendDeadlineModal}
+          currentDeadline={selectedGroup.deadline}
+          groupName={selectedGroup.name}
+          onConfirm={handleExtendDeadline}
+          isLoading={isUpdating}
         />
       )}
     </DashboardLayout>

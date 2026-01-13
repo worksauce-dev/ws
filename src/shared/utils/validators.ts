@@ -95,13 +95,19 @@ export const isFutureDate = (dateString: string): boolean => {
 };
 
 /**
- * 과거 날짜인지 검사
+ * 과거 날짜인지 검사 (날짜만 비교, 시간 무시)
+ * 마감일 당일은 false 반환 (아직 지나지 않음)
  * @example isPastDate("2020-01-01") // true
+ * @example isPastDate("2025-01-13") // false (오늘이 2025-01-13이면)
  */
 export const isPastDate = (dateString: string): boolean => {
   const date = new Date(dateString);
-  const now = new Date();
-  return date < now;
+  date.setHours(0, 0, 0, 0); // 시간 제거
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // 시간 제거
+
+  return date < today; // 당일은 false
 };
 
 /**

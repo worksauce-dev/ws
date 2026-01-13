@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import {
   MdPsychology,
   MdGroups,
@@ -30,6 +30,7 @@ import {
   STATUS_LABELS,
   STATUS_BADGE_STYLES,
 } from "@/shared/constants/applicantStatus";
+import { DeletedResourceNotice } from "@/shared/components/DeletedResourceNotice";
 import type { ApplicantStatus } from "@/shared/types/database.types";
 
 export const ApplicantDetailPage = () => {
@@ -37,11 +38,10 @@ export const ApplicantDetailPage = () => {
     groupId: string;
     applicantId: string;
   }>();
-  const navigate = useNavigate();
   const { showToast } = useToast();
 
   // 그룹 상세 정보 조회 (지원자 데이터 포함)
-  const { data, isLoading, isError, error } = useGroupDetail(groupId || "");
+  const { data, isLoading, isError } = useGroupDetail(groupId || "");
 
   // AI 분석 결과 조회 (Supabase에서 가져오기)
   const {
@@ -188,16 +188,17 @@ export const ApplicantDetailPage = () => {
     refetchAiAnalysis();
   };
 
-  // AI 분석 완료 시 isAnalyzing 상태 해제
+  // AI 분석 완료 시 isAnalyzing 상태 해제 + Toast 알림
   useEffect(() => {
-    if (aiAnalysisData) {
+    if (aiAnalysisData && isAnalyzing) {
       setIsAnalyzing(false);
+      showToast(
+        "success",
+        "AI 분석 완료",
+        "실행 스타일 비교 분석 결과를 확인해보세요!"
+      );
     }
-  }, [aiAnalysisData]);
-
-  const handleBackClick = () => {
-    navigate(`/dashboard/groups/${groupId}`);
-  };
+  }, [aiAnalysisData, isAnalyzing, showToast]);
 
   // 크레딧 클릭 처리
   const handleCreditClick = () => {
@@ -211,11 +212,7 @@ export const ApplicantDetailPage = () => {
   // 로딩 상태
   if (isLoading) {
     return (
-      <DashboardLayout
-        title="로딩 중..."
-        description=""
-        onCreditClick={handleCreditClick}
-      >
+      <DashboardLayout onCreditClick={handleCreditClick}>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="w-16 h-16 mx-auto mb-4 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
@@ -228,27 +225,14 @@ export const ApplicantDetailPage = () => {
     );
   }
 
-  // 에러 상태
+  // 에러 상태 - 삭제된 그룹 또는 지원자
   if (isError || !data?.group || !currentApplicant) {
     return (
-      <DashboardLayout
-        title="오류"
-        description=""
-        onCreditClick={handleCreditClick}
-      >
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <p className="text-error text-lg mb-4">
-              {error?.message || "지원자를 찾을 수 없습니다."}
-            </p>
-            <button
-              onClick={handleBackClick}
-              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-600"
-            >
-              그룹 페이지로 돌아가기
-            </button>
-          </div>
-        </div>
+      <DashboardLayout onCreditClick={handleCreditClick}>
+        <DeletedResourceNotice
+          resourceType="applicant"
+          backUrl={groupId ? `/dashboard/groups/${groupId}` : "/dashboard"}
+        />
       </DashboardLayout>
     );
   }
