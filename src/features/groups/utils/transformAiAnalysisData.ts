@@ -68,6 +68,35 @@ export function transformAiAnalysisData(
     interpretation: diff.interpretation,
   }));
 
+  // axisBreakdown 더미 데이터 생성 (n8n 응답에는 포함되지 않음)
+  const axisBreakdown = {
+    decision_speed: {
+      score: jobExecutionProfile.decision_speed,
+      reasoning: "",
+      examples: [],
+    },
+    uncertainty_tolerance: {
+      score: jobExecutionProfile.uncertainty_tolerance,
+      reasoning: "",
+      examples: [],
+    },
+    autonomy: {
+      score: jobExecutionProfile.autonomy,
+      reasoning: "",
+      examples: [],
+    },
+    relationship_focus: {
+      score: jobExecutionProfile.relationship_focus,
+      reasoning: "",
+      examples: [],
+    },
+    precision_requirement: {
+      score: jobExecutionProfile.precision_requirement,
+      reasoning: "",
+      examples: [],
+    },
+  };
+
   return {
     analysisId: record.analysis_id,
     creditsUsed: record.credits_used,
@@ -77,7 +106,7 @@ export function transformAiAnalysisData(
       id: record.job_execution_profile.id,
       jobInput: record.job_execution_profile.jobInput,
       executionProfile: jobExecutionProfile,
-      axisBreakdown: null as any, // n8n 응답에는 포함되지 않음
+      axisBreakdown,
       creditsUsed: record.job_execution_profile.creditsUsed,
       generatedAt: record.job_execution_profile.generatedAt,
     },

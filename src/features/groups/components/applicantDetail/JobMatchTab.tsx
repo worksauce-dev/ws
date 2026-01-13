@@ -154,14 +154,59 @@ export const JobMatchTab = ({
                 )}
 
                 {aiAnalysisStatus === "pending" && (
-                  <div className="flex items-start gap-3 p-3 bg-primary-50 border border-primary-200 rounded-lg">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600 flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-primary-900 leading-relaxed">
-                      <span className="font-semibold">AI가 분석 중입니다</span>
-                      <span className="text-primary-700 ml-1">
-                        (약 10-15초 소요)
-                      </span>
-                    </p>
+                  <div className="bg-gradient-to-r from-primary-50 to-purple-50 rounded-xl border-2 border-primary-300 p-6">
+                    <div className="flex items-start gap-4">
+                      {/* 애니메이션 아이콘 */}
+                      <div className="flex-shrink-0">
+                        <div className="relative w-14 h-14">
+                          <div className="absolute inset-0 bg-primary-500 rounded-full animate-ping opacity-20"></div>
+                          <div className="relative w-14 h-14 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center">
+                            <MdAutoAwesome className="w-7 h-7 text-white animate-pulse" />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-lg font-bold text-neutral-800 mb-2">
+                          AI 분석이 진행 중입니다
+                        </h4>
+                        <p className="text-sm text-neutral-700 mb-4">
+                          분석이 완료되면{" "}
+                          <strong className="text-primary-700">알림</strong>으로
+                          안내드립니다. 다른 작업을 계속하셔도 괜찮습니다.
+                        </p>
+
+                        {/* 진행 상태 */}
+                        <div className="space-y-2 mb-4">
+                          <div className="flex items-center gap-2 text-xs">
+                            <div className="w-2 h-2 rounded-full bg-success-500"></div>
+                            <span className="text-neutral-600">
+                              요청 전송 완료
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs">
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary-600"></div>
+                            <span className="text-neutral-700 font-medium">
+                              AI 분석 중 (약 1-2분 소요)
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* 하단 안내 */}
+                        <div className="pt-3 border-t border-primary-200">
+                          <div className="flex items-start gap-2 text-sm">
+                            <span className="text-lg flex-shrink-0">💡</span>
+                            <p className="text-neutral-600">
+                              분석 완료 후 이 페이지로 돌아오시면 결과를 바로
+                              확인하실 수 있습니다.
+                              <span className="text-neutral-500 ml-1">
+                                (페이지 새로고침 필요 없음)
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
 

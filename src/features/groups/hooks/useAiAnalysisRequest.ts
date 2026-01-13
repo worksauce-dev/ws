@@ -12,14 +12,14 @@ import { InsufficientCreditsError } from "@/shared/errors/CreditErrors";
 import { logger } from "@/shared/utils/logger";
 import { CREDIT_COSTS } from "@/shared/constants/credits";
 import type { AnalyzedResult } from "../utils/analyzeTestResult";
-import type { Group } from "@/shared/types/database.types";
+import type { Group, TestResult } from "@/shared/types/database.types";
 
 interface AnalysisRequestParams {
   applicant: {
     id: string;
     name: string;
     email: string;
-    test_result: any;
+    test_result: TestResult;
   };
   group: Group;
   positionLabel: string;
@@ -97,6 +97,7 @@ export const useAiAnalysisRequest = () => {
           jobTitle: positionLabel,
           jobDescription: finalJobDescription,
           position: group.position,
+          experienceLevel: group.experience_level, // 경력 수준 추가
         },
         applicant: {
           id: applicant.id,
