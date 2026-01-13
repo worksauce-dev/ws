@@ -31,7 +31,8 @@ export const calculatePrimaryWorkType = (
       0
     );
     // 평균 점수를 100점 만점으로 변환 (1-5 → 0-100)
-    const average = (sum / questions.length / 5) * 100;
+    // Math.round로 부동소수점 오류 방지
+    const average = Math.round((sum / questions.length / 5) * 100);
     statementScores[workType as WorkTypeCode] = average;
   });
 
@@ -64,12 +65,14 @@ export const calculatePrimaryWorkType = (
   });
 
   // VerbTest 점수를 100점 만점으로 정규화
+  // Math.round로 부동소수점 오류 방지
   Object.keys(verbScores).forEach(workType => {
     const wt = workType as WorkTypeCode;
-    verbScores[wt] = (verbScores[wt] / totalVerbSelections) * 100;
+    verbScores[wt] = Math.round((verbScores[wt] / totalVerbSelections) * 100);
   });
 
   // 3. 최종 점수 계산 (50:50 비중)
+  // Math.round로 부동소수점 오류 방지
   const finalScores: Record<WorkTypeCode, number> = {} as Record<
     WorkTypeCode,
     number
@@ -77,7 +80,7 @@ export const calculatePrimaryWorkType = (
 
   Object.keys(statementScores).forEach(workType => {
     const wt = workType as WorkTypeCode;
-    finalScores[wt] = statementScores[wt] * 0.5 + verbScores[wt] * 0.5;
+    finalScores[wt] = Math.round(statementScores[wt] * 0.5 + verbScores[wt] * 0.5);
   });
 
   // 4. 가장 높은 점수를 가진 WorkType 찾기
