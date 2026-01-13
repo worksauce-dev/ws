@@ -118,6 +118,17 @@ export const useNotifications = (userId: string | undefined) => {
           queryClient.invalidateQueries({
             queryKey: ["notifications", "unread", userId],
           });
+
+          // AI 분석 완료 알림인 경우, AI 분석 캐시도 무효화
+          if (newNotification.type === "ai_analysis_complete") {
+            const applicantId = newNotification.data?.applicant_id;
+            if (applicantId) {
+              console.log("✅ AI 분석 완료 감지 - 캐시 무효화:", applicantId);
+              queryClient.invalidateQueries({
+                queryKey: ["aiAnalysis", applicantId],
+              });
+            }
+          }
         }
       )
       .subscribe();

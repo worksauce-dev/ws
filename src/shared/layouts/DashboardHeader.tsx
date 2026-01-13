@@ -30,11 +30,8 @@ interface UserProfile {
 }
 
 interface DashboardHeaderProps {
-  title: string;
-  description?: string;
   breadcrumbs?: BreadcrumbItem[];
   actions?: ReactNode;
-  statusBadge?: ReactNode;
   userProfile?: UserProfile;
   credits?: number;
   onCreditClick?: () => void;
@@ -44,11 +41,8 @@ interface DashboardHeaderProps {
 }
 
 export const DashboardHeader = ({
-  title,
-  description,
   breadcrumbs,
   actions,
-  statusBadge,
   userProfile,
   credits,
   onCreditClick,
@@ -159,21 +153,6 @@ export const DashboardHeader = ({
                 </div>
               )) ?? null}
             </nav>
-
-            {/* Title Section */}
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 sm:gap-3">
-                <h1 className="text-lg sm:text-2xl font-semibold text-primary truncate">
-                  {title}
-                </h1>
-                {statusBadge}
-              </div>
-              {description && (
-                <p className="mt-1 lg:mt-2 text-xs sm:text-sm lg:text-base text-neutral-600 truncate">
-                  {description}
-                </p>
-              )}
-            </div>
           </div>
 
           {/* Right Section: Desktop - Full Menu / Mobile - Hamburger */}

@@ -19,7 +19,7 @@ export interface NotificationData {
   team_name?: string; // 팀 이름
   team_member_id?: string; // 팀원 ID
   team_member_name?: string; // 팀원 이름
-  [key: string]: any;
+  [key: string]: string | number | boolean | null | undefined;
 }
 
 export interface Notification {

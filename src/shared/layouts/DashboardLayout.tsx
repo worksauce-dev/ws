@@ -10,8 +10,6 @@ interface BreadcrumbItem {
 
 interface DashboardLayoutProps {
   children: ReactNode;
-  title?: string;
-  description?: string;
   breadcrumbs?: BreadcrumbItem[];
   actions?: ReactNode;
   statusBadge?: ReactNode;
@@ -25,11 +23,8 @@ interface DashboardLayoutProps {
 
 export const DashboardLayout = ({
   children,
-  title,
-  description,
   breadcrumbs,
   actions,
-  statusBadge,
   maxWidth = "7xl",
   padding = "lg",
   onCreditClick,
@@ -79,11 +74,8 @@ export const DashboardLayout = ({
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <DashboardHeader
-        title={title || ""}
-        description={description}
         breadcrumbs={breadcrumbs}
         actions={actions}
-        statusBadge={statusBadge}
         userProfile={{
           name: userName,
           email: userEmail,

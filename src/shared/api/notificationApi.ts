@@ -52,9 +52,10 @@ export async function getNotifications(
     }
 
     return { data, error: null };
-  } catch (err: any) {
+  } catch (err) {
     console.error("Error fetching notifications:", err);
-    return { data: null, error: err.message || "알림 조회 중 오류가 발생했습니다." };
+    const errorMessage = err instanceof Error ? err.message : "알림 조회 중 오류가 발생했습니다.";
+    return { data: null, error: errorMessage };
   }
 }
 
@@ -86,9 +87,10 @@ export async function getUnreadCount(): Promise<{
     }
 
     return { count: count || 0, error: null };
-  } catch (err: any) {
+  } catch (err) {
     console.error("Error fetching unread count:", err);
-    return { count: 0, error: err.message || "알림 개수 조회 중 오류가 발생했습니다." };
+    const errorMessage = err instanceof Error ? err.message : "알림 개수 조회 중 오류가 발생했습니다.";
+    return { count: 0, error: errorMessage };
   }
 }
 
@@ -110,9 +112,10 @@ export async function markAsRead(notificationId: string): Promise<{
     }
 
     return { error: null };
-  } catch (err: any) {
+  } catch (err) {
     console.error("Error marking notification as read:", err);
-    return { error: err.message || "알림 읽음 처리 중 오류가 발생했습니다." };
+    const errorMessage = err instanceof Error ? err.message : "알림 읽음 처리 중 오류가 발생했습니다.";
+    return { error: errorMessage };
   }
 }
 
@@ -143,9 +146,10 @@ export async function markAllAsRead(): Promise<{
     }
 
     return { error: null };
-  } catch (err: any) {
+  } catch (err) {
     console.error("Error marking all notifications as read:", err);
-    return { error: err.message || "알림 읽음 처리 중 오류가 발생했습니다." };
+    const errorMessage = err instanceof Error ? err.message : "알림 읽음 처리 중 오류가 발생했습니다.";
+    return { error: errorMessage };
   }
 }
 
@@ -167,8 +171,9 @@ export async function deleteNotification(notificationId: string): Promise<{
     }
 
     return { error: null };
-  } catch (err: any) {
+  } catch (err) {
     console.error("Error deleting notification:", err);
-    return { error: err.message || "알림 삭제 중 오류가 발생했습니다." };
+    const errorMessage = err instanceof Error ? err.message : "알림 삭제 중 오류가 발생했습니다.";
+    return { error: errorMessage };
   }
 }
