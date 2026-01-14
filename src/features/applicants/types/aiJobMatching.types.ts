@@ -152,6 +152,10 @@ export interface AxisDifference {
   gap: number; // jobScore - applicantScore (-100 ~ +100)
   gapLevel: "critical" | "significant" | "moderate" | "minimal"; // 차이 수준
   interpretation: string; // AI가 생성한 차이 해석 (판단 아님!)
+  trade_off: {
+    positive: string; // 이 차이가 가진 긍정적 측면
+    negative: string; // 이 차이가 가진 부정적 측면
+  };
 }
 
 /**
@@ -191,6 +195,17 @@ export interface AIConfidence {
 }
 
 /**
+ * 시나리오 분석
+ *
+ * 지원자가 최적/최악의 성과를 낼 상황 예측 및 팀 시너지 제안
+ */
+export interface ScenarioAnalysis {
+  bestScenario: string; // 지원자가 가장 빛을 발할 상황
+  worstScenario: string; // 가장 고전할 상황
+  teamSynergyRecommendation: string; // 시너지를 위한 팀 구성 제안
+}
+
+/**
  * AI 비교 분석 결과
  *
  * ⚠️ 중요: 이 결과는 "적합/부적합" 판단이 아니라
@@ -213,6 +228,9 @@ export interface AIComparisonAnalysis extends CreditConsumption {
     differingAreas: string[]; // 다른 실행 방식 영역
     interpretationSummary: string; // 전체 해석 (200자 이내)
   };
+
+  // 시나리오 분석
+  scenarioAnalysis: ScenarioAnalysis;
 
   // 협업/관리 포인트
   managementPoints: ManagementPoint[];

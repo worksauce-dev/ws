@@ -11,7 +11,10 @@ import type { AIComparisonAnalysis } from "../types/aiJobMatching.types";
  * @param enabled - 쿼리 활성화 여부 (기본: true)
  * @returns AI 분석 결과, 로딩 상태, 에러 정보
  */
-export const useAiAnalysis = (applicantId: string | undefined, enabled = true) => {
+export const useAiAnalysis = (
+  applicantId: string | undefined,
+  enabled = true
+) => {
   return useQuery<AIComparisonAnalysis | null>({
     queryKey: ["aiAnalysis", applicantId],
     queryFn: async () => {
@@ -25,6 +28,6 @@ export const useAiAnalysis = (applicantId: string | undefined, enabled = true) =
     },
     enabled: enabled && !!applicantId,
     staleTime: CACHE_TIMES.FIVE_MINUTES,
-    gcTime: CACHE_TIMES.TEN_MINUTES
+    gcTime: CACHE_TIMES.TEN_MINUTES,
   });
 };

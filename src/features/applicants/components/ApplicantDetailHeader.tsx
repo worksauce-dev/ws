@@ -14,12 +14,12 @@ import type {
 import type { WorkTypeCode } from "@/features/groups/constants/workTypeKeywords";
 import type { WorkTypeData } from "@/features/groups/types/workType.types";
 import WORK_TYPE_DATA from "@/features/groups/constants/workTypes";
-import { getScoreColorClass } from "../../utils/formatHelpers";
+import { getScoreColorClass } from "@/features/groups/utils/formatHelpers";
 import {
   getStatusIcon,
   getStatusLabel,
   getStatusColor,
-} from "../../utils/testStatusHelpers";
+} from "@/features/groups/utils/testStatusHelpers";
 
 interface ApplicantDetailHeaderProps {
   applicant: Applicant;

@@ -11,8 +11,9 @@ import { getUserCredits, deductCredits } from "@/shared/api/creditApi";
 import { InsufficientCreditsError } from "@/shared/errors/CreditErrors";
 import { logger } from "@/shared/utils/logger";
 import { CREDIT_COSTS } from "@/shared/constants/credits";
-import type { AnalyzedResult } from "../utils/analyzeTestResult";
+import type { AnalyzedResult } from "@/features/groups/utils/analyzeTestResult";
 import type { Group, TestResult } from "@/shared/types/database.types";
+import { transformVerbSelectionsForAI } from "../utils/transformVerbSelections";
 
 interface AnalysisRequestParams {
   applicant: {
@@ -90,7 +91,12 @@ export const useAiAnalysisRequest = () => {
       const finalJobDescription =
         group.description || additionalContext || "일반적인 직무 특성 기준으로 분석";
 
-      // 4. n8n Webhook 요청 데이터 생성
+      // 4. Verb Test 선택 데이터 변환 (AI가 이해할 수 있는 형태로)
+      const verbSelections = transformVerbSelectionsForAI(
+        applicant.test_result.verbTestSelections
+      );
+
+      // 5. n8n Webhook 요청 데이터 생성
       const requestPayload = {
         userId: user.id,
         jobInput: {
@@ -103,12 +109,12 @@ export const useAiAnalysisRequest = () => {
           id: applicant.id,
           name: applicant.name,
           email: applicant.email,
-          test_result: applicant.test_result,
         },
         testResult: {
           statementScores: applicant.test_result.statementScores,
           primaryType: analyzedResult.primaryType.code,
           scoreDistribution: analyzedResult.scoreDistribution,
+          verbSelections, // ✅ 변환된 동사 선택 데이터 (AI가 읽을 수 있는 형태)
         },
         metadata: {
           groupId: group.id,
@@ -123,6 +129,7 @@ export const useAiAnalysisRequest = () => {
       logger.log("📝 직무 설명:", requestPayload.jobInput.jobDescription);
       logger.log("👤 지원자:", requestPayload.applicant.name);
       logger.log("🔬 주 유형:", requestPayload.testResult.primaryType);
+      logger.log("🔤 동사 선택:", verbSelections.length, "개 단계");
 
       // 5. n8n Webhook 호출 (Fire-and-forget)
       const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_URL;

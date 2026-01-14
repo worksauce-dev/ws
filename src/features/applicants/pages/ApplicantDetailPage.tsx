@@ -8,7 +8,7 @@ import {
   MdWorkOutline,
 } from "react-icons/md";
 import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
-import { useGroupDetail } from "../hooks/useGroupDetail";
+import { useGroupDetail } from "@/features/groups/hooks/useGroupDetail";
 import { useUpdateApplicantStatus } from "../hooks/useUpdateApplicantStatus";
 import { useAiAnalysis } from "../hooks/useAiAnalysis";
 import { useAiAnalysisRequest } from "../hooks/useAiAnalysisRequest";
@@ -16,16 +16,16 @@ import { useToast } from "@/shared/components/ui/useToast";
 import {
   analyzeTestResult,
   calculateJobFitScore,
-} from "../utils/analyzeTestResult";
-import WORK_TYPE_DATA from "../constants/workTypes";
-import { POSITION_OPTIONS } from "../constants/positionOptions";
-import { getJobProfile } from "../constants/jobProfiles";
-import { ApplicantDetailHeader } from "../components/applicantDetail/ApplicantDetailHeader";
-import { WorkTypeAnalysisTab } from "../components/applicantDetail/WorkTypeAnalysisTab";
-import { TeamSynergyTab } from "../components/applicantDetail/TeamSynergyTab";
-import { InterviewGuideTab } from "../components/applicantDetail/InterviewGuideTab";
-import { JobMatchTab } from "../components/applicantDetail/JobMatchTab";
-import { StatusActionButton } from "../components/applicantDetail/StatusActionButton";
+} from "@/features/groups/utils/analyzeTestResult";
+import WORK_TYPE_DATA from "@/features/groups/constants/workTypes";
+import { POSITION_OPTIONS } from "@/features/groups/constants/positionOptions";
+import { getJobProfile } from "@/features/groups/constants/jobProfiles";
+import { ApplicantDetailHeader } from "../components/ApplicantDetailHeader";
+import { WorkTypeAnalysisTab } from "../components/WorkTypeAnalysisTab";
+import { TeamSynergyTab } from "../components/TeamSynergyTab";
+import { InterviewGuideTab } from "../components/InterviewGuideTab";
+import { JobMatchTab } from "../components/JobMatchTab";
+import { StatusActionButton } from "../components/StatusActionButton";
 import {
   STATUS_LABELS,
   STATUS_BADGE_STYLES,

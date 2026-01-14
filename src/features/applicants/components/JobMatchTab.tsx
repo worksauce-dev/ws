@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { MdAutoAwesome } from "react-icons/md";
-import type { AIComparisonAnalysis } from "../../types/aiJobMatching.types";
+import type { AIComparisonAnalysis } from "../types/aiJobMatching.types";
 
 /**
  * AI 분석 상태
@@ -266,11 +266,11 @@ export const JobMatchTab = ({
                 </span>
                 <div>
                   <h6 className="text-sm font-semibold text-neutral-800 mb-1">
-                    온보딩 및 일상 업무 관리 포인트
+                    Trade-off 분석 (양면적 인사이트)
                   </h6>
                   <p className="text-xs sm:text-sm text-neutral-600">
-                    실행 방식 차이를 고려한 구체적인 관리 가이드와 주의사항을
-                    제공합니다.
+                    각 차이가 가진 긍정적 측면과 주의할 측면을 동시에 제시하여
+                    균형 잡힌 평가를 돕습니다.
                   </p>
                 </div>
               </div>
@@ -281,10 +281,25 @@ export const JobMatchTab = ({
                 </span>
                 <div>
                   <h6 className="text-sm font-semibold text-neutral-800 mb-1">
-                    성장 지원 및 커뮤니케이션 가이드
+                    시나리오 분석 및 팀 시너지 제안
                   </h6>
                   <p className="text-xs sm:text-sm text-neutral-600">
-                    지원자의 성장을 돕고 효과적인 소통을 위한 맞춤형 조언을
+                    최적 환경과 도전 환경을 예측하고, 함께 일할 때 시너지를
+                    낼 수 있는 팀 구성을 제안합니다.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-600 text-white flex items-center justify-center text-xs font-bold">
+                  4
+                </span>
+                <div>
+                  <h6 className="text-sm font-semibold text-neutral-800 mb-1">
+                    온보딩 및 일상 업무 관리 포인트
+                  </h6>
+                  <p className="text-xs sm:text-sm text-neutral-600">
+                    실행 방식 차이를 고려한 구체적인 관리 가이드와 주의사항을
                     제공합니다.
                   </p>
                 </div>
@@ -320,6 +335,56 @@ export const JobMatchTab = ({
                 {aiAnalysisResult.overallSummary.interpretationSummary}
               </p>
             </div>
+
+            {/* 시나리오 분석 */}
+            {aiAnalysisResult.scenarioAnalysis && (
+              <div className="bg-gradient-to-br from-purple-50 to-primary-50 rounded-xl border border-purple-200 p-6 mb-4">
+                <h6 className="text-base font-semibold text-neutral-800 mb-4 flex items-center gap-2">
+                  <span>🎬</span>
+                  <span>시나리오 분석</span>
+                </h6>
+                <div className="space-y-4">
+                  {/* 최적 환경 */}
+                  <div className="bg-white rounded-lg p-4 border border-neutral-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-lg">🌟</span>
+                      <span className="text-sm font-semibold text-success-700">
+                        최적 환경
+                      </span>
+                    </div>
+                    <p className="text-sm text-neutral-700 leading-relaxed pl-7">
+                      {aiAnalysisResult.scenarioAnalysis.bestScenario}
+                    </p>
+                  </div>
+
+                  {/* 도전 환경 */}
+                  <div className="bg-white rounded-lg p-4 border border-neutral-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-lg">⚡</span>
+                      <span className="text-sm font-semibold text-warning-700">
+                        도전 환경
+                      </span>
+                    </div>
+                    <p className="text-sm text-neutral-700 leading-relaxed pl-7">
+                      {aiAnalysisResult.scenarioAnalysis.worstScenario}
+                    </p>
+                  </div>
+
+                  {/* 팀 시너지 제안 */}
+                  <div className="bg-white rounded-lg p-4 border border-neutral-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-lg">🤝</span>
+                      <span className="text-sm font-semibold text-primary-700">
+                        팀 시너지 제안
+                      </span>
+                    </div>
+                    <p className="text-sm text-neutral-700 leading-relaxed pl-7">
+                      {aiAnalysisResult.scenarioAnalysis.teamSynergyRecommendation}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* 축별 차이 분석 */}
             <div className="space-y-4">
@@ -387,6 +452,45 @@ export const JobMatchTab = ({
                   <p className="text-sm text-neutral-600 mt-3 italic">
                     💡 {diff.interpretation}
                   </p>
+
+                  {/* Trade-off 분석 */}
+                  {diff.trade_off && (
+                    <div className="mt-4 pt-4 border-t border-neutral-200">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-sm font-semibold text-neutral-700">
+                          ⚖️ Trade-off 분석
+                        </span>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-start gap-2">
+                          <span className="flex-shrink-0 text-success-600 font-bold text-sm mt-0.5">
+                            ✓
+                          </span>
+                          <div className="flex-1">
+                            <span className="text-xs font-medium text-success-700 block mb-1">
+                              긍정적 측면
+                            </span>
+                            <p className="text-sm text-neutral-700 leading-relaxed">
+                              {diff.trade_off.positive}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <span className="flex-shrink-0 text-warning-600 font-bold text-sm mt-0.5">
+                            ⚠
+                          </span>
+                          <div className="flex-1">
+                            <span className="text-xs font-medium text-warning-700 block mb-1">
+                              주의할 측면
+                            </span>
+                            <p className="text-sm text-neutral-700 leading-relaxed">
+                              {diff.trade_off.negative}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

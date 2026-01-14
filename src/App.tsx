@@ -45,7 +45,7 @@ const CreateGroupPage = lazy(() =>
   }))
 );
 const ApplicantDetailPage = lazy(() =>
-  import("@/features/groups/pages/ApplicantDetailPage").then(module => ({
+  import("@/features/applicants/pages/ApplicantDetailPage").then(module => ({
     default: module.ApplicantDetailPage,
   }))
 );

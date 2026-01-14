@@ -52,11 +52,20 @@ export interface SaveAiAnalysisRequest {
     gap: number
     gapLevel: "critical" | "significant" | "moderate" | "minimal"
     interpretation: string
+    trade_off: {
+      positive: string
+      negative: string
+    }
   }>
   overall_summary: {
     matchingAreas: string[]
     differingAreas: string[]
     interpretationSummary: string
+  }
+  scenario_analysis: {
+    bestScenario: string
+    worstScenario: string
+    teamSynergyRecommendation: string
   }
   management_points: Array<{
     category: "onboarding" | "daily_work" | "growth" | "communication"

@@ -12,8 +12,8 @@ import type {
   ExecutionAxisScore,
   ApplicantExecutionProfile,
   ExecutionAxisCode,
-} from "../types/aiJobMatching.types";
-import { toExecutionAxisScore } from "../types/aiJobMatching.types";
+} from "@/features/applicants/types/aiJobMatching.types";
+import { toExecutionAxisScore } from "@/features/applicants/types/aiJobMatching.types";
 import type { WorkTypeCode } from "../types/workType.types";
 
 /**

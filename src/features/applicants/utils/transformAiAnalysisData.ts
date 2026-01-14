@@ -16,49 +16,49 @@ import { toExecutionAxisScore } from "../types/aiJobMatching.types";
  * @returns AIComparisonAnalysis 타입 객체
  */
 export function transformAiAnalysisData(
-  record: AiAnalysisRecord,
+  record: AiAnalysisRecord
 ): AIComparisonAnalysis {
   // ExecutionProfile의 점수를 ExecutionAxisScore 타입으로 변환
+  console.log("record", record);
+
   const jobExecutionProfile = {
     decision_speed: toExecutionAxisScore(
-      record.job_execution_profile.executionProfile.decision_speed,
+      record.job_execution_profile.executionProfile.decision_speed
     ),
     uncertainty_tolerance: toExecutionAxisScore(
-      record.job_execution_profile.executionProfile.uncertainty_tolerance,
+      record.job_execution_profile.executionProfile.uncertainty_tolerance
     ),
     autonomy: toExecutionAxisScore(
-      record.job_execution_profile.executionProfile.autonomy,
+      record.job_execution_profile.executionProfile.autonomy
     ),
     relationship_focus: toExecutionAxisScore(
-      record.job_execution_profile.executionProfile.relationship_focus,
+      record.job_execution_profile.executionProfile.relationship_focus
     ),
     precision_requirement: toExecutionAxisScore(
-      record.job_execution_profile.executionProfile.precision_requirement,
+      record.job_execution_profile.executionProfile.precision_requirement
     ),
   };
 
   const applicantExecutionProfile = {
     decision_speed: toExecutionAxisScore(
-      record.applicant_execution_profile.executionProfile.decision_speed,
+      record.applicant_execution_profile.executionProfile.decision_speed
     ),
     uncertainty_tolerance: toExecutionAxisScore(
-      record.applicant_execution_profile.executionProfile
-        .uncertainty_tolerance,
+      record.applicant_execution_profile.executionProfile.uncertainty_tolerance
     ),
     autonomy: toExecutionAxisScore(
-      record.applicant_execution_profile.executionProfile.autonomy,
+      record.applicant_execution_profile.executionProfile.autonomy
     ),
     relationship_focus: toExecutionAxisScore(
-      record.applicant_execution_profile.executionProfile.relationship_focus,
+      record.applicant_execution_profile.executionProfile.relationship_focus
     ),
     precision_requirement: toExecutionAxisScore(
-      record.applicant_execution_profile.executionProfile
-        .precision_requirement,
+      record.applicant_execution_profile.executionProfile.precision_requirement
     ),
   };
 
   // AxisDifference의 점수를 ExecutionAxisScore 타입으로 변환
-  const axisDifferences = record.axis_differences.map((diff) => ({
+  const axisDifferences = record.axis_differences.map(diff => ({
     axis: diff.axis as ExecutionAxisCode,
     axisName: diff.axisName,
     jobScore: toExecutionAxisScore(diff.jobScore),
@@ -66,6 +66,7 @@ export function transformAiAnalysisData(
     gap: diff.gap,
     gapLevel: diff.gapLevel,
     interpretation: diff.interpretation,
+    trade_off: diff.trade_off,
   }));
 
   // axisBreakdown 더미 데이터 생성 (n8n 응답에는 포함되지 않음)
@@ -121,6 +122,8 @@ export function transformAiAnalysisData(
     axisDifferences,
 
     overallSummary: record.overall_summary,
+
+    scenarioAnalysis: record.scenario_analysis,
 
     managementPoints: record.management_points,
 

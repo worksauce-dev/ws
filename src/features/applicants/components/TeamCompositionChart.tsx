@@ -1,5 +1,5 @@
-import WORK_TYPE_DATA from "../../constants/workTypes";
-import type { WorkTypeCode } from "../../types/workType.types";
+import WORK_TYPE_DATA from "@/features/groups/constants/workTypes";
+import type { WorkTypeCode } from "@/features/groups/types/workType.types";
 
 interface TeamCompositionChartProps {
   currentComposition: Record<WorkTypeCode, number>;

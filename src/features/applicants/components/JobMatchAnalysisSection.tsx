@@ -5,7 +5,7 @@
  */
 
 import { MdCheckCircle, MdWarning, MdLightbulb, MdTrendingUp } from "react-icons/md";
-import type { JobFitAnalysis } from "../../types/jobProfile.types";
+import type { JobFitAnalysis } from "@/features/groups/types/jobProfile.types";
 
 interface JobMatchAnalysisSectionProps {
   analysis: JobFitAnalysis;

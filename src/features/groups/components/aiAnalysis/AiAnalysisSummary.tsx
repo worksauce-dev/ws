@@ -4,7 +4,7 @@
  * AI가 생성한 매칭/차이 영역과 전체 해석을 표시합니다.
  */
 
-import type { AIComparisonAnalysis } from "../../types/aiJobMatching.types";
+import type { AIComparisonAnalysis } from "@/features/applicants/types/aiJobMatching.types";
 import { MdCheckCircle, MdWarning, MdLightbulb } from "react-icons/md";
 
 interface AiAnalysisSummaryProps {
