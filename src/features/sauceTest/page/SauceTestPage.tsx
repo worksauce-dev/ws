@@ -6,6 +6,7 @@ import { Button } from "@/shared/components/ui/Button";
 import { useApplicant } from "../hooks/useApplicant";
 import { VerifyApplicant } from "../components/VerifyApplicant";
 import { TestSession } from "../components/TestSession";
+import { CompletedTestResultPage } from "../components/CompletedTestResultPage";
 
 export const SauceTestPage = () => {
   const { testToken } = useParams<{ testToken: string }>();
@@ -102,6 +103,16 @@ export const SauceTestPage = () => {
           </Button>
         </motion.div>
       </div>
+    );
+  }
+
+  // 이미 테스트를 완료한 경우 결과 화면 표시
+  if (applicant.test_status === "completed" && applicant.test_result) {
+    return (
+      <CompletedTestResultPage
+        applicantName={applicant.name}
+        primaryWorkType={applicant.test_result.primaryWorkType}
+      />
     );
   }
 

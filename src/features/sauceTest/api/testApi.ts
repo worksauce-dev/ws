@@ -16,7 +16,7 @@ export async function getApplicantByToken(
     // 1. applicants 테이블에서 조회 시도
     const { data: applicant } = await supabase
       .from("applicants")
-      .select("id, name, email, group_id, test_token, test_status")
+      .select("id, name, email, group_id, test_token, test_status, test_result")
       .eq("test_token", testToken)
       .maybeSingle();
 
@@ -30,7 +30,7 @@ export async function getApplicantByToken(
     // 2. team_members 테이블에서 조회 시도
     const { data: teamMember } = await supabase
       .from("team_members")
-      .select("id, name, email, team_id, test_token, test_status")
+      .select("id, name, email, team_id, test_token, test_status, test_result")
       .eq("test_token", testToken)
       .maybeSingle();
 
@@ -43,6 +43,7 @@ export async function getApplicantByToken(
         group_id: teamMember.team_id, // team_id를 group_id로 매핑
         test_token: teamMember.test_token,
         test_status: teamMember.test_status,
+        test_result: teamMember.test_result,
         context: "team", // 팀 컨텍스트
       };
     }
