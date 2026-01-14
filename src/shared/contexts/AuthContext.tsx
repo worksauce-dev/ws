@@ -110,13 +110,23 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       setLoading(true);
 
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
         return { error };
+      }
+
+      // 로그인 성공 시 즉시 세션과 사용자 정보 업데이트
+      if (data.session && data.user) {
+        setSession(data.session);
+        setUser(data.user);
+
+        // 사용자 프로필 조회
+        const profile = await fetchUserProfile(data.user.id);
+        setUserProfile(profile);
       }
 
       return { error: null };
