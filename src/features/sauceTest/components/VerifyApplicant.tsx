@@ -102,10 +102,10 @@ export const VerifyApplicant = ({
             transition={{ delay: 0.3 }}
           >
             <h1 className="text-3xl font-bold text-neutral-800 mb-3">
-              워크소스 테스트에 오신 것을 환영합니다
+              직무 실행 유형 검사를 시작합니다
             </h1>
             <p className="text-neutral-600 text-lg">
-              본인 인증 후 테스트를 시작해주세요
+              본인 인증을 완료하면 바로 검사를 시작할 수 있어요
             </p>
           </motion.div>
         </div>
