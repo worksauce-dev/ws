@@ -90,6 +90,13 @@ export const DashboardPage = () => {
           "전체 그룹 수, 활성 그룹, 지원자 수, 완료된 테스트 수를 실시간으로 확인하세요.",
         placement: "bottom" as const,
       },
+      {
+        target: "[data-tour='credits']",
+        title: "환영 선물이 도착했어요!",
+        description:
+          "워크소스에 오신 것을 환영합니다! 지원자 분석에 사용할 수 있는 크레딧 10개를 선물로 드렸습니다.",
+        placement: "bottom" as const,
+      },
     ],
     []
   );
@@ -115,7 +122,7 @@ export const DashboardPage = () => {
   // 에러 상태
   if (error) {
     return (
-      <DashboardLayout title="대시보드">
+      <DashboardLayout>
         <div className="max-w-2xl mx-auto">
           <GroupsErrorDisplay error={error} onRetry={refetch} />
         </div>

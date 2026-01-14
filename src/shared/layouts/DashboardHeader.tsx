@@ -166,7 +166,7 @@ export const DashboardHeader = ({
             <div className="hidden sm:flex items-center gap-4">
               {/* Credits Display */}
               {(credits !== undefined || creditsLoading) && (
-                <div className="pl-4 border-l border-gray-200">
+                <div className="pl-4 border-l border-gray-200" data-tour="credits">
                   {creditsLoading ? (
                     <div className="flex items-center gap-2 h-[52px] px-3">
                       <div className="w-4 h-4 bg-neutral-200 rounded animate-pulse" />

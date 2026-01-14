@@ -224,12 +224,37 @@ export function OnboardingTour({ steps, onComplete, onSkip, onMobileMenuToggle }
 
           {/* Content */}
           <div className="px-4 sm:px-6 pb-4 sm:pb-6">
-            <h3 className="text-base sm:text-xl font-bold text-neutral-900 mb-1.5 sm:mb-2 break-keep">
-              {step.title}
-            </h3>
-            <p className="text-sm sm:text-base text-neutral-600 leading-relaxed break-keep">
-              {step.description}
-            </p>
+            {!isLastStep ? (
+              <>
+                <h3 className="text-base sm:text-xl font-bold text-neutral-900 mb-1.5 sm:mb-2 break-keep">
+                  {step.title}
+                </h3>
+                <p className="text-sm sm:text-base text-neutral-600 leading-relaxed break-keep">
+                  {step.description}
+                </p>
+              </>
+            ) : (
+              <>
+                {/* 마지막 단계: 크레딧 지급 축하 UI */}
+                <div className="text-center py-3">
+                  <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-primary-50 rounded-2xl mb-3">
+                    <span className="text-2xl sm:text-3xl">🎉</span>
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-bold text-neutral-900 mb-2 break-keep">
+                    {step.title}
+                  </h3>
+                  <p className="text-sm sm:text-base text-neutral-600 leading-relaxed break-keep mb-5">
+                    {step.description}
+                  </p>
+
+                  {/* 크레딧 표시 */}
+                  <div className="inline-flex items-baseline gap-1.5 px-5 py-2.5 bg-white rounded-xl border border-primary-200 shadow-sm">
+                    <span className="text-2xl sm:text-3xl font-bold text-primary-600">+10</span>
+                    <span className="text-sm sm:text-base font-medium text-neutral-700">크레딧</span>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Footer */}
