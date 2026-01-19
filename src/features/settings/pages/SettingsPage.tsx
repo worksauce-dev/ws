@@ -5,8 +5,13 @@ import { ProfileSection } from "../components/ProfileSection";
 import { BusinessSection } from "../components/BusinessSection";
 import { NotificationsSection } from "../components/NotificationsSection";
 import type { SettingsTab } from "../types/settings.types";
+import {
+  usePageSEO,
+  WORKSAUCE_SEO_PRESETS,
+} from "@/shared/hooks/usePageSEO";
 
 export const SettingsPage = () => {
+  usePageSEO(WORKSAUCE_SEO_PRESETS.settings);
   const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
 
   const renderContent = () => {

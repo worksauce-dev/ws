@@ -12,8 +12,13 @@ import {
 } from "react-icons/md";
 import { useSurveys } from "../hooks/useSurveys";
 import { useAllBusinessVerifications } from "../hooks/useBusinessVerifications";
+import {
+  usePageSEO,
+  WORKSAUCE_SEO_PRESETS,
+} from "@/shared/hooks/usePageSEO";
 
 export const AdminPage = () => {
+  usePageSEO(WORKSAUCE_SEO_PRESETS.admin);
   const { isAdmin, isLoading } = useUser();
   const { data: surveys } = useSurveys();
   const { data: verifications } = useAllBusinessVerifications();

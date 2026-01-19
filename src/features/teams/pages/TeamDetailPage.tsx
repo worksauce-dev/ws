@@ -12,8 +12,13 @@ import { MdPeople, MdCheckCircle, MdPending, MdEmail } from "react-icons/md";
 import WORK_TYPE_DATA from "@/features/groups/constants/workTypes";
 import type { WorkTypeCode } from "@/features/groups/types/workType.types";
 import { getPrimaryWorkType } from "../utils/workTypeUtils";
+import {
+  usePageSEO,
+  WORKSAUCE_SEO_PRESETS,
+} from "@/shared/hooks/usePageSEO";
 
 export const TeamDetailPage = () => {
+  usePageSEO(WORKSAUCE_SEO_PRESETS.teamDetail);
   const navigate = useNavigate();
   const { teamId } = useParams<{ teamId: string }>();
   const { isAuthenticated } = useUser();

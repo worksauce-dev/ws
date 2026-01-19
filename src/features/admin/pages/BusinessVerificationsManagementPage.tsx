@@ -19,8 +19,13 @@ import {
 import { getSignedUrl } from "@/features/settings/api/businessApi";
 import toast from "react-hot-toast";
 import type { BusinessVerification } from "@/features/settings/types/business.types";
+import {
+  usePageSEO,
+  WORKSAUCE_SEO_PRESETS,
+} from "@/shared/hooks/usePageSEO";
 
 export const BusinessVerificationsManagementPage = () => {
+  usePageSEO(WORKSAUCE_SEO_PRESETS.adminBusinessVerifications);
   const { user } = useAuth();
   const { data: userProfile, isLoading: profileLoading } = useUserProfile(
     user?.id
@@ -201,14 +206,13 @@ export const BusinessVerificationsManagementPage = () => {
 
   return (
     <DashboardLayout
-      title="기업 인증 관리"
-      description="기업 회원 인증 신청을 검토하고 승인/거부하세요"
       breadcrumbs={[
         { label: "대시보드", href: "/dashboard" },
         { label: "관리자", href: "/admin" },
         { label: "기업 인증 관리" },
       ]}
     >
+
       <div className="space-y-6">
         {/* 뒤로 가기 버튼 */}
         <button
@@ -482,3 +486,4 @@ export const BusinessVerificationsManagementPage = () => {
     </DashboardLayout>
   );
 };
+

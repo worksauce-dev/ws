@@ -13,8 +13,13 @@ import {
 } from "react-icons/md";
 import { useSurveys } from "../hooks/useSurveys";
 import { SelectDropdown } from "@/shared/components/ui/Dropdown";
+import {
+  usePageSEO,
+  WORKSAUCE_SEO_PRESETS,
+} from "@/shared/hooks/usePageSEO";
 
 export const SurveysManagementPage = () => {
+  usePageSEO(WORKSAUCE_SEO_PRESETS.adminSurveys);
   const { user } = useAuth();
   const { data: userProfile, isLoading: profileLoading } = useUserProfile(
     user?.id

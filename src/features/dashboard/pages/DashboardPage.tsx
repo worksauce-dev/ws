@@ -25,10 +25,15 @@ import { CalendarView } from "../components/CalendarView";
 import { OnboardingTour } from "../components/OnboardingTour";
 import { ExtendDeadlineModal } from "../components/ExtendDeadlineModal";
 import { GROUP_STATUS_FILTER_OPTIONS } from "../constants/groupStyles";
+import {
+  usePageSEO,
+  WORKSAUCE_SEO_PRESETS,
+} from "@/shared/hooks/usePageSEO";
 
 type ViewMode = "grid" | "calendar";
 
 export const DashboardPage = () => {
+  usePageSEO(WORKSAUCE_SEO_PRESETS.dashboard);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { isAuthenticated } = useUser();

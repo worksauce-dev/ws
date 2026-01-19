@@ -25,8 +25,13 @@ import {
   convertToScoreDistribution,
 } from "../utils/workTypeHelpers";
 import { getScoreColorClass } from "../utils/formatHelpers";
+import {
+  usePageSEO,
+  WORKSAUCE_SEO_PRESETS,
+} from "@/shared/hooks/usePageSEO";
 
 export const GroupPage = () => {
+  usePageSEO(WORKSAUCE_SEO_PRESETS.groupDetail);
   const { groupId } = useParams<{ groupId: string }>();
   const navigate = useNavigate();
 

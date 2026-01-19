@@ -131,4 +131,80 @@ export const WORKSAUCE_SEO_PRESETS = {
     description: "지원자들의 직무실행유형 검사 결과를 확인하고 분석하세요.",
     noindex: true, // 개인정보 포함된 페이지
   },
+
+  // Groups 도메인
+  createGroup: {
+    title: "새 채용 그룹 만들기 | 워크소스",
+    description:
+      "채용 포지션과 지원자 정보를 입력하고 직무실행유형 검사를 시작하세요.",
+    noindex: true,
+  },
+
+  groupDetail: {
+    title: "채용 그룹 상세 | 워크소스",
+    description: "지원자별 검사 결과와 직무 적합성 분석을 확인하세요.",
+    noindex: true,
+  },
+
+  // Applicants 도메인
+  applicantDetail: {
+    title: "지원자 상세 분석 | 워크소스",
+    description:
+      "지원자의 직무실행유형 검사 결과, 직무 적합도, 팀 시너지, 면접 가이드를 확인하세요.",
+    noindex: true,
+  },
+
+  // Teams 도메인
+  teams: {
+    title: "팀 관리 | 워크소스",
+    description:
+      "기존 팀원들의 직무실행유형을 파악하고 신규 채용에 활용하세요.",
+    noindex: true,
+  },
+
+  createTeam: {
+    title: "새 팀 만들기 | 워크소스",
+    description: "팀원들에게 직무실행유형 검사를 발송하여 팀 구성을 분석하세요.",
+    noindex: true,
+  },
+
+  teamDetail: {
+    title: "팀 상세 정보 | 워크소스",
+    description: "팀원들의 검사 결과와 팀 전체의 직무실행유형 분포를 확인하세요.",
+    noindex: true,
+  },
+
+  // Settings 도메인
+  settings: {
+    title: "설정 | 워크소스",
+    description: "계정 정보, 기업 인증, 알림 설정을 관리하세요.",
+    noindex: true,
+  },
+
+  // Admin 도메인
+  admin: {
+    title: "관리자 대시보드 | 워크소스",
+    description: "시스템 관리 및 설문조사, 기업 인증 관리 기능",
+    noindex: true,
+  },
+
+  adminSurveys: {
+    title: "설문조사 관리 | 워크소스 관리자",
+    description: "미니 테스트 설문조사 응답 현황 및 통계 분석",
+    noindex: true,
+  },
+
+  adminBusinessVerifications: {
+    title: "기업 인증 관리 | 워크소스 관리자",
+    description: "기업 회원 인증 신청 검토 및 승인/거부 관리",
+    noindex: true,
+  },
+
+  // MiniTest 도메인
+  miniTest: {
+    title: "미니 소스테스트 | 워크소스",
+    description:
+      "5분 만에 나의 직무실행유형을 확인해보세요. 간단한 질문으로 워크스타일을 파악할 수 있습니다.",
+    keywords: "소스테스트, 직무실행유형, 워크스타일, 성향 검사, 미니테스트",
+  },
 } as const;
