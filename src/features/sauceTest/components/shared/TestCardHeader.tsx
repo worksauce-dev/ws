@@ -9,6 +9,7 @@ interface TestCardHeaderProps {
 
   // 질문/지시문 영역
   questionText: string;
+  questionClassName?: string;
 
   // 버튼들
   onSave?: () => void;
@@ -24,6 +25,7 @@ export const TestCardHeader = ({
   title,
   subtitle,
   questionText,
+  questionClassName,
   onSave,
   onReset,
   onRandomComplete,
@@ -93,7 +95,9 @@ export const TestCardHeader = ({
 
       {/* 하단: 질문 텍스트 */}
       <div className="px-4 md:px-8 py-4 md:py-6">
-        <p className="text-white text-lg md:text-2xl font-medium leading-relaxed">
+        <p
+          className={`text-white text-lg md:text-2xl font-medium leading-relaxed ${questionClassName || ""}`}
+        >
           {questionText}
         </p>
       </div>

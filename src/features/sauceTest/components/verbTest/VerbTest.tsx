@@ -254,6 +254,7 @@ export const VerbTest = ({
           <TestCardHeader
             title={`${phaseConfig.step}/${TOTAL_STEPS} 단계`}
             questionText={phaseConfig.instruction}
+            questionClassName="whitespace-pre-line"
             onSave={onSave}
             onReset={onReset}
             onRandomComplete={isDev ? handleRandomComplete : undefined}
