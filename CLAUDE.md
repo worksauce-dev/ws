@@ -86,7 +86,7 @@ The signup process consists of **4 beautiful, accessible steps**:
 
 Custom email verification using **Supabase Edge Functions**:
 
-- **6-digit verification codes** sent via Resend API from `mail.worksauce.kr`
+- **6-digit verification codes** sent via Resend API from `worksauce.kr`
 - **10-minute expiration timer** with real-time countdown
 - **Professional Korean email templates** with WorkSauce branding
 - **Edge Functions**: `send-verification-email`, `verify-email-code`
@@ -226,7 +226,7 @@ Required environment variables in `supabase/functions/.env`:
 SUPABASE_URL=https://your-project-ref.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 RESEND_API_KEY=your_resend_api_key
-EMAIL_DOMAIN=mail.worksauce.kr
+EMAIL_DOMAIN=worksauce.kr
 ```
 
 #### Database Setup
@@ -259,7 +259,7 @@ See `supabase/DEPLOYMENT.md` for complete setup instructions.
 
 ### Email System
 
-- **Custom domain**: All emails sent from `noreply@mail.worksauce.kr`
+- **Custom domain**: All emails sent from `noreply@worksauce.kr`
 - **Professional templates**: Korean-language templates with WorkSauce branding
 - **Security**: 6-digit codes with 10-minute expiration and automatic cleanup
 - **User experience**: Real-time countdown timers and validation feedback
@@ -271,7 +271,7 @@ Before deploying to production:
 1. ✅ Set `VITE_ENV=Production` to hide development features
 2. ✅ Deploy Supabase Edge Functions with environment variables
 3. ✅ Run database migrations for verification_codes table
-4. ✅ Verify Resend domain authentication for mail.worksauce.kr
+4. ✅ Verify Resend domain authentication for worksauce.kr
 5. ✅ Test complete signup flow end-to-end
 6. ✅ Verify auth state persistence across page refreshes
 
