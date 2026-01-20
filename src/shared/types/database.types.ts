@@ -12,6 +12,12 @@ export type ApplicantStatus =
   | "rejected" // 불합격
   | "passed"; // 최종 합격
 
+// 이메일 발송 상태
+export type EmailSentStatus =
+  | "pending" // 발송 대기 중
+  | "sent" // 발송 완료
+  | "failed"; // 발송 실패
+
 // 팀 멤버 테스트 상태 (team_members 테이블용)
 export type TeamMemberTestStatus = "pending" | "in_progress" | "completed" | "expired";
 
@@ -52,6 +58,7 @@ export interface Applicant {
   group_id: string;
   name: string;
   email: string;
+  test_token: string; // 테스트 고유 토큰
   test_status: TestStatus; // 테스트 진행 상태
   status: ApplicantStatus; // 채용 결정 상태
   test_raw_data: TestRawData | null;
@@ -61,6 +68,10 @@ export interface Applicant {
   created_at: string;
   updated_at: string;
   is_starred: boolean;
+  // 이메일 발송 추적 필드
+  email_sent_status: EmailSentStatus;
+  email_sent_at: string | null;
+  email_last_error: string | null;
 }
 
 export interface Group {

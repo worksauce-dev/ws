@@ -6,6 +6,7 @@ import {
   MdTrendingUp,
   MdAssignment,
   MdSearch,
+  MdEmail,
 } from "react-icons/md";
 import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
 import { SelectDropdown } from "@/shared/components/ui/Dropdown";
@@ -29,6 +30,8 @@ import {
   usePageSEO,
   WORKSAUCE_SEO_PRESETS,
 } from "@/shared/hooks/usePageSEO";
+import { useResendEmail } from "../hooks/useResendEmail";
+import { Button } from "@/shared/components/ui/Button";
 
 export const GroupPage = () => {
   usePageSEO(WORKSAUCE_SEO_PRESETS.groupDetail);
@@ -49,9 +52,19 @@ export const GroupPage = () => {
     | "interview"
     | "rejected"
     | "passed"
+    | "email_pending"
+    | "email_sent"
+    | "email_failed"
   >("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddApplicantModalOpen, setIsAddApplicantModalOpen] = useState(false);
+  const [selectedApplicants, setSelectedApplicants] = useState<Set<string>>(
+    new Set()
+  );
+
+  // Email resend hook
+  const { resendEmail, resendBulkEmails, isLoading: isResending } =
+    useResendEmail();
 
   // 데이터 추출
   const currentGroup = data?.group;
@@ -64,6 +77,12 @@ export const GroupPage = () => {
       matchesTab = true;
     } else if (selectedTab === "completed") {
       matchesTab = applicant.test_status === "completed";
+    } else if (selectedTab === "email_pending") {
+      matchesTab = applicant.email_sent_status === "pending";
+    } else if (selectedTab === "email_sent") {
+      matchesTab = applicant.email_sent_status === "sent";
+    } else if (selectedTab === "email_failed") {
+      matchesTab = applicant.email_sent_status === "failed";
     } else {
       // 채용 상태로 필터링 (pending, shortlisted, interview, rejected, passed)
       matchesTab = applicant.status === selectedTab;
@@ -86,6 +105,78 @@ export const GroupPage = () => {
 
   const handleApplicantClick = (applicantId: string) => {
     navigate(`/dashboard/groups/${groupId}/applicants/${applicantId}`);
+  };
+
+  // 개별 이메일 재발송 핸들러
+  const handleResendEmail = async (applicantId: string) => {
+    const applicant = applicants.find(a => a.id === applicantId);
+    if (!applicant || !currentGroup) return;
+
+    await resendEmail({
+      applicant,
+      groupDeadline: currentGroup.deadline,
+      groupId: groupId!,
+      showRealName: true,
+    });
+  };
+
+  // 일괄 선택/해제 핸들러
+  const handleSelectionChange = (applicantId: string, selected: boolean) => {
+    setSelectedApplicants(prev => {
+      const newSet = new Set(prev);
+      if (selected) {
+        newSet.add(applicantId);
+      } else {
+        newSet.delete(applicantId);
+      }
+      return newSet;
+    });
+  };
+
+  // 전체 선택/해제 핸들러
+  const handleSelectAll = () => {
+    if (selectedApplicants.size === filteredApplicants.length) {
+      setSelectedApplicants(new Set());
+    } else {
+      setSelectedApplicants(new Set(filteredApplicants.map(a => a.id)));
+    }
+  };
+
+  // 일괄 이메일 재발송 핸들러 (선택된 지원자)
+  const handleBulkResend = async () => {
+    if (!currentGroup || selectedApplicants.size === 0) return;
+
+    const selectedApplicantsList = applicants.filter(a =>
+      selectedApplicants.has(a.id)
+    );
+
+    await resendBulkEmails({
+      applicants: selectedApplicantsList,
+      groupDeadline: currentGroup.deadline,
+      groupId: groupId!,
+      showRealName: true,
+    });
+
+    // 재발송 완료 후 선택 해제
+    setSelectedApplicants(new Set());
+  };
+
+  // 전체 이메일 재발송 핸들러
+  const handleResendAllEmails = async () => {
+    if (!currentGroup || applicants.length === 0) return;
+
+    const confirmed = window.confirm(
+      `${applicants.length}명의 지원자 전체에게 이메일을 재발송하시겠습니까?`
+    );
+
+    if (!confirmed) return;
+
+    await resendBulkEmails({
+      applicants: applicants,
+      groupDeadline: currentGroup.deadline,
+      groupId: groupId!,
+      showRealName: true,
+    });
   };
 
   // 지원자 추가 버튼 클릭 핸들러
@@ -314,7 +405,51 @@ export const GroupPage = () => {
           {/* Tabs and Controls */}
           <div className="bg-white rounded-xl border border-neutral-200 mb-6 overflow-hidden">
             <div className="p-6 border-b border-neutral-200">
+              {/* Bulk Actions Bar */}
+              {selectedApplicants.size > 0 && (
+                <div className="mb-4 p-3 bg-primary-50 border border-primary-200 rounded-lg flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-medium text-primary-700">
+                      {selectedApplicants.size}명 선택됨
+                    </span>
+                    <button
+                      onClick={handleSelectAll}
+                      className="text-xs text-primary-600 hover:text-primary-700 underline"
+                    >
+                      전체 선택 해제
+                    </button>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="primary"
+                    size="sm"
+                    onClick={handleBulkResend}
+                    disabled={isResending}
+                    className="flex items-center gap-2"
+                  >
+                    <MdEmail className="w-4 h-4" />
+                    <span>선택한 지원자에게 이메일 재발송</span>
+                  </Button>
+                </div>
+              )}
+
               <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
+                {/* Select All Checkbox */}
+                {filteredApplicants.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={
+                        selectedApplicants.size === filteredApplicants.length &&
+                        filteredApplicants.length > 0
+                      }
+                      onChange={handleSelectAll}
+                      className="w-4 h-4 rounded border-neutral-300 text-primary focus:ring-primary cursor-pointer"
+                    />
+                    <span className="text-sm text-neutral-700">전체 선택</span>
+                  </div>
+                )}
+
                 {/* Status Filter Dropdown */}
                 <div className="w-full sm:w-64">
                   <SelectDropdown
@@ -328,6 +463,18 @@ export const GroupPage = () => {
                       {
                         value: "completed",
                         label: `테스트 완료 (${applicants.filter(a => a.test_status === "completed").length}명)`,
+                      },
+                      {
+                        value: "email_pending",
+                        label: `이메일 발송 대기 (${applicants.filter(a => a.email_sent_status === "pending").length}명)`,
+                      },
+                      {
+                        value: "email_sent",
+                        label: `이메일 발송 완료 (${applicants.filter(a => a.email_sent_status === "sent").length}명)`,
+                      },
+                      {
+                        value: "email_failed",
+                        label: `이메일 발송 실패 (${applicants.filter(a => a.email_sent_status === "failed").length}명)`,
                       },
                       {
                         value: "shortlisted",
@@ -356,6 +503,9 @@ export const GroupPage = () => {
                           | "interview"
                           | "rejected"
                           | "passed"
+                          | "email_pending"
+                          | "email_sent"
+                          | "email_failed"
                       )
                     }
                   />
@@ -384,6 +534,9 @@ export const GroupPage = () => {
                   preferredWorkTypes={currentGroup.preferred_work_types}
                   onToggleStar={toggleStar}
                   onClick={handleApplicantClick}
+                  onResendEmail={handleResendEmail}
+                  isSelected={selectedApplicants.has(applicant.id)}
+                  onSelectionChange={handleSelectionChange}
                 />
               ))}
             </div>
@@ -399,14 +552,24 @@ export const GroupPage = () => {
               </div>
             )}
 
-            {/* 지원자 추가하기 버튼 */}
+            {/* 하단 액션 버튼 */}
             <div className="p-4 border-t border-neutral-200">
-              <button
-                onClick={handleAddApplicantClick}
-                className="w-full py-3 text-sm font-medium text-neutral-700 hover:text-primary hover:bg-neutral-50 transition-colors duration-200 rounded-lg"
-              >
-                + 지원자 추가하기
-              </button>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={handleResendAllEmails}
+                  disabled={isResending || applicants.length === 0}
+                  className="py-3 text-sm font-medium text-primary hover:text-primary-600 hover:bg-primary-50 transition-colors duration-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  <MdEmail className="w-4 h-4" />
+                  <span>전체 이메일 재발송</span>
+                </button>
+                <button
+                  onClick={handleAddApplicantClick}
+                  className="py-3 text-sm font-medium text-neutral-700 hover:text-primary hover:bg-neutral-50 transition-colors duration-200 rounded-lg flex items-center justify-center gap-2"
+                >
+                  <span>+ 지원자 추가하기</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

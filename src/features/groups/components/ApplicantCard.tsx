@@ -1,4 +1,4 @@
-import { MdStar, MdStarBorder } from "react-icons/md";
+import { MdStar, MdStarBorder, MdEmail } from "react-icons/md";
 import type { Applicant } from "@/shared/types/database.types";
 import type { WorkTypeCode } from "@/features/groups/constants/workTypeKeywords";
 import {
@@ -13,12 +13,16 @@ import {
 } from "../utils/workTypeHelpers";
 import { formatDate, getScoreColorClass } from "../utils/formatHelpers";
 import { calculateJobFitScore } from "../utils/analyzeTestResult";
+import { EmailStatusBadge } from "@/shared/components/ui/EmailStatusBadge";
 
 interface ApplicantCardProps {
   applicant: Applicant;
   preferredWorkTypes: WorkTypeCode[];
   onToggleStar: (applicantId: string) => void;
   onClick: (applicantId: string) => void;
+  onResendEmail?: (applicantId: string) => void;
+  isSelected?: boolean;
+  onSelectionChange?: (applicantId: string, selected: boolean) => void;
 }
 
 export const ApplicantCard = ({
@@ -26,16 +30,32 @@ export const ApplicantCard = ({
   preferredWorkTypes,
   onToggleStar,
   onClick,
+  onResendEmail,
+  isSelected = false,
+  onSelectionChange,
 }: ApplicantCardProps) => {
   return (
     <div
       className="p-4 sm:p-6 hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
       onClick={() => onClick(applicant.id)}
     >
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          {/* Header: Star + Name + Status */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          {/* Header: Checkbox + Star + Name + Status */}
           <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            {/* Bulk Selection Checkbox */}
+            {onSelectionChange && (
+              <input
+                type="checkbox"
+                checked={isSelected}
+                onChange={e => {
+                  e.stopPropagation();
+                  onSelectionChange(applicant.id, e.target.checked);
+                }}
+                className="w-4 h-4 rounded border-neutral-300 text-primary focus:ring-primary cursor-pointer flex-shrink-0"
+              />
+            )}
+
             <button
               onClick={e => {
                 e.stopPropagation();
@@ -82,6 +102,12 @@ export const ApplicantCard = ({
                       ? "불합격"
                       : "최종 합격"}
             </span>
+            {/* 이메일 발송 상태 배지 */}
+            <EmailStatusBadge
+              status={applicant.email_sent_status}
+              className="flex-shrink-0"
+              showLabel={true}
+            />
           </div>
 
           {/* Email + Dates */}
@@ -159,6 +185,23 @@ export const ApplicantCard = ({
             </div>
           )}
         </div>
+
+        {/* Right Side Actions */}
+        {onResendEmail && (
+          <div className="flex-shrink-0 flex items-center">
+            <button
+              onClick={e => {
+                e.stopPropagation();
+                onResendEmail(applicant.id);
+              }}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary hover:text-primary-600 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors duration-200"
+              title="이메일 재발송"
+            >
+              <MdEmail className="w-4 h-4" />
+              <span>재발송</span>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

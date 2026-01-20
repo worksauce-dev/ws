@@ -47,7 +47,14 @@ export const CreateGroupPage = () => {
   });
 
   // 그룹 생성 플로우
-  const { executeFlow, flowState, isCreating } = useCreateGroupFlow({
+  const {
+    executeFlow,
+    flowState,
+    isCreating,
+    handleGoToGroupPage,
+    handleRetryEmail,
+    handleDeleteGroup,
+  } = useCreateGroupFlow({
     showRealName,
   });
 
@@ -203,13 +210,17 @@ export const CreateGroupPage = () => {
           isOpen={
             isCreating ||
             flowState.currentStep === "sending" ||
-            flowState.currentStep === "complete"
+            flowState.currentStep === "complete" ||
+            flowState.currentStep === "email_failed"
           }
           currentStep={flowState.currentStep}
           applicantCount={applicantManager.applicants.length}
           successCount={flowState.emailProgress.success}
           failedCount={flowState.emailProgress.failed}
           errorMessage={flowState.error}
+          onGoToGroupPage={handleGoToGroupPage}
+          onRetryEmail={handleRetryEmail}
+          onDeleteGroup={handleDeleteGroup}
         />
       </div>
     </DashboardLayout>

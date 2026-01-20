@@ -90,6 +90,7 @@ export const useSendTestEmails = () => {
               testId: applicant.test_token,
               dashboardId: group.id,
               deadline: group.deadline,
+              applicantId: applicant.id, // 이메일 발송 상태 DB 업데이트를 위해 추가
             });
 
             if (result.success) {

@@ -4,10 +4,16 @@
  */
 
 import { Modal } from "@/shared/components/ui/Modal";
+import { Button } from "@/shared/components/ui/Button";
 import { MdCheckCircle, MdError } from "react-icons/md";
 import { clsx } from "clsx";
 
-export type CreateGroupStep = "creating" | "sending" | "complete" | "error";
+export type CreateGroupStep =
+  | "creating"
+  | "sending"
+  | "complete"
+  | "error"
+  | "email_failed"; // 이메일 전체 실패 상태 추가
 
 interface CreateGroupLoadingModalProps {
   isOpen: boolean;
@@ -16,6 +22,10 @@ interface CreateGroupLoadingModalProps {
   successCount?: number;
   failedCount?: number;
   errorMessage?: string;
+  // 이메일 실패 시 액션 핸들러
+  onGoToGroupPage?: () => void;
+  onRetryEmail?: () => void;
+  onDeleteGroup?: () => void;
 }
 
 export const CreateGroupLoadingModal = ({
@@ -25,11 +35,15 @@ export const CreateGroupLoadingModal = ({
   successCount = 0,
   failedCount = 0,
   errorMessage,
+  onGoToGroupPage,
+  onRetryEmail,
+  onDeleteGroup,
 }: CreateGroupLoadingModalProps) => {
   const isCreating = currentStep === "creating";
   const isSending = currentStep === "sending";
   const isComplete = currentStep === "complete";
   const isError = currentStep === "error";
+  const isEmailFailed = currentStep === "email_failed";
 
   return (
     <Modal
@@ -172,6 +186,66 @@ export const CreateGroupLoadingModal = ({
           <p className="text-xs text-neutral-500 text-center">
             잠시만 기다려주세요. 창을 닫지 마세요.
           </p>
+        )}
+
+        {/* 이메일 전체 실패 시 처리 옵션 */}
+        {isEmailFailed && (
+          <div className="space-y-4 pt-4 border-t border-neutral-200">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <MdError className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-yellow-800 mb-1">
+                    이메일 발송 실패
+                  </h4>
+                  <p className="text-sm text-yellow-700 mb-2">
+                    그룹은 생성되었으나 모든 이메일 발송에 실패했습니다.
+                    {errorMessage && (
+                      <>
+                        <br />
+                        <span className="text-xs">{errorMessage}</span>
+                      </>
+                    )}
+                  </p>
+                  <p className="text-xs text-yellow-600">
+                    어떻게 처리하시겠습니까?
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* 액션 버튼 */}
+            <div className="grid grid-cols-3 gap-3">
+              <Button
+                type="button"
+                variant="primary"
+                onClick={onGoToGroupPage}
+                className="w-full"
+              >
+                그룹 페이지로 이동
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onRetryEmail}
+                className="w-full"
+              >
+                다시 시도
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={onDeleteGroup}
+                className="w-full text-red-600 hover:text-red-700"
+              >
+                그룹 삭제
+              </Button>
+            </div>
+
+            <p className="text-xs text-neutral-500 text-center">
+              그룹 페이지로 이동하시면 나중에 이메일을 재발송할 수 있습니다.
+            </p>
+          </div>
         )}
       </div>
     </Modal>
