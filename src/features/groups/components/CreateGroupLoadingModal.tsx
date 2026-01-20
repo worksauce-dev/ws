@@ -51,31 +51,31 @@ export const CreateGroupLoadingModal = ({
       onClose={() => {}} // 진행 중에는 닫기 불가
       title="채용 그룹 생성 중"
     >
-      <div className="space-y-6 py-4">
+      <div className="space-y-4 sm:space-y-6 py-2 sm:py-4">
         {/* 단계 1: 그룹 생성 */}
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-3 sm:gap-4">
           {/* 아이콘 */}
-          <div className="flex-shrink-0 mt-1">
+          <div className="flex-shrink-0 mt-0.5 sm:mt-1">
             {isCreating ? (
-              <div className="w-6 h-6 border-3 border-primary-500 border-t-transparent rounded-full animate-spin" />
+              <div className="w-5 h-5 sm:w-6 sm:h-6 border-3 border-primary-500 border-t-transparent rounded-full animate-spin" />
             ) : isError && currentStep === "error" ? (
-              <MdError className="w-6 h-6 text-red-500" />
+              <MdError className="w-5 h-5 sm:w-6 sm:h-6 text-red-500" />
             ) : (
-              <MdCheckCircle className="w-6 h-6 text-green-500" />
+              <MdCheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
             )}
           </div>
 
           {/* 내용 */}
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <h3
               className={clsx(
-                "font-medium text-neutral-800 mb-1",
+                "text-sm sm:text-base font-medium text-neutral-800 mb-1",
                 isCreating && "text-primary-600"
               )}
             >
               1. 채용 그룹 생성
             </h3>
-            <p className="text-sm text-neutral-600">
+            <p className="text-xs sm:text-sm text-neutral-600">
               {isCreating
                 ? "그룹 정보를 저장하고 있습니다..."
                 : isError && currentStep === "error"
@@ -86,34 +86,34 @@ export const CreateGroupLoadingModal = ({
         </div>
 
         {/* 단계 2: 이메일 발송 */}
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-3 sm:gap-4">
           {/* 아이콘 */}
-          <div className="flex-shrink-0 mt-1">
+          <div className="flex-shrink-0 mt-0.5 sm:mt-1">
             {isSending ? (
-              <div className="w-6 h-6 border-3 border-primary-500 border-t-transparent rounded-full animate-spin" />
+              <div className="w-5 h-5 sm:w-6 sm:h-6 border-3 border-primary-500 border-t-transparent rounded-full animate-spin" />
             ) : isComplete || (isError && successCount > 0) ? (
               <MdCheckCircle
                 className={clsx(
-                  "w-6 h-6",
+                  "w-5 h-5 sm:w-6 sm:h-6",
                   failedCount > 0 ? "text-yellow-500" : "text-green-500"
                 )}
               />
             ) : (
-              <div className="w-6 h-6 border-3 border-neutral-300 rounded-full" />
+              <div className="w-5 h-5 sm:w-6 sm:h-6 border-3 border-neutral-300 rounded-full" />
             )}
           </div>
 
           {/* 내용 */}
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <h3
               className={clsx(
-                "font-medium text-neutral-800 mb-1",
+                "text-sm sm:text-base font-medium text-neutral-800 mb-1",
                 isSending && "text-primary-600"
               )}
             >
               2. 소스테스트 이메일 발송
             </h3>
-            <p className="text-sm text-neutral-600">
+            <p className="text-xs sm:text-sm text-neutral-600 break-words">
               {isSending ? (
                 <>
                   {applicantCount}명의 지원자에게 이메일을 발송하고 있습니다...
@@ -145,12 +145,16 @@ export const CreateGroupLoadingModal = ({
 
         {/* 오류 메시지 */}
         {isError && errorMessage && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <MdError className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-              <div>
-                <h4 className="font-medium text-red-800 mb-1">오류 발생</h4>
-                <p className="text-sm text-red-700">{errorMessage}</p>
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4">
+            <div className="flex items-start gap-2 sm:gap-3">
+              <MdError className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 flex-shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <h4 className="text-sm sm:text-base font-medium text-red-800 mb-1">
+                  오류 발생
+                </h4>
+                <p className="text-xs sm:text-sm text-red-700 break-words">
+                  {errorMessage}
+                </p>
               </div>
             </div>
           </div>
@@ -190,15 +194,15 @@ export const CreateGroupLoadingModal = ({
 
         {/* 이메일 전체 실패 시 처리 옵션 */}
         {isEmailFailed && (
-          <div className="space-y-4 pt-4 border-t border-neutral-200">
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <MdError className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-medium text-yellow-800 mb-1">
+          <div className="space-y-3 sm:space-y-4 pt-3 sm:pt-4 border-t border-neutral-200">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 sm:p-4">
+              <div className="flex items-start gap-2 sm:gap-3">
+                <MdError className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-sm sm:text-base font-medium text-yellow-800 mb-1">
                     이메일 발송 실패
                   </h4>
-                  <p className="text-sm text-yellow-700 mb-2">
+                  <p className="text-xs sm:text-sm text-yellow-700 mb-2 break-words">
                     그룹은 생성되었으나 모든 이메일 발송에 실패했습니다.
                     {errorMessage && (
                       <>
@@ -215,12 +219,12 @@ export const CreateGroupLoadingModal = ({
             </div>
 
             {/* 액션 버튼 */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
               <Button
                 type="button"
                 variant="primary"
                 onClick={onGoToGroupPage}
-                className="w-full"
+                className="w-full text-sm sm:text-base py-2 sm:py-2.5"
               >
                 그룹 페이지로 이동
               </Button>
@@ -228,7 +232,7 @@ export const CreateGroupLoadingModal = ({
                 type="button"
                 variant="outline"
                 onClick={onRetryEmail}
-                className="w-full"
+                className="w-full text-sm sm:text-base py-2 sm:py-2.5"
               >
                 다시 시도
               </Button>
@@ -236,7 +240,7 @@ export const CreateGroupLoadingModal = ({
                 type="button"
                 variant="secondary"
                 onClick={onDeleteGroup}
-                className="w-full text-red-600 hover:text-red-700"
+                className="w-full text-sm sm:text-base py-2 sm:py-2.5 text-red-600 hover:text-red-700"
               >
                 그룹 삭제
               </Button>
