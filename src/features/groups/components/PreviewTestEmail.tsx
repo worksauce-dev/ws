@@ -116,10 +116,10 @@ function generateSauceTestEmailTemplate(
       <p style="margin-bottom: 8px;">본 이메일은 발신 전용입니다.</p>
       <p style="margin-bottom: 16px;">
         워크소스에 궁금하신 점은
-        <a href="mailto:worksauce.info@gmail.com"
+        <a href="mailto:worksauce@worksauce.kr"
            style="color: oklch(70.5% 0.213 47.604); text-decoration: none; font-weight: 500;"
            rel="noreferrer noopener"
-           target="_blank">worksauce.info@gmail.com</a>로
+           target="_blank">worksauce@worksauce.kr</a>로
         문의바랍니다.
       </p>
       <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid oklch(92.4% 0.011 286);">

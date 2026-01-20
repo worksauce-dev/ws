@@ -8,7 +8,7 @@ const COMPANY_INFO = {
   name: "워크소스",
   ceo: "나요한",
   businessNumber: "123-45-67890", // 실제 사업자번호로 변경 필요
-  email: "worksauce.info@gmail.com",
+  email: "worksauce@worksauce.kr",
   linkedIn:
     "https://www.linkedin.com/company/%EC%9B%8C%ED%81%AC%EC%86%8C%EC%8A%A4/",
 } as const;

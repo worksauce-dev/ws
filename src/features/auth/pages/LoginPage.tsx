@@ -182,10 +182,10 @@ export const LoginPage = () => {
           <div className="caption text-neutral-500">
             계정 관련 문의:{" "}
             <a
-              href="mailto:worksauce.info@gmail.com"
+              href="mailto:worksauce@worksauce.kr"
               className="text-primary-600 hover:text-primary-500"
             >
-              worksauce.info@gmail.com
+              worksauce@worksauce.kr
             </a>
           </div>
 
