@@ -27,6 +27,11 @@ export type UserProfile = {
   created_at: string;
   updated_at: string;
   email_verified: boolean;
+  /**
+   * @deprecated 보안상 이유로 사용하지 않음.
+   * 관리자 여부는 useIsAdmin() 훅 또는 useUser().isAdmin을 사용하세요.
+   * 관리자 정보는 admins 테이블에서 관리됩니다.
+   */
   is_admin: boolean;
   business_verified: boolean;
   business_name?: string | null;

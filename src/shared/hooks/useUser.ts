@@ -8,6 +8,7 @@
  */
 
 import { useAuth } from "@/shared/contexts/useAuth";
+import { useIsAdmin } from "./useIsAdmin";
 
 export interface UseUserReturn {
   // 기본 정보
@@ -52,6 +53,7 @@ export interface UseUserReturn {
  */
 export const useUser = (): UseUserReturn => {
   const { user, userProfile, loading, refreshProfile } = useAuth();
+  const { isAdmin, isLoading: isAdminLoading } = useIsAdmin();
 
   // 기본 정보 - fallback 체인 통일
   const userId = user?.id;
@@ -61,16 +63,13 @@ export const useUser = (): UseUserReturn => {
     user?.email?.split("@")[0] ||
     "사용자";
   const userEmail = userProfile?.email || user?.email || "";
-
-  // 확장 정보 - userProfile에서만 조회
-  const isAdmin = userProfile?.is_admin || false;
   const isBusinessVerified = userProfile?.business_verified || false;
   const businessName = userProfile?.business_name || null;
   const credits = userProfile?.credits || 0;
   const lastLoginAt = userProfile?.last_login_at || null;
 
   // 상태
-  const isLoading = loading;
+  const isLoading = loading || isAdminLoading;
   const isAuthenticated = !!user;
 
   return {
