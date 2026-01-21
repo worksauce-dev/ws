@@ -137,3 +137,18 @@ export const formatPhoneNumber = (phone: string): string => {
 
   return phone;
 };
+
+/**
+ * 한국어 날짜+시간 포맷 (년 월 일 시:분)
+ * @example formatKoreanDateTime("2024-12-25T10:30:00") // "2024년 12월 25일 10:30"
+ */
+export const formatKoreanDateTime = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("ko-KR", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
