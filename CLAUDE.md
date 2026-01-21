@@ -312,8 +312,8 @@ The dashboard is the core feature of WorkSauce, providing recruitment management
 
 **ApplicantDetail** (`/applicant/detail`)
 - Deep-dive analysis of a single applicant
-- Tabs: Work Type Analysis, Team Synergy Analysis, Interview Guide
-- Displays test scores, strengths/weaknesses, team fit, and interview questions
+- Tabs: Work Type Analysis, Interview Guide
+- Displays test scores, strengths/weaknesses, and interview questions
 
 ### API Layer
 
@@ -401,366 +401,188 @@ interface Applicant {
 > "소스테스트로 채용을 더 똑똑하게 (Smarter hiring with SauceTest)"
 
 **Key Principles:**
-- 🎯 **채용이 메인, 팀은 보조**: Team context enhances hiring decisions, not a separate platform
 - 🚀 **점진적 확장**: Start with MVP, expand based on user feedback
 - 💡 **즉각적 가치**: Every feature must provide immediate actionable value
 
-### Development Phases
-
-#### Phase 0: Hiring Decision Actions (1 week) - BRONZE 🥉
-**Goal:** Enable immediate hiring decisions after viewing applicant analysis
-
-**Features:**
-1. **Applicant Status Management**
-   - Add status field to applicants: `pending`, `shortlisted`, `interview`, `rejected`, `passed`
-   - Quick action buttons on ApplicantDetailPage
-   - Status-based filtering on GroupPage tabs
-
-**Database Changes:**
-```sql
-ALTER TABLE applicants
-ADD COLUMN status TEXT DEFAULT 'pending';
-```
-
-**UX Impact:**
-- ✅ Users can immediately act on analysis results
-- ✅ Track hiring pipeline progress
-- ✅ Filter/sort by decision status
-
 ---
 
-#### Phase 1: Team Context for Better Hiring (1-2 weeks) - SILVER 🥈 ✅ COMPLETED
-**Goal:** Enhance hiring decisions with team composition context
+## AI 직무 매칭 분석 (n8n + GPT-4o-mini)
 
-**Status:** ✅ Completed (Dec 2024)
+### 개요
 
-**Features Implemented:**
-1. **Team Composition Input (Optional)**
-   - ✅ Added `current_team_composition` JSONB field to groups table
-   - ✅ Simple counter UI in GroupInfoForm ("현재 팀 구성" section)
-   - ✅ Skip-friendly toggle button (doesn't block group creation)
-   - ✅ WorkTypeCounter component with +/- controls
-   - ✅ Total team members count display
+지원자의 테스트 결과를 바탕으로 **AI가 직무 적합도를 분석**하여 개인화된 리포트를 생성하는 기능. n8n 워크플로우와 OpenAI GPT-4o-mini를 활용하여 실행 프로필 기반 매칭 분석을 수행.
 
-2. **Team Fit Analysis**
-   - ✅ `calculateTeamFitScore()` utility function in analyzeTestResult.ts
-   - ✅ Team balance score (0-100): Higher when applicant's type is needed
-   - ✅ Team diversity score (0-100): Based on unique type count
-   - ✅ 4-level recommendation system:
-     - excellent: New type (count === 0)
-     - good: Underrepresented type (<20%)
-     - neutral: Balanced type (20-40%)
-     - caution: Overrepresented type (≥40%)
-   - ✅ TeamCompositionChart component with before/after bar charts
-   - ✅ Conditional rendering on ApplicantDetailPage (only if team data exists)
+### 워크플로우 아키텍처
 
-**Database Changes:**
-```sql
-ALTER TABLE groups
-ADD COLUMN current_team_composition JSONB;
-
--- Example data:
--- { "EX": 2, "ST": 1, "AN": 1, "CR": 0 }
+```
+Webhook (POST) → Validation → Sanity Check → Transform Profile → AI Agent → Parse & Format → Supabase INSERT → Notification
 ```
 
-**Implementation Details:**
+**노드별 역할:**
 
-**Type Definitions:**
+1. **Webhook**: 프론트엔드에서 분석 요청 수신 (CORS 설정: worksauce.kr)
+2. **Validation**: 필수 필드 검증 (jobInput, testResult, metadata)
+3. **Sanity Check**: 직무 설명이 의미 있는 내용인지 AI로 검증
+4. **Transform Applicant Profile**: 테스트 점수 → 5가지 실행 프로필 축으로 변환
+5. **AI Agent**: GPT-4o-mini로 직무-지원자 프로필 비교 분석
+6. **Parse & Format**: AI 응답 파싱 및 최종 응답 구조화
+7. **Supabase INSERT**: `ai_job_analysis` 테이블에 분석 결과 저장
+8. **Notification**: `notifications` 테이블에 완료 알림 생성
+
+### 실행 프로필 (Execution Profile)
+
+지원자의 Work Type 점수를 5가지 실행 축으로 변환:
+
+| 축 | 설명 | 0점 | 100점 |
+|---|---|---|---|
+| `decision_speed` | 의사결정 속도 | 신중한 분석 후 결정 | 빠른 판단과 실행 |
+| `uncertainty_tolerance` | 불확실성 내성 | 명확한 구조 선호 | 변화와 모호함 수용 |
+| `autonomy` | 자율성 | 협업/조정 중심 | 독립적 업무 선호 |
+| `relationship_focus` | 관계 중심성 | 과제/결과 중심 | 대인관계/조화 중심 |
+| `precision_requirement` | 정확성 요구도 | 속도/유연성 우선 | 완벽함/디테일 중시 |
+
+**변환 로직** (`transform applicant profile` 노드):
+- Work Type별 가중치 기반 점수 계산
+- 예: `decision_speed` = 빠른 실행형(EE, EG) - 신중한 분석형(UR, SA, SE, CH)
+
+### AI 분석 출력 구조
+
 ```typescript
-// src/shared/types/database.types.ts
-export type TeamComposition = Partial<Record<WorkTypeCode, number>>;
+interface AIJobAnalysis {
+  analysisId: string;
 
-// src/features/groups/utils/analyzeTestResult.ts
-export interface TeamFitAnalysis {
-  balanceScore: number;
-  currentComposition: Record<WorkTypeCode, number>;
-  afterComposition: Record<WorkTypeCode, number>;
-  diversityScore: number;
-  recommendation: {
-    level: "excellent" | "good" | "neutral" | "caution";
-    message: string;
-    reasons: string[];
+  // 직무 실행 프로필 (AI 생성)
+  jobExecutionProfile: {
+    executionProfile: ExecutionProfile;
+    rationale: Record<string, string>;  // 각 축 점수의 근거
+    primaryAxes: Array<{               // 핵심 축 2개
+      axis: string;
+      failurePattern: string;          // 이 직무에서 흔한 실패 패턴
+      criticalBecause: string;         // 왜 치명적인가
+    }>;
+  };
+
+  // 지원자 실행 프로필 (계산된 값)
+  applicantExecutionProfile: ExecutionProfile;
+
+  // 축별 차이 분석
+  axisDifferences: Array<{
+    axis: string;
+    axisName: string;
+    isPrimaryAxis: boolean;
+    jobScore: number;
+    applicantScore: number;
+    gap: number;
+    gapLevel: "critical" | "significant" | "moderate" | "minimal";
+    interpretation: string;
+    trade_off: { positive: string; negative: string };
+  }>;
+
+  // 전체 요약
+  overallSummary: {
+    matchingAreas: string[];
+    differingAreas: string[];
+    interpretationSummary: string;
+  };
+
+  // 시나리오 분석
+  scenarioAnalysis: {
+    bestScenario: string;      // 지원자가 빛날 상황
+    worstScenario: string;     // 고전할 상황
+    teamSynergyRecommendation: string;  // 함께 일하면 좋은 동료 유형
+  };
+
+  // 관리 포인트
+  managementPoints: Array<{
+    category: "onboarding" | "daily_work" | "growth" | "communication";
+    categoryLabel: string;
+    point: string;
+    priority: "high" | "medium" | "low";
+  }>;
+
+  // 신뢰도
+  confidence: {
+    level: "high" | "medium" | "low";
+    note: string | null;
   };
 }
 ```
 
-**Components:**
-- `WorkTypeCounter` - Individual work type counter with +/- buttons
-- `TeamCompositionChart` - Before/after bar chart visualization
-- `GroupInfoForm` - Team composition input section (lines 204-257)
-- `ApplicantDetailPage` - Team fit analysis section (lines 293-450)
+### 데이터베이스 스키마
 
-**UX Flow:**
-```
-CreateGroupPage → "현재 팀 구성" toggle button
-                → If enabled: Counter grid for all 10 work types
-                → Total team members count auto-calculated
-                → Can be disabled at any time
-
-ApplicantDetailPage → IF team_composition exists:
-                       → "팀 적합도 분석" section appears
-                       → Balance score + Diversity score cards
-                       → Color-coded recommendation banner
-                       → Before/after bar chart comparison
-                    → ELSE: Section hidden (conditional rendering)
-```
-
-**Key Benefits:**
-- ✅ No separate team management complexity
-- ✅ Optional feature (progressive enhancement)
-- ✅ Immediate value for users who provide team info
-- ✅ Maintains "hiring-first" product identity
-- ✅ Visual feedback with color-coded recommendations
-- ✅ Data-driven insights for better hiring decisions
-
-**Files Modified:**
-- Database: `groups` table + `current_team_composition` column
-- Types: `database.types.ts`, `group.types.ts`
-- Components: `GroupInfoForm.tsx`, `WorkTypeCounter.tsx` (new), `TeamCompositionChart.tsx` (new)
-- Pages: `ApplicantDetailPage.tsx`
-- Utils: `analyzeTestResult.ts`, `buildCreateGroupRequest.ts`
-- API: `groupApi.ts`
-
----
-
-#### Phase 2: Team Assessment Landing (2-3 weeks) - GOLD 🥇 ✅ COMPLETED
-**Goal:** Enable users to assess their existing team and reuse data for hiring
-
-**Status:** ✅ Completed (Dec 2024)
-
-**Features Implemented:**
-1. **Team Management System**
-   - ✅ Separate `teams` and `team_members` tables
-   - ✅ Team creation flow with member email input
-   - ✅ Automatic team composition calculation from completed tests
-   - ✅ Team dashboard with progress tracking
-   - ✅ Team detail page with member status and type distribution
-
-2. **Integration with Hiring Flow**
-   - ✅ "Select from existing team" dropdown in CreateGroupPage
-   - ✅ Auto-fill team composition when team is selected
-   - ✅ Seamless data reuse without manual input
-
-**Database Changes:**
+**ai_job_analysis 테이블:**
 ```sql
--- teams 테이블
-CREATE TABLE teams (
+CREATE TABLE ai_job_analysis (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  description TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- team_members 테이블
-CREATE TABLE team_members (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  team_id UUID NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  email TEXT NOT NULL,
-  test_token TEXT NOT NULL UNIQUE,
-  test_status TEXT NOT NULL DEFAULT 'pending',
-  test_result JSONB,
-  test_url TEXT NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  user_id UUID NOT NULL REFERENCES auth.users(id),
+  applicant_id UUID NOT NULL REFERENCES applicants(id),
+  group_id UUID NOT NULL REFERENCES groups(id),
+  analysis_id TEXT NOT NULL,
+  job_execution_profile JSONB NOT NULL,
+  applicant_execution_profile JSONB NOT NULL,
+  axis_differences JSONB NOT NULL,
+  overall_summary JSONB NOT NULL,
+  scenario_analysis JSONB NOT NULL,
+  management_points JSONB NOT NULL,
+  confidence JSONB NOT NULL,
+  credits_used INTEGER DEFAULT 1,
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
 
-**Implementation Details:**
+**notifications 테이블:**
+```sql
+CREATE TABLE notifications (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id),
+  type TEXT NOT NULL,
+  title TEXT NOT NULL,
+  message TEXT NOT NULL,
+  data JSONB,
+  is_read BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
 
-**Type Definitions:**
+### API 호출 방법
+
+**Webhook 엔드포인트:** `POST /webhook/80cad2e1-b232-4abf-8e3a-32301367e21a`
+
+**Request Body:**
 ```typescript
-// src/features/teams/types/team.types.ts
-export interface Team {
-  id: string;
-  user_id: string;
-  name: string;
-  description: string | null;
-  created_at: string;
-  updated_at: string;
+{
+  userId: string;
+  applicant: {
+    id: string;
+    name: string;
+  };
+  jobInput: {
+    jobTitle: string;
+    position: string;
+    experienceLevel?: string;
+    jobDescription?: string;
+  };
+  testResult: {
+    primaryType: string;
+    scoreDistribution: Record<string, number>;
+    statementScores: Record<string, number>;
+    verbSelections?: Record<string, string[]>;
+  };
+  metadata: {
+    transactionId: string;
+    groupId: string;
+  };
 }
-
-export interface TeamMember {
-  id: string;
-  team_id: string;
-  name: string;
-  email: string;
-  test_token: string;
-  test_status: TeamMemberTestStatus;
-  test_result: TestResult | null;
-  test_url: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface TeamDetail extends Team {
-  members: TeamMemberSummary[];
-  total_members: number;
-  completed_tests: number;
-  team_composition: TeamComposition | null; // Auto-calculated
-}
 ```
 
-**API Layer:**
-```typescript
-// src/features/teams/api/teamApi.ts
-export const teamApi = {
-  createTeam,           // Create team + bulk insert members
-  getTeams,             // Fetch user's teams
-  getTeamWithMembers,   // Fetch team with members + composition
-  updateTeam,           // Update team info
-  deleteTeam,           // Delete team (CASCADE deletes members)
-  addMembersToTeam,     // Add new members to existing team
-  deleteTeamMember,     // Remove member from team
-  getTeamsWithComposition, // For CreateGroupPage dropdown
-};
-```
+### 핵심 특징
 
-**React Query Hooks:**
-```typescript
-// src/features/teams/hooks/
-- useTeams(userId)                    // List all teams
-- useTeamDetail(teamId)               // Team with members
-- useCreateTeam(options)              // Create team mutation
-- useTeamsWithComposition(userId)     // For dropdown in CreateGroupPage
-```
-
-**Pages:**
-```typescript
-// src/features/teams/pages/
-- TeamsPage                (/dashboard/teams)
-  → Team dashboard with grid view
-  → Progress tracking (X/Y completed)
-  → Empty state with CTA
-
-- CreateTeamPage           (/dashboard/teams/create)
-  → Simple form (name + description)
-  → Reuses ApplicantManager for member input
-  → Excel upload support
-
-- TeamDetailPage           (/dashboard/teams/:teamId)
-  → Team info and statistics
-  → Member list with test status
-  → Team composition chart (pie/bar)
-  → Resend test emails button (TODO)
-```
-
-**User Flow:**
-```
-1. User navigates to /dashboard/teams
-2. Clicks "새 팀 만들기"
-3. Inputs team name/description + member emails
-4. System creates team + sends tests to members
-5. Members complete tests → Auto-calculates team composition
-6. User creates recruitment group → Selects existing team
-7. Team composition auto-fills → Enables team fit analysis
-```
-
-**Key Benefits:**
-- ✅ Solves Phase 1's manual input problem
-- ✅ Makes Phase 1 features fully functional
-- ✅ Data reuse across hiring processes
-- ✅ No duplicated manual work
-- ✅ Maintains "hiring-first" product identity
-
-**Files Modified/Added:**
-- Database: `teams`, `team_members` tables
-- Types: `team.types.ts`, updated `database.types.ts`
-- API: `teamApi.ts`
-- Hooks: `useTeams.ts`, `useTeamDetail.ts`, `useCreateTeam.ts`, `useTeamsWithComposition.ts`
-- Pages: `TeamsPage.tsx`, `CreateTeamPage.tsx`, `TeamDetailPage.tsx`
-- Components: Updated `GroupInfoForm.tsx` with team selector
-- Pages: Updated `CreateGroupPage.tsx` with team selection logic
-- Routing: Added team routes in `App.tsx`
-- Navigation: Added "팀 관리" menu in `DashboardHeader.tsx`
-
----
-
-#### Phase 3: Advanced Features (3-4+ weeks)
-**Goal:** Full-featured team + hiring platform (only if validated by Phases 1-2)
-
-**Considerations:**
-- Only proceed if strong user demand for dedicated team management
-- Requires: Separate `/teams` page, member management UI, team analytics
-- Risk: Product scope creep, complexity increase
-- Decision: Based on Phase 1-2 user feedback and metrics
-
----
-
-### Feature Decision Framework
-
-**When to build a feature:**
-1. ✅ Does it help users make hiring decisions faster/better?
-2. ✅ Can it be implemented without breaking "hiring-first" positioning?
-3. ✅ Is there validated user demand (not just assumption)?
-
-**When to defer a feature:**
-1. ❌ Requires separate product identity (e.g., "org management platform")
-2. ❌ Adds complexity without proportional hiring value
-3. ❌ No clear evidence users need it
-
----
-
-### Current Status (Dec 2024)
-
-**Completed:**
-- ✅ CreateGroupPage refactoring (45% code reduction)
-- ✅ Design system consistency improvements
-- ✅ Reusable email sending infrastructure (`useSendTestEmails`)
-- ✅ Phase 0 (Bronze): Applicant status management
-- ✅ Phase 1 (Silver): Team Context for Better Hiring
-- ✅ Phase 2 (Gold): Team Assessment & Management
-
-**Phase 1 Highlights:**
-- ✅ 12 implementation tasks completed
-- ✅ Type check: Passing ✓
-- ✅ Build: Successful ✓
-- ✅ Lint: Phase 1 code clean (2 warnings fixed)
-- ✅ New components: WorkTypeCounter, TeamCompositionChart
-- ✅ Enhanced: GroupInfoForm, ApplicantDetailPage, analyzeTestResult.ts
-
-**Phase 2 Highlights:**
-- ✅ 13 implementation tasks completed
-- ✅ Type check: Passing ✓
-- ✅ Build: Successful ✓
-- ✅ New feature: Complete team management system
-- ✅ New pages: TeamsPage, CreateTeamPage, TeamDetailPage
-- ✅ New API: teamApi with 8 functions
-- ✅ New hooks: 4 React Query hooks
-- ✅ Integration: Seamless connection with hiring flow
-
-**Next Steps:**
-1. Deploy Phase 2 to production
-2. Create database migrations for `teams` and `team_members` tables
-3. Test complete flow: Team creation → Member tests → Group creation
-4. Monitor metrics:
-   - % of users who create teams before recruitment groups
-   - % of users who select existing teams vs manual input
-   - Team test completion rates
-   - Correlation between team fit analysis and hiring decisions
-5. Gather user feedback on team management features
-6. Consider Phase 3 based on validated demand
-
----
-
-### Success Metrics
-
-**Phase 0 (Bronze):**
-- % of users who use status buttons after viewing applicant detail
-- Time from viewing analysis to making hiring decision
-
-**Phase 1 (Silver):**
-- % of users who input team composition (optional field usage)
-- Correlation between team fit score and final hiring decision
-
-**Phase 2 (Gold):**
-- % of users who create teams before recruitment groups
-- Team test completion rate (completed tests / total members)
-- % of users who select existing teams vs manual input when creating groups
-- User retention: Do users who create teams return more often?
-- Conversion: Team assessment → Recruitment group creation rate
+1. **Sanity Check**: 무의미한 직무 설명 필터링 (농담, 무관한 내용 등)
+2. **Constraint-based Scoring**: AI가 직무 프로필 생성 시 트레이드오프 제약 적용
+   - `decision_speed + precision_requirement ≤ 140`
+   - `autonomy + relationship_focus ≤ 130`
+3. **Failure-driven Analysis**: 해당 직무에서 흔한 실패 패턴 기반 핵심 축 선정
+4. **비동기 처리**: 분석 완료 시 notifications 테이블에 알림 생성
 
 ---
 
