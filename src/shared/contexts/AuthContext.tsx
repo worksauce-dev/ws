@@ -15,33 +15,6 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   const [loading, setLoading] = useState(true);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
-  // 사용자 프로필 조회
-  // const fetchUserProfile = async (
-  //   userId: string
-  // ): Promise<UserProfile | null> => {
-  //   try {
-  //     const { data, error } = await supabase
-  //       .from("user_profile")
-  //       .select("*")
-  //       .eq("id", userId)
-  //       .single();
-
-  //     if (error) {
-  //       console.warn("❌ User profile fetch error:", {
-  //         message: error.message,
-  //         details: error.details,
-  //         hint: error.hint,
-  //         code: error.code,
-  //       });
-  //       return null;
-  //     }
-
-  //     return data as UserProfile;
-  //   } catch (error) {
-  //     console.warn("❌ Exception fetching user profile:", error);
-  //     return null;
-  //   }
-  // };
 
   // 사용자 프로필 조회 (기업 인증 정보 포함)
   // useCallback으로 메모이제이션하여 무한 루프 방지
