@@ -200,9 +200,6 @@ export const JobMatchTab = ({
                             <p className="text-neutral-600">
                               분석 완료 후 이 페이지로 돌아오시면 결과를 바로
                               확인하실 수 있습니다.
-                              <span className="text-neutral-500 ml-1">
-                                (페이지 새로고침 필요 없음)
-                              </span>
                             </p>
                           </div>
                         </div>
