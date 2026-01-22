@@ -135,7 +135,7 @@ export const NameStep = ({
       <Button
         onClick={handleNext}
         variant="primary"
-        disabled={!formData.name.trim() || !!errors.name}
+        disabled={!formData.name.trim() || formData.name.trim().length < 2 || !!errors.name}
         className="w-full"
       >
         다음 단계로 →

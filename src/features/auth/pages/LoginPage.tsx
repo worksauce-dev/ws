@@ -37,6 +37,7 @@ export const LoginPage = () => {
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
+    mode: "onBlur", // 필드 포커스 해제 시 검증
   });
 
   // 이미 로그인된 경우 리다이렉트

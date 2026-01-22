@@ -129,8 +129,10 @@ export const EmailStep = ({
       });
 
       if (error || !data?.verified) {
+        // 기술적 에러 메시지 대신 사용자 친화적 메시지 사용
+        const userFriendlyMessage = "인증 코드가 올바르지 않거나 만료되었습니다. 다시 확인해주세요.";
         setErrors({
-          code: error?.message || "인증 코드가 올바르지 않거나 만료되었습니다. 다시 확인해주세요."
+          code: userFriendlyMessage
         });
         return;
       }
