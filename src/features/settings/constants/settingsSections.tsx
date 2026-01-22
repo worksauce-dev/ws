@@ -1,6 +1,6 @@
 import {
   MdPerson,
-  MdNotifications,
+  // MdNotifications,
   MdBusiness,
 } from "react-icons/md";
 import type {
@@ -24,12 +24,12 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     icon: <MdBusiness className="w-5 h-5" />,
     description: "기업 회원 인증 및 혜택",
   },
-  {
-    id: "notifications",
-    title: "알림",
-    icon: <MdNotifications className="w-5 h-5" />,
-    description: "이메일 및 푸시 알림 설정",
-  },
+  // {
+  //   id: "notifications",
+  //   title: "알림",
+  //   icon: <MdNotifications className="w-5 h-5" />,
+  //   description: "이메일 및 푸시 알림 설정",
+  // },
 ];
 
 /**
