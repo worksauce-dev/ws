@@ -7,9 +7,9 @@ import {
   MdChevronRight,
   MdCalendarToday,
   MdVisibility,
-  MdEdit,
-  MdContentCopy,
-  MdDownload,
+  // MdEdit,        // TODO: 그룹 수정 기능 구현 시 사용
+  // MdContentCopy, // TODO: 그룹 복제 기능 구현 시 사용
+  // MdDownload,    // TODO: 지원자 내보내기 기능 구현 시 사용
   MdDelete,
 } from "react-icons/md";
 import { Dropdown } from "@/shared/components/ui/Dropdown";
@@ -73,36 +73,37 @@ export const GroupCard = ({ group, onClick, onMenuAction }: GroupCardProps) => {
                     label: "상세 보기",
                   }),
               },
-              {
-                id: "edit",
-                label: "그룹 수정",
-                icon: <MdEdit className="w-4 h-4" />,
-                onClick: () =>
-                  onMenuAction(group.id, {
-                    id: "edit",
-                    label: "그룹 수정",
-                  }),
-              },
-              {
-                id: "duplicate",
-                label: "그룹 복제",
-                icon: <MdContentCopy className="w-4 h-4" />,
-                onClick: () =>
-                  onMenuAction(group.id, {
-                    id: "duplicate",
-                    label: "그룹 복제",
-                  }),
-              },
-              {
-                id: "export",
-                label: "지원자 내보내기",
-                icon: <MdDownload className="w-4 h-4" />,
-                onClick: () =>
-                  onMenuAction(group.id, {
-                    id: "export",
-                    label: "지원자 내보내기",
-                  }),
-              },
+              // TODO: 아래 기능들은 추후 구현 예정
+              // {
+              //   id: "edit",
+              //   label: "그룹 수정",
+              //   icon: <MdEdit className="w-4 h-4" />,
+              //   onClick: () =>
+              //     onMenuAction(group.id, {
+              //       id: "edit",
+              //       label: "그룹 수정",
+              //     }),
+              // },
+              // {
+              //   id: "duplicate",
+              //   label: "그룹 복제",
+              //   icon: <MdContentCopy className="w-4 h-4" />,
+              //   onClick: () =>
+              //     onMenuAction(group.id, {
+              //       id: "duplicate",
+              //       label: "그룹 복제",
+              //     }),
+              // },
+              // {
+              //   id: "export",
+              //   label: "지원자 내보내기",
+              //   icon: <MdDownload className="w-4 h-4" />,
+              //   onClick: () =>
+              //     onMenuAction(group.id, {
+              //       id: "export",
+              //       label: "지원자 내보내기",
+              //     }),
+              // },
               {
                 id: "extend",
                 label: "마감일 연장",

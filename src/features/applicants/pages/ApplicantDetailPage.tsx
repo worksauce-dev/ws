@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import {
   MdPsychology,
@@ -50,7 +50,8 @@ export const ApplicantDetailPage = () => {
 
   // AI 분석 결과 조회 (Supabase에서 가져오기)
   const {
-    data: aiAnalysisData,
+    analysisStatus: dbAnalysisStatus,
+    analysisData: aiAnalysisData,
     isLoading: isLoadingAiAnalysis,
     isError: isAiAnalysisError,
     refetch: refetchAiAnalysis,
@@ -149,20 +150,23 @@ export const ApplicantDetailPage = () => {
     "analysis" | "team" | "interview" | "jobmatch"
   >("analysis");
 
-  // AI 분석 진행 중 상태 관리 (로컬 상태)
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-
-  // AI 분석 상태 관리 (Supabase 데이터 기반 + 로컬 상태)
+  // AI 분석 상태 관리 (DB 상태 기반)
+  // - idle: 분석 요청 전
+  // - pending/processing: 분석 진행 중 (새로고침해도 유지)
+  // - completed: 분석 완료
+  // - failed: 분석 실패
   const aiAnalysisStatus: "idle" | "pending" | "completed" | "failed" =
-    isAnalyzing
-      ? "pending" // 분석 요청 후 결과 대기 중
-      : isLoadingAiAnalysis
-        ? "pending" // Supabase 조회 중
-        : isAiAnalysisError
-          ? "failed"
-          : aiAnalysisData
+    isLoadingAiAnalysis
+      ? "pending" // Supabase 조회 중
+      : isAiAnalysisError
+        ? "failed"
+        : dbAnalysisStatus === "pending" || dbAnalysisStatus === "processing"
+          ? "pending"
+          : dbAnalysisStatus === "completed"
             ? "completed"
-            : "idle";
+            : dbAnalysisStatus === "failed"
+              ? "failed"
+              : "idle";
 
   const aiAnalysisResult = aiAnalysisData || undefined;
 
@@ -173,8 +177,6 @@ export const ApplicantDetailPage = () => {
       return;
     }
 
-    setIsAnalyzing(true); // 분석 시작 상태로 전환
-
     await requestAnalysis({
       applicant: currentApplicant,
       group: data.group,
@@ -182,8 +184,8 @@ export const ApplicantDetailPage = () => {
       analyzedResult,
       additionalContext,
       onSuccess: () => {
-        // n8n 응답 받은 직후에는 isAnalyzing 유지 (백그라운드 분석 진행 중)
-        // 알림이 오면 사용자가 페이지를 다시 방문하거나 새로고침할 것
+        // pending 레코드가 DB에 생성되면 useAiAnalysis가 자동으로 refetch
+        refetchAiAnalysis();
       },
     });
   };
@@ -192,18 +194,6 @@ export const ApplicantDetailPage = () => {
   const handleRetryAnalysis = () => {
     refetchAiAnalysis();
   };
-
-  // AI 분석 완료 시 isAnalyzing 상태 해제 + Toast 알림
-  useEffect(() => {
-    if (aiAnalysisData && isAnalyzing) {
-      setIsAnalyzing(false);
-      showToast(
-        "success",
-        "AI 분석 완료",
-        "실행 스타일 비교 분석 결과를 확인해보세요!"
-      );
-    }
-  }, [aiAnalysisData, isAnalyzing, showToast]);
 
   // 크레딧 클릭 처리
   const handleCreditClick = () => {
