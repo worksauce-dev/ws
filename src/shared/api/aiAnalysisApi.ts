@@ -1,6 +1,15 @@
 import { supabase } from "@/shared/lib/supabase"
 
 /**
+ * AI 분석 상태
+ * - pending: 분석 요청됨, n8n 처리 대기 중
+ * - processing: n8n에서 처리 중
+ * - completed: 분석 완료
+ * - failed: 분석 실패
+ */
+export type AiAnalysisStatus = "pending" | "processing" | "completed" | "failed"
+
+/**
  * AI 분석 결과 저장 요청 타입
  */
 export interface SaveAiAnalysisRequest {
@@ -85,6 +94,7 @@ export interface SaveAiAnalysisRequest {
  */
 export interface AiAnalysisRecord extends SaveAiAnalysisRequest {
   id: string
+  status: AiAnalysisStatus
   created_at: string
   updated_at: string
 }
@@ -110,6 +120,63 @@ export async function saveAiAnalysis(
   }
 
   return data
+}
+
+/**
+ * AI 분석 요청 시 pending 레코드 생성
+ *
+ * n8n 처리 전에 미리 레코드를 생성하여 새로고침 시에도 상태 유지
+ *
+ * @param params - pending 레코드 생성에 필요한 정보
+ * @returns 생성된 pending 레코드
+ */
+export async function createPendingAiAnalysis(params: {
+  user_id: string
+  applicant_id: string
+  group_id: string
+  analysis_id: string
+  transaction_id: string
+}): Promise<AiAnalysisRecord> {
+  const { data, error } = await supabase
+    .from("ai_job_analysis")
+    .insert([
+      {
+        user_id: params.user_id,
+        applicant_id: params.applicant_id,
+        group_id: params.group_id,
+        analysis_id: params.analysis_id,
+        transaction_id: params.transaction_id,
+        status: "pending" as AiAnalysisStatus,
+      },
+    ])
+    .select()
+    .single()
+
+  if (error) {
+    throw new Error(`AI 분석 pending 레코드 생성 실패: ${error.message}`)
+  }
+
+  return data
+}
+
+/**
+ * AI 분석 상태 업데이트
+ *
+ * @param analysisId - 분석 ID
+ * @param status - 새로운 상태
+ */
+export async function updateAiAnalysisStatus(
+  analysisId: string,
+  status: AiAnalysisStatus,
+): Promise<void> {
+  const { error } = await supabase
+    .from("ai_job_analysis")
+    .update({ status })
+    .eq("analysis_id", analysisId)
+
+  if (error) {
+    throw new Error(`AI 분석 상태 업데이트 실패: ${error.message}`)
+  }
 }
 
 /**

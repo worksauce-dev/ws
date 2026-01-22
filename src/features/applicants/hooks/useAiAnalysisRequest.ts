@@ -7,10 +7,15 @@
 
 import { useToast } from "@/shared/components/ui/useToast";
 import { useAuth } from "@/shared/contexts/useAuth";
-import { getUserCredits, deductCredits } from "@/shared/api/creditApi";
+import { getUserCredits, deductCredits, refundCredits } from "@/shared/api/creditApi";
+import {
+  createPendingAiAnalysis,
+  updateAiAnalysisStatus,
+} from "@/shared/api/aiAnalysisApi";
 import { InsufficientCreditsError } from "@/shared/errors/CreditErrors";
 import { logger } from "@/shared/utils/logger";
 import { CREDIT_COSTS } from "@/shared/constants/credits";
+import { nanoid } from "nanoid";
 import type { AnalyzedResult } from "@/features/groups/utils/analyzeTestResult";
 import type { Group, TestResult } from "@/shared/types/database.types";
 import { transformVerbSelectionsForAI } from "../utils/transformVerbSelections";
@@ -49,6 +54,10 @@ export const useAiAnalysisRequest = () => {
       return;
     }
 
+    // 크레딧 차감 후 에러 발생 시 환불을 위한 변수
+    let deductedTransaction: { id: string } | null = null;
+    let deductedAmount = 0;
+
     try {
       // 1. 크레딧 잔액 확인
       const { balance } = await getUserCredits(user.id);
@@ -76,6 +85,10 @@ export const useAiAnalysisRequest = () => {
         },
       });
 
+      // 환불을 위해 차감 정보 저장
+      deductedTransaction = transaction;
+      deductedAmount = requiredCredits;
+
       logger.log("✅ 크레딧 차감 완료:", {
         transactionId: transaction.id,
         newBalance,
@@ -87,16 +100,29 @@ export const useAiAnalysisRequest = () => {
         `크레딧 ${requiredCredits} 차감 (잔여: ${newBalance})`
       );
 
-      // 3. 직무 설명 우선순위 결정
+      // 3. 분석 ID 생성 및 pending 레코드 생성
+      const analysisId = nanoid();
+
+      await createPendingAiAnalysis({
+        user_id: user.id,
+        applicant_id: applicant.id,
+        group_id: group.id,
+        analysis_id: analysisId,
+        transaction_id: transaction.id,
+      });
+
+      logger.log("✅ Pending 레코드 생성 완료:", { analysisId });
+
+      // 4. 직무 설명 우선순위 결정
       const finalJobDescription =
         group.description || additionalContext || "일반적인 직무 특성 기준으로 분석";
 
-      // 4. Verb Test 선택 데이터 변환 (AI가 이해할 수 있는 형태로)
+      // 5. Verb Test 선택 데이터 변환 (AI가 이해할 수 있는 형태로)
       const verbSelections = transformVerbSelectionsForAI(
         applicant.test_result.verbTestSelections
       );
 
-      // 5. n8n Webhook 요청 데이터 생성
+      // 6. n8n Webhook 요청 데이터 생성
       const requestPayload = {
         userId: user.id,
         jobInput: {
@@ -119,6 +145,7 @@ export const useAiAnalysisRequest = () => {
         metadata: {
           groupId: group.id,
           applicantId: applicant.id,
+          analysisId, // pending 레코드와 연결
           transactionId: transaction.id,
           timestamp: new Date().toISOString(),
         },
@@ -137,16 +164,40 @@ export const useAiAnalysisRequest = () => {
         throw new Error("VITE_N8N_WEBHOOK_URL 환경 변수가 설정되지 않았습니다.");
       }
 
-      // 응답을 기다리지 않고 요청만 전송 (백그라운드 처리)
-      fetch(webhookUrl, {
+      // n8n Webhook 호출 (응답 대기)
+      const response = await fetch(webhookUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(requestPayload),
-      }).catch((error) => {
-        logger.error("❌ n8n webhook 호출 실패 (백그라운드):", error);
       });
+
+      if (!response.ok) {
+        // Webhook 호출 실패 시 상태 업데이트 및 크레딧 환불
+        logger.error("❌ n8n webhook 응답 실패:", response.status);
+
+        await updateAiAnalysisStatus(analysisId, "failed");
+
+        await refundCredits({
+          user_id: user.id,
+          amount: requiredCredits,
+          reason: `AI 분석 실패 환불 - ${applicant.name} (${positionLabel})`,
+          metadata: {
+            originalTransactionId: transaction.id,
+            applicantId: applicant.id,
+            groupId: group.id,
+            failureReason: `Webhook response: ${response.status}`,
+          },
+        });
+
+        showToast(
+          "error",
+          "분석 실패",
+          "AI 분석 요청에 실패했습니다. 크레딧이 환불되었습니다."
+        );
+        return;
+      }
 
       logger.log("🚀 AI 분석 요청 전송 완료 (백그라운드 처리 중)");
 
@@ -160,6 +211,26 @@ export const useAiAnalysisRequest = () => {
     } catch (error) {
       logger.error("❌ AI 분석 요청 실패:", error);
 
+      // 크레딧 차감 후 에러 발생 시 환불 처리
+      if (deductedTransaction && deductedAmount > 0) {
+        try {
+          await refundCredits({
+            user_id: user.id,
+            amount: deductedAmount,
+            reason: `AI 분석 실패 환불 - ${applicant.name} (${positionLabel})`,
+            metadata: {
+              originalTransactionId: deductedTransaction.id,
+              applicantId: applicant.id,
+              groupId: group.id,
+              failureReason: error instanceof Error ? error.message : "Unknown error",
+            },
+          });
+          logger.log("✅ 크레딧 환불 완료");
+        } catch (refundError) {
+          logger.error("❌ 크레딧 환불 실패:", refundError);
+        }
+      }
+
       // 에러 타입별 처리
       if (error instanceof InsufficientCreditsError) {
         showToast(
@@ -168,9 +239,17 @@ export const useAiAnalysisRequest = () => {
           `크레딧이 부족합니다. (필요: ${error.required}, 보유: ${error.available})`
         );
       } else if (error instanceof Error) {
-        showToast("error", "분석 실패", error.message);
+        showToast(
+          "error",
+          "분석 실패",
+          `${error.message} 크레딧이 환불되었습니다.`
+        );
       } else {
-        showToast("error", "분석 실패", "알 수 없는 오류가 발생했습니다.");
+        showToast(
+          "error",
+          "분석 실패",
+          "알 수 없는 오류가 발생했습니다. 크레딧이 환불되었습니다."
+        );
       }
     }
   };
