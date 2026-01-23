@@ -16,6 +16,7 @@ interface JobMatchTabProps {
   jobDescription?: string; // 그룹의 description (선택)
   aiAnalysisStatus: AIAnalysisStatus;
   aiAnalysisResult?: AIComparisonAnalysis;
+  errorMessage?: string; // 실패 시 에러 메시지
   onRequestAnalysis: (additionalContext?: string) => void;
   onRetry?: () => void;
 }
@@ -24,6 +25,7 @@ export const JobMatchTab = ({
   jobDescription,
   aiAnalysisStatus,
   aiAnalysisResult,
+  errorMessage,
   onRequestAnalysis,
   onRetry,
 }: JobMatchTabProps) => {
@@ -155,53 +157,43 @@ export const JobMatchTab = ({
                 )}
 
                 {aiAnalysisStatus === "pending" && (
-                  <div className="bg-gradient-to-r from-primary-50 to-purple-50 rounded-xl border-2 border-primary-300 p-6">
-                    <div className="flex items-start gap-4">
-                      {/* 애니메이션 아이콘 */}
-                      <div className="flex-shrink-0">
-                        <div className="relative w-14 h-14">
-                          <div className="absolute inset-0 bg-primary-500 rounded-full animate-ping opacity-20"></div>
-                          <div className="relative w-14 h-14 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center">
-                            <MdAutoAwesome className="w-7 h-7 text-white animate-pulse" />
-                          </div>
-                        </div>
+                  <div className="bg-success-50 rounded-xl border border-success-200 p-5">
+                    <div className="flex items-start gap-3">
+                      {/* 체크 아이콘 */}
+                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-success-500 flex items-center justify-center">
+                        <svg
+                          className="w-5 h-5 text-white"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2.5}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <h4 className="text-lg font-bold text-neutral-800 mb-2">
-                          AI 분석이 진행 중입니다
+                        <h4 className="text-base font-bold text-success-800 mb-1">
+                          분석 요청이 접수되었습니다
                         </h4>
-                        <p className="text-sm text-neutral-700 mb-4">
-                          분석이 완료되면{" "}
-                          <strong className="text-primary-700">알림</strong>으로
-                          안내드립니다. 다른 작업을 계속하셔도 괜찮습니다.
+                        <p className="text-sm text-success-700 mb-3">
+                          완료되면 알림으로 안내드립니다. 이 페이지에서 기다리실
+                          필요 없습니다.
                         </p>
 
-                        {/* 진행 상태 */}
-                        <div className="space-y-2 mb-4">
-                          <div className="flex items-center gap-2 text-xs">
-                            <div className="w-2 h-2 rounded-full bg-success-500"></div>
-                            <span className="text-neutral-600">
-                              요청 전송 완료
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 text-xs">
-                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary-600"></div>
-                            <span className="text-neutral-700 font-medium">
-                              AI 분석 중 (약 1-2분 소요)
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* 하단 안내 */}
-                        <div className="pt-3 border-t border-primary-200">
-                          <div className="flex items-start gap-2 text-sm">
-                            <span className="text-lg flex-shrink-0">💡</span>
-                            <p className="text-neutral-600">
-                              분석 완료 후 이 페이지로 돌아오시면 결과를 바로
-                              확인하실 수 있습니다.
-                            </p>
-                          </div>
+                        <div className="flex items-center gap-4 text-xs text-success-600">
+                          <span className="flex items-center gap-1.5">
+                            <span>⏱</span>
+                            <span>예상 소요: 1-2분</span>
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <span>🔔</span>
+                            <span>완료 시 알림</span>
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -210,14 +202,33 @@ export const JobMatchTab = ({
 
                 {aiAnalysisStatus === "failed" && onRetry && (
                   <div className="space-y-3">
-                    <div className="flex items-start gap-3 p-3 bg-error-50 border border-error-200 rounded-lg">
+                    <div className="flex items-start gap-3 p-4 bg-error-50 border border-error-200 rounded-lg">
                       <span className="text-xl flex-shrink-0 mt-0.5">⚠️</span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-error-900 leading-relaxed">
-                          <span className="font-semibold">분석 실패</span>
-                          <span className="text-error-700 ml-1">
-                            크레딧은 차감되지 않았습니다
-                          </span>
+                        <p className="text-sm font-semibold text-error-900 mb-1">
+                          분석을 완료할 수 없습니다
+                        </p>
+                        {errorMessage ? (
+                          <p className="text-sm text-error-700 leading-relaxed">
+                            {errorMessage === "모든 Work Type 점수가 동일합니다." ? (
+                              <>
+                                테스트 응답이 유효하지 않아 분석이 어렵습니다.
+                                <br />
+                                <span className="text-error-600 text-xs">
+                                  (지원자가 모든 문항에 동일하게 응답한 경우)
+                                </span>
+                              </>
+                            ) : (
+                              errorMessage
+                            )}
+                          </p>
+                        ) : (
+                          <p className="text-sm text-error-700">
+                            일시적인 오류가 발생했습니다.
+                          </p>
+                        )}
+                        <p className="text-xs text-error-600 mt-2">
+                          크레딧은 차감되지 않았습니다
                         </p>
                       </div>
                     </div>
