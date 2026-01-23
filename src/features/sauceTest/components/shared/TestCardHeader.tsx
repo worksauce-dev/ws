@@ -15,6 +15,7 @@ interface TestCardHeaderProps {
   onSave?: () => void;
   onReset?: () => void;
   onRandomComplete?: () => void;
+  onPerfectScore?: () => void;
   extraButtons?: React.ReactNode;
 
   // 스타일링
@@ -29,6 +30,7 @@ export const TestCardHeader = ({
   onSave,
   onReset,
   onRandomComplete,
+  onPerfectScore,
   extraButtons,
   icon = <MdLightbulb className="w-4 h-4 md:w-5 md:h-5 text-white" />,
 }: TestCardHeaderProps) => {
@@ -87,6 +89,17 @@ export const TestCardHeader = ({
               >
                 <span>🎲</span>
                 <span className="hidden sm:inline">랜덤 완성</span>
+              </button>
+            )}
+
+            {isDev && onPerfectScore && (
+              <button
+                onClick={onPerfectScore}
+                className="flex items-center gap-1 text-xs md:text-sm text-error-100 hover:text-white transition-colors px-2 md:px-3 py-1 rounded-md hover:bg-white/10 border border-error-200/50"
+                title="모든 점수 만점으로 처리 (개발 모드)"
+              >
+                <span>💯</span>
+                <span className="hidden sm:inline">만점 처리</span>
               </button>
             )}
           </div>

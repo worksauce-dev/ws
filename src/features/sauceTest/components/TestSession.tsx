@@ -12,9 +12,9 @@ import type {
   Question,
   AnswerValue,
 } from "../constants/testQuestions";
+import type { TestRawData, TestResult } from "@/shared/types/database.types";
 import { calculatePrimaryWorkType } from "../utils/calculatePrimaryWorkType";
 import { submitTestResults } from "../api/testApi";
-import type { TestRawData } from "@/shared/types/database.types";
 
 interface TestSessionProps {
   applicant: Applicant;
@@ -189,6 +189,57 @@ export const TestSession = ({ applicant, testToken }: TestSessionProps) => {
     console.log("로컬스토리지 초기화됨 (testId:", testId, ")");
   };
 
+  // 모든 점수 만점으로 처리 (개발 모드 전용)
+  const handlePerfectScore = async () => {
+    if (!isDev) return;
+
+    const workTypes: WorkTypeCode[] = ["UR", "AS", "AF", "EE", "EG", "SA", "SE", "CA", "CH", "UM"];
+
+    // 모든 WorkType 점수를 100으로 설정
+    const perfectStatementScores: Record<WorkTypeCode, number> = {} as Record<WorkTypeCode, number>;
+    workTypes.forEach(wt => {
+      perfectStatementScores[wt] = 100;
+    });
+
+    // 빈 동사 테스트 선택
+    const perfectVerbSelections: Record<VerbCategory, string[]> = {
+      start: [],
+      advance: [],
+      utility: [],
+      communicate: [],
+      expert: [],
+    };
+
+    const testRawData: TestRawData = {
+      verbTest: {
+        selectionHistory: perfectVerbSelections,
+      },
+      statementTest: {
+        answers: [], // 빈 배열 (만점 테스트용)
+      },
+    };
+
+    const testResult: TestResult = {
+      primaryWorkType: "UR", // 임의의 주요 타입
+      verbTestSelections: perfectVerbSelections,
+      statementScores: perfectStatementScores,
+    };
+
+    console.log("🎯 만점 테스트 결과 제출:", { testRawData, testResult });
+
+    const success = await submitTestResults(applicant.id, testRawData, testResult);
+
+    if (success) {
+      console.log("✅ 만점 테스트 결과 제출 성공");
+      setCurrentTest("completed");
+      // 페이지 새로고침으로 completed 상태 반영
+      window.location.reload();
+    } else {
+      console.error("❌ 만점 테스트 결과 제출 실패");
+      alert("만점 테스트 제출 실패");
+    }
+  };
+
   // 동사 테스트 중
   if (currentTest === "verb") {
     return (
@@ -210,6 +261,7 @@ export const TestSession = ({ applicant, testToken }: TestSessionProps) => {
           onComplete={handleVerbTestComplete}
           onSave={isDev ? handleSave : undefined}
           onReset={isDev ? handleReset : undefined}
+          onPerfectScore={isDev ? handlePerfectScore : undefined}
         />
       </>
     );

@@ -35,6 +35,7 @@ interface VerbTestProps {
   }) => void;
   onSave?: () => void;
   onReset?: () => void;
+  onPerfectScore?: () => void;
 }
 
 export const VerbTest = ({
@@ -43,6 +44,7 @@ export const VerbTest = ({
   onComplete,
   onSave,
   onReset,
+  onPerfectScore,
 }: VerbTestProps) => {
   // 현재 단계
   const [currentPhase, setCurrentPhase] = useState<VerbCategory>("start");
@@ -258,6 +260,7 @@ export const VerbTest = ({
             onSave={onSave}
             onReset={onReset}
             onRandomComplete={isDev ? handleRandomComplete : undefined}
+            onPerfectScore={onPerfectScore}
           />
 
           {/* 카드 내용 */}
