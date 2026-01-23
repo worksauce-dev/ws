@@ -192,7 +192,7 @@ const DatabaseError = () => {
       </div>
 
       <button
-        onClick={() => (window.location.href = "mailto:support@worksauce.com")}
+        onClick={() => (window.location.href = "mailto:worksauce@worksauce.kr")}
         className="px-6 py-2.5 border border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50 transition-colors"
       >
         지원팀 문의

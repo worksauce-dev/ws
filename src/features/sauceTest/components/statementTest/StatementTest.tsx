@@ -362,10 +362,10 @@ const StatementTest = ({ onSave, onReset, onComplete }: StatementTestProps = {})
             <p className="text-xs md:text-sm text-neutral-600">
               질문이 있으신가요?{" "}
               <a
-                href="mailto:support@worksauce.kr"
+                href="mailto:worksauce@worksauce.kr"
                 className="text-primary-600 hover:text-primary-700 font-semibold inline-flex items-center gap-1 transition-colors"
               >
-                support@worksauce.kr
+                worksauce@worksauce.kr
                 <span className="text-xs">↗</span>
               </a>
             </p>
