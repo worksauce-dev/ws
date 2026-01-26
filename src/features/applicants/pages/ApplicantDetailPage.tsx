@@ -12,6 +12,7 @@ import { useGroupDetail } from "@/features/groups/hooks/useGroupDetail";
 import { useUpdateApplicantStatus } from "../hooks/useUpdateApplicantStatus";
 import { useAiAnalysis } from "../hooks/useAiAnalysis";
 import { useAiAnalysisRequest } from "../hooks/useAiAnalysisRequest";
+import { getAiAnalysisStatus } from "../utils/getAiAnalysisStatus";
 import { useToast } from "@/shared/components/ui/useToast";
 import {
   analyzeTestResult,
@@ -150,23 +151,12 @@ export const ApplicantDetailPage = () => {
     "analysis" | "team" | "interview" | "jobmatch"
   >("analysis");
 
-  // AI 분석 상태 관리 (DB 상태 기반)
-  // - idle: 분석 요청 전
-  // - pending/processing: 분석 진행 중 (새로고침해도 유지)
-  // - completed: 분석 완료
-  // - failed: 분석 실패
-  const aiAnalysisStatus: "idle" | "pending" | "completed" | "failed" =
-    isLoadingAiAnalysis
-      ? "pending" // Supabase 조회 중
-      : isAiAnalysisError
-        ? "failed"
-        : dbAnalysisStatus === "pending" || dbAnalysisStatus === "processing"
-          ? "pending"
-          : dbAnalysisStatus === "completed"
-            ? "completed"
-            : dbAnalysisStatus === "failed"
-              ? "failed"
-              : "idle";
+  // AI 분석 상태 결정
+  const aiAnalysisStatus = getAiAnalysisStatus({
+    isLoading: isLoadingAiAnalysis,
+    isError: isAiAnalysisError,
+    dbStatus: dbAnalysisStatus,
+  });
 
   const aiAnalysisResult = aiAnalysisData || undefined;
 
