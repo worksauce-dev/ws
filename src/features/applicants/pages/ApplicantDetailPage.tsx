@@ -1,12 +1,6 @@
 import { useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import {
-  MdPsychology,
-  MdGroups,
-  MdQuestionAnswer,
-  MdSchedule,
-  MdWorkOutline,
-} from "react-icons/md";
+import { MdSchedule } from "react-icons/md";
 import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
 import { useGroupDetail } from "@/features/groups/hooks/useGroupDetail";
 import { useUpdateApplicantStatus } from "../hooks/useUpdateApplicantStatus";
@@ -22,6 +16,10 @@ import WORK_TYPE_DATA from "@/features/groups/constants/workTypes";
 import { POSITION_OPTIONS } from "@/features/groups/constants/positionOptions";
 import { getJobProfile } from "@/features/groups/constants/jobProfiles";
 import { ApplicantDetailHeader } from "../components/ApplicantDetailHeader";
+import {
+  ApplicantTabGroup,
+  type ApplicantTabId,
+} from "../components/ApplicantTabGroup";
 import { WorkTypeAnalysisTab } from "../components/WorkTypeAnalysisTab";
 import { TeamSynergyTab } from "../components/TeamSynergyTab";
 import { InterviewGuideTab } from "../components/InterviewGuideTab";
@@ -147,9 +145,7 @@ export const ApplicantDetailPage = () => {
   const [isStarred, setIsStarred] = useState(
     currentApplicant?.is_starred ?? false
   );
-  const [activeTab, setActiveTab] = useState<
-    "analysis" | "team" | "interview" | "jobmatch"
-  >("analysis");
+  const [activeTab, setActiveTab] = useState<ApplicantTabId>("analysis");
 
   // AI 분석 상태 결정
   const aiAnalysisStatus = getAiAnalysisStatus({
@@ -275,91 +271,10 @@ export const ApplicantDetailPage = () => {
         {/* 탭 네비게이션 */}
         <div className="bg-white rounded-xl border border-neutral-200">
           <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-neutral-200">
-            <div
-              className="flex rounded-xl p-1.5 bg-neutral-100 w-fit"
-              role="tablist"
-            >
-              <button
-                role="tab"
-                aria-selected={activeTab === "analysis"}
-                aria-controls="analysis-panel"
-                id="analysis-tab"
-                onClick={() => setActiveTab("analysis")}
-                className={`px-3 sm:px-5 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 ${
-                  activeTab === "analysis"
-                    ? "bg-white text-primary shadow-md scale-[1.02]"
-                    : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-800"
-                }`}
-              >
-                <div className="flex flex-row sm:flex-col items-center gap-1.5 sm:gap-1">
-                  <MdPsychology className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="whitespace-nowrap">
-                    <span className="sm:hidden">분석</span>
-                    <span className="hidden sm:inline">직무유형 분석</span>
-                  </span>
-                </div>
-              </button>
-              <button
-                role="tab"
-                aria-selected={activeTab === "team"}
-                aria-controls="team-panel"
-                id="team-tab"
-                onClick={() => setActiveTab("team")}
-                className={`px-3 sm:px-5 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 ${
-                  activeTab === "team"
-                    ? "bg-white text-primary shadow-md scale-[1.02]"
-                    : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-800"
-                }`}
-              >
-                <div className="flex flex-row sm:flex-col items-center gap-1.5 sm:gap-1">
-                  <MdGroups className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="whitespace-nowrap">
-                    <span className="sm:hidden">팀워크</span>
-                    <span className="hidden sm:inline">팀워크 스타일</span>
-                  </span>
-                </div>
-              </button>
-              <button
-                role="tab"
-                aria-selected={activeTab === "interview"}
-                aria-controls="interview-panel"
-                id="interview-tab"
-                onClick={() => setActiveTab("interview")}
-                className={`px-3 sm:px-5 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 ${
-                  activeTab === "interview"
-                    ? "bg-white text-primary shadow-md scale-[1.02]"
-                    : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-800"
-                }`}
-              >
-                <div className="flex flex-row sm:flex-col items-center gap-1.5 sm:gap-1">
-                  <MdQuestionAnswer className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="whitespace-nowrap">
-                    <span className="sm:hidden">면접</span>
-                    <span className="hidden sm:inline">면접 가이드</span>
-                  </span>
-                </div>
-              </button>
-              <button
-                role="tab"
-                aria-selected={activeTab === "jobmatch"}
-                aria-controls="jobmatch-panel"
-                id="jobmatch-tab"
-                onClick={() => setActiveTab("jobmatch")}
-                className={`px-3 sm:px-5 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 ${
-                  activeTab === "jobmatch"
-                    ? "bg-white text-primary shadow-md scale-[1.02]"
-                    : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-800"
-                }`}
-              >
-                <div className="flex flex-row sm:flex-col items-center gap-1.5 sm:gap-1">
-                  <MdWorkOutline className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="whitespace-nowrap">
-                    <span className="sm:hidden">직무</span>
-                    <span className="hidden sm:inline">직무 적합도</span>
-                  </span>
-                </div>
-              </button>
-            </div>
+            <ApplicantTabGroup
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+            />
           </div>
 
           {/* 탭 컨텐츠 */}
