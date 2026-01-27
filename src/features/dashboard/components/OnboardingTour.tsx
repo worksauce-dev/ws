@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { MdClose, MdArrowForward, MdArrowBack } from "react-icons/md";
+import { useDashboard } from "@/shared/layouts/DashboardContext";
 
 interface TourStep {
   target: string; // CSS selector
@@ -12,10 +13,10 @@ interface OnboardingTourProps {
   steps: TourStep[];
   onComplete: () => void;
   onSkip: () => void;
-  onMobileMenuToggle?: (isOpen: boolean) => void;
 }
 
-export function OnboardingTour({ steps, onComplete, onSkip, onMobileMenuToggle }: OnboardingTourProps) {
+export function OnboardingTour({ steps, onComplete, onSkip }: OnboardingTourProps) {
+  const { setIsMobileMenuOpen } = useDashboard();
   const [currentStep, setCurrentStep] = useState(0);
   const [targetPosition, setTargetPosition] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
 
@@ -28,9 +29,9 @@ export function OnboardingTour({ steps, onComplete, onSkip, onMobileMenuToggle }
     const isMobile = window.innerWidth < 640; // sm breakpoint
     const isNotificationStep = step.target === "[data-tour='notification-bell']";
 
-    if (isMobile && isNotificationStep && onMobileMenuToggle) {
+    if (isMobile && isNotificationStep) {
       // 알림 스텝에서는 모바일 메뉴 열기
-      onMobileMenuToggle(true);
+      setIsMobileMenuOpen(true);
 
       // 약간의 딜레이 후 모바일 알림 타겟으로 변경
       setTimeout(() => {
@@ -38,11 +39,11 @@ export function OnboardingTour({ steps, onComplete, onSkip, onMobileMenuToggle }
         const event = new Event('resize');
         window.dispatchEvent(event);
       }, 100);
-    } else if (isMobile && !isNotificationStep && onMobileMenuToggle) {
+    } else if (isMobile && !isNotificationStep) {
       // 다른 스텝으로 이동하면 메뉴 닫기
-      onMobileMenuToggle(false);
+      setIsMobileMenuOpen(false);
     }
-  }, [currentStep, step.target, onMobileMenuToggle]);
+  }, [currentStep, step.target, setIsMobileMenuOpen]);
 
   // Calculate target element position
   useEffect(() => {

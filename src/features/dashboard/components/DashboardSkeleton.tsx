@@ -3,7 +3,6 @@ import { DashboardLayout } from "@/shared/layouts/DashboardLayout";
 const DashboardSkeleton = () => {
   return (
     <DashboardLayout
-      creditsLoading={true}
       actions={
         <div className="h-[52px] w-32 bg-neutral-200 rounded-lg animate-pulse" />
       }

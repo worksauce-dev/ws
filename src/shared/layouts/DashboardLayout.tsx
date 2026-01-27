@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { DashboardHeader } from "@/shared/layouts/DashboardHeader";
-import { useUser } from "@/shared/hooks/useUser";
+import { DashboardProvider } from "@/shared/layouts/DashboardContext";
 
 interface BreadcrumbItem {
   label: string;
@@ -12,13 +12,9 @@ interface DashboardLayoutProps {
   children: ReactNode;
   breadcrumbs?: BreadcrumbItem[];
   actions?: ReactNode;
-  statusBadge?: ReactNode;
   maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl" | "7xl";
   padding?: "sm" | "md" | "lg";
   onCreditClick?: () => void;
-  creditsLoading?: boolean;
-  isMobileMenuOpen?: boolean;
-  onMobileMenuToggle?: (isOpen: boolean) => void;
 }
 
 export const DashboardLayout = ({
@@ -28,9 +24,6 @@ export const DashboardLayout = ({
   maxWidth = "7xl",
   padding = "lg",
   onCreditClick,
-  creditsLoading = false,
-  isMobileMenuOpen,
-  onMobileMenuToggle,
 }: DashboardLayoutProps) => {
   const getMaxWidthClass = () => {
     switch (maxWidth) {
@@ -64,35 +57,19 @@ export const DashboardLayout = ({
     }
   };
 
-  const { userName, userEmail, isAuthenticated, credits } = useUser();
-
-  if (!isAuthenticated) {
-    return null;
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <DashboardHeader
-        breadcrumbs={breadcrumbs}
-        actions={actions}
-        userProfile={{
-          name: userName,
-          email: userEmail,
-        }}
-        credits={credits}
-        onCreditClick={onCreditClick}
-        creditsLoading={creditsLoading}
-        isMobileMenuOpen={isMobileMenuOpen}
-        onMobileMenuToggle={onMobileMenuToggle}
-      />
+    <DashboardProvider onCreditClick={onCreditClick}>
+      <div className="min-h-screen bg-gray-50">
+        {/* Header */}
+        <DashboardHeader breadcrumbs={breadcrumbs} actions={actions} />
 
-      {/* Main Content */}
-      <div
-        className={`${getMaxWidthClass()} mx-auto px-4 sm:px-6 lg:px-8 ${getPaddingClass()}`}
-      >
-        {children}
+        {/* Main Content */}
+        <div
+          className={`${getMaxWidthClass()} mx-auto px-4 sm:px-6 lg:px-8 ${getPaddingClass()}`}
+        >
+          {children}
+        </div>
       </div>
-    </div>
+    </DashboardProvider>
   );
 };

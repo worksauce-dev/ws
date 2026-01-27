@@ -35,7 +35,6 @@ type ViewMode = "grid" | "calendar";
 export const DashboardPage = () => {
   usePageSEO(WORKSAUCE_SEO_PRESETS.dashboard);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { isAuthenticated } = useUser();
 
   // 데이터 페칭
@@ -143,8 +142,6 @@ export const DashboardPage = () => {
   return (
     <DashboardLayout
       onCreditClick={handleCreditClick}
-      isMobileMenuOpen={isMobileMenuOpen}
-      onMobileMenuToggle={setIsMobileMenuOpen}
       actions={
         <button
           data-tour="create-group-button"
@@ -237,7 +234,6 @@ export const DashboardPage = () => {
           steps={tourSteps}
           onComplete={completeTour}
           onSkip={skipTour}
-          onMobileMenuToggle={setIsMobileMenuOpen}
         />
       )}
 

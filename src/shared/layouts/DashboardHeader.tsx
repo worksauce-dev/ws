@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from "react";
+import { type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   MdChevronRight,
@@ -9,7 +9,6 @@ import {
   MdMenu,
   MdClose,
   MdNotifications,
-  // MdPeople, // 팀 관리 기능 - MVP 범위에서 제외
 } from "react-icons/md";
 import { clsx } from "clsx";
 import { useAuth } from "@/shared/contexts/useAuth";
@@ -17,6 +16,7 @@ import { UserProfileDropdown, Logo } from "@/shared/components/ui";
 import type { UserMenuItem } from "@/shared/components/ui";
 import { NotificationBell } from "@/shared/components/NotificationBell";
 import { useOutsideClick } from "@/features/landing/hooks/useOutsideClick";
+import { useDashboard } from "@/shared/layouts/DashboardContext";
 
 interface BreadcrumbItem {
   label: string;
@@ -24,46 +24,28 @@ interface BreadcrumbItem {
   onClick?: () => void;
 }
 
-interface UserProfile {
-  name: string;
-  email: string;
-}
-
 interface DashboardHeaderProps {
   breadcrumbs?: BreadcrumbItem[];
   actions?: ReactNode;
-  userProfile?: UserProfile;
-  credits?: number;
-  onCreditClick?: () => void;
-  creditsLoading?: boolean;
-  isMobileMenuOpen?: boolean;
-  onMobileMenuToggle?: (isOpen: boolean) => void;
 }
 
 export const DashboardHeader = ({
   breadcrumbs,
   actions,
-  userProfile,
-  credits,
-  onCreditClick,
-  creditsLoading = false,
-  isMobileMenuOpen: externalIsMobileMenuOpen,
-  onMobileMenuToggle,
 }: DashboardHeaderProps) => {
   const { signOut } = useAuth();
   const navigate = useNavigate();
-  const [internalIsMobileMenuOpen, setInternalIsMobileMenuOpen] =
-    useState(false);
 
-  // 외부에서 제어하는 경우 외부 state 사용, 아니면 내부 state 사용
-  const isMobileMenuOpen = externalIsMobileMenuOpen ?? internalIsMobileMenuOpen;
-  const setIsMobileMenuOpen = (isOpen: boolean) => {
-    if (onMobileMenuToggle) {
-      onMobileMenuToggle(isOpen);
-    } else {
-      setInternalIsMobileMenuOpen(isOpen);
-    }
-  };
+  // Context에서 대시보드 전역 상태 가져오기
+  const {
+    userName,
+    userEmail,
+    credits,
+    isLoading: creditsLoading,
+    isMobileMenuOpen,
+    setIsMobileMenuOpen,
+    onCreditClick,
+  } = useDashboard();
 
   // 메뉴 외부 클릭 시 닫기
   const menuRef = useOutsideClick(() => setIsMobileMenuOpen(false));
@@ -90,12 +72,6 @@ export const DashboardHeader = ({
     closeMobileMenu();
   };
 
-  // 팀 관리 기능 - MVP 범위에서 제외 (Phase 5 이후 재활성화 예정)
-  // const handleTeamsClick = () => {
-  //   navigate("/dashboard/teams");
-  //   closeMobileMenu();
-  // };
-
   const handleCreditClickMobile = () => {
     if (onCreditClick) {
       onCreditClick();
@@ -105,12 +81,6 @@ export const DashboardHeader = ({
 
   // 사용자 드롭다운 메뉴 아이템 (데스크톱)
   const userMenuItems: UserMenuItem[] = [
-    // 팀 관리 기능 - MVP 범위에서 제외 (Phase 5 이후 재활성화 예정)
-    // {
-    //   icon: <MdPeople className="w-4 h-4" />,
-    //   label: "팀 대시보드",
-    //   onClick: () => navigate("/dashboard/teams"),
-    // },
     {
       icon: <MdSettings className="w-4 h-4" />,
       label: "설정",
@@ -208,17 +178,15 @@ export const DashboardHeader = ({
               </div>
 
               {/* User Profile Dropdown */}
-              {userProfile && (
-                <UserProfileDropdown
-                  user={{
-                    name: userProfile.name,
-                    email: userProfile.email,
-                  }}
-                  menuItems={userMenuItems}
-                  variant="desktop"
-                  className="pl-4 border-l border-gray-200"
-                />
-              )}
+              <UserProfileDropdown
+                user={{
+                  name: userName,
+                  email: userEmail,
+                }}
+                menuItems={userMenuItems}
+                variant="desktop"
+                className="pl-4 border-l border-gray-200"
+              />
             </div>
 
             {/* Mobile Only: Hamburger Menu */}
@@ -245,16 +213,14 @@ export const DashboardHeader = ({
               {isMobileMenuOpen && (
                 <div className="absolute right-0 mt-2 w-64 bg-white border border-neutral-200 rounded-lg shadow-lg py-2 z-50">
                   {/* 사용자 정보 */}
-                  {userProfile && (
-                    <div className="px-4 py-3 border-b border-neutral-100">
-                      <p className="font-medium text-neutral-900 truncate">
-                        {userProfile.name}
-                      </p>
-                      <p className="text-sm text-neutral-500 truncate">
-                        {userProfile.email}
-                      </p>
-                    </div>
-                  )}
+                  <div className="px-4 py-3 border-b border-neutral-100">
+                    <p className="font-medium text-neutral-900 truncate">
+                      {userName}
+                    </p>
+                    <p className="text-sm text-neutral-500 truncate">
+                      {userEmail}
+                    </p>
+                  </div>
 
                   {/* 크레딧 (클릭 가능한 경우만) */}
                   {credits !== undefined && onCreditClick && (
@@ -297,15 +263,6 @@ export const DashboardHeader = ({
                   </div>
 
                   <hr className="my-1" />
-
-                  {/* 팀 관리 기능 - MVP 범위에서 제외 (Phase 5 이후 재활성화 예정) */}
-                  {/* <button
-                    onClick={handleTeamsClick}
-                    className="w-full flex items-center space-x-2 px-4 py-3 text-neutral-700 hover:bg-neutral-50"
-                  >
-                    <MdPeople className="w-5 h-5" />
-                    <span>팀 관리</span>
-                  </button> */}
 
                   {/* 설정 */}
                   <button

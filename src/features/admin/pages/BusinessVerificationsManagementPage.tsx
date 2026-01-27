@@ -125,7 +125,6 @@ export const BusinessVerificationsManagementPage = () => {
           onStatusFilterChange={setStatusFilter}
           sortBy={sortBy}
           onSortByChange={setSortBy}
-          resultCount={filteredVerifications.length}
         />
 
         {/* 테이블 */}
