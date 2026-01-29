@@ -534,7 +534,11 @@ export const GroupPage = () => {
                   preferredWorkTypes={currentGroup.preferred_work_types}
                   onToggleStar={toggleStar}
                   onClick={handleApplicantClick}
-                  onResendEmail={handleResendEmail}
+                  onResendEmail={
+                    applicant.test_status !== "completed"
+                      ? handleResendEmail
+                      : undefined
+                  }
                   isSelected={selectedApplicants.has(applicant.id)}
                   onSelectionChange={handleSelectionChange}
                 />

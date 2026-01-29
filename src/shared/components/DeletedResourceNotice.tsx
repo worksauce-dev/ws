@@ -3,15 +3,13 @@
  * 그룹 또는 지원자가 삭제되었을 때 표시되는 UI
  */
 
-import { MdInfoOutline, MdArrowBack, MdDashboard } from "react-icons/md";
+import { MdInfoOutline, MdDashboard } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 
 interface DeletedResourceNoticeProps {
   resourceType: "group" | "applicant";
   title?: string;
   message?: string;
-  showBackButton?: boolean;
-  backUrl?: string;
   showDashboardButton?: boolean;
 }
 
@@ -19,8 +17,6 @@ export const DeletedResourceNotice = ({
   resourceType,
   title,
   message,
-  showBackButton = true,
-  backUrl,
   showDashboardButton = true,
 }: DeletedResourceNoticeProps) => {
   const navigate = useNavigate();
@@ -35,14 +31,6 @@ export const DeletedResourceNotice = ({
     resourceType === "group"
       ? "이 채용 그룹은 삭제되었거나 존재하지 않습니다."
       : "이 지원자는 삭제되었거나 속한 채용 그룹이 삭제되었습니다.";
-
-  const handleBack = () => {
-    if (backUrl) {
-      navigate(backUrl);
-    } else {
-      navigate(-1);
-    }
-  };
 
   const handleDashboard = () => {
     navigate("/dashboard");
@@ -94,26 +82,15 @@ export const DeletedResourceNotice = ({
         </div>
 
         {/* 액션 버튼 */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          {showBackButton && (
-            <button
-              onClick={handleBack}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border border-neutral-300 rounded-lg font-medium text-neutral-700 hover:bg-neutral-50 transition-colors"
-            >
-              <MdArrowBack className="w-5 h-5" />
-              <span>이전 페이지</span>
-            </button>
-          )}
-          {showDashboardButton && (
-            <button
-              onClick={handleDashboard}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary-500 text-white rounded-lg font-medium hover:bg-primary-600 transition-colors"
-            >
-              <MdDashboard className="w-5 h-5" />
-              <span>대시보드로 이동</span>
-            </button>
-          )}
-        </div>
+        {showDashboardButton && (
+          <button
+            onClick={handleDashboard}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary-500 text-white rounded-lg font-medium hover:bg-primary-600 transition-colors"
+          >
+            <MdDashboard className="w-5 h-5" />
+            <span>대시보드로 이동</span>
+          </button>
+        )}
       </div>
     </div>
   );
