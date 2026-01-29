@@ -5,9 +5,9 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { MdChevronLeft } from "react-icons/md";
 import toast from "react-hot-toast";
 import {
-  usePageSEO,
-  WORKSAUCE_SEO_PRESETS,
-} from "@/shared/hooks/usePageSEO";
+  useMetadata,
+  WORKSAUCE_METADATA_PRESETS,
+} from "@/shared/hooks/useMetadata";
 
 // Hooks
 import {
@@ -30,7 +30,7 @@ import { getSignedUrl } from "@/features/settings/api/businessApi";
 import type { BusinessVerification } from "@/features/settings/types/business.types";
 
 export const BusinessVerificationsManagementPage = () => {
-  usePageSEO(WORKSAUCE_SEO_PRESETS.adminBusinessVerifications);
+  useMetadata(WORKSAUCE_METADATA_PRESETS.adminBusinessVerifications);
 
   const { isAdmin, isLoading: userLoading } = useUser();
   const { data: verifications, isLoading: verificationsLoading } =

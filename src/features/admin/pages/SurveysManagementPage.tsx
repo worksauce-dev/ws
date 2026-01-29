@@ -13,12 +13,12 @@ import {
 import { useSurveys } from "../hooks/useSurveys";
 import { SelectDropdown } from "@/shared/components/ui/Dropdown";
 import {
-  usePageSEO,
-  WORKSAUCE_SEO_PRESETS,
-} from "@/shared/hooks/usePageSEO";
+  useMetadata,
+  WORKSAUCE_METADATA_PRESETS,
+} from "@/shared/hooks/useMetadata";
 
 export const SurveysManagementPage = () => {
-  usePageSEO(WORKSAUCE_SEO_PRESETS.adminSurveys);
+  useMetadata(WORKSAUCE_METADATA_PRESETS.adminSurveys);
   const { isAdmin, isLoading: userLoading } = useUser();
   const { data: surveys, isLoading, error, refetch } = useSurveys();
 

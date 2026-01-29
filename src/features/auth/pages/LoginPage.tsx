@@ -6,7 +6,7 @@ import { z } from "zod";
 import { MdRefresh } from "react-icons/md";
 import { useToast } from "@/shared/components/ui/useToast";
 import { useAuth } from "@/shared/contexts/useAuth";
-import { usePageSEO, WORKSAUCE_SEO_PRESETS } from "@/shared/hooks/usePageSEO";
+import { useMetadata, WORKSAUCE_METADATA_PRESETS } from "@/shared/hooks/useMetadata";
 import { Button } from "@/shared/components/ui/Button";
 import { Input } from "@/shared/components/ui/Input";
 import { Logo } from "@/shared/components/ui/Logo";
@@ -55,7 +55,7 @@ export const LoginPage = () => {
   const location = useLocation();
 
   // SEO 설정
-  usePageSEO(WORKSAUCE_SEO_PRESETS.login);
+  useMetadata(WORKSAUCE_METADATA_PRESETS.login);
 
   // 로그인 후 리다이렉트할 경로
   const from = location.state?.from?.pathname || "/dashboard";

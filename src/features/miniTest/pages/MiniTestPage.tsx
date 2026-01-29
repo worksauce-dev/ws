@@ -8,12 +8,12 @@ import { useTestFlow } from "../hooks/useTestFlow";
 import { useVerbTest } from "../hooks/useVerbTest";
 import { verbQuestions } from "../const/miniTestData";
 import {
-  usePageSEO,
-  WORKSAUCE_SEO_PRESETS,
-} from "@/shared/hooks/usePageSEO";
+  useMetadata,
+  WORKSAUCE_METADATA_PRESETS,
+} from "@/shared/hooks/useMetadata";
 
 export const MiniTestPage = () => {
-  usePageSEO(WORKSAUCE_SEO_PRESETS.miniTest);
+  useMetadata(WORKSAUCE_METADATA_PRESETS.miniTest);
   const verbTest = useVerbTest();
 
   // Verb 테스트 점수 계산

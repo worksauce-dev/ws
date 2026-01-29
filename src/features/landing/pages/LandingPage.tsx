@@ -4,10 +4,10 @@ import { HowItWorksSection } from "@/features/landing/components/sections/HowItW
 import { FAQSection } from "@/features/landing/components/sections/FAQSection";
 import { LandingFooter } from "@/features/landing/components/layout/LandingFooter";
 import { ScrollToTopButton } from "@/features/landing/components/ui/ScrollToTopButton";
-import { usePageSEO, WORKSAUCE_SEO_PRESETS } from "@/shared/hooks/usePageSEO";
+import { useMetadata, WORKSAUCE_METADATA_PRESETS } from "@/shared/hooks/useMetadata";
 
 export const LandingPage = () => {
-  usePageSEO(WORKSAUCE_SEO_PRESETS.landing);
+  useMetadata(WORKSAUCE_METADATA_PRESETS.landing);
   return (
     <div className="min-h-screen">
       {/* 고정 헤더 */}

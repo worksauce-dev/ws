@@ -6,12 +6,12 @@ import { BusinessSection } from "../components/BusinessSection";
 import { NotificationsSection } from "../components/NotificationsSection";
 import type { SettingsTab } from "../types/settings.types";
 import {
-  usePageSEO,
-  WORKSAUCE_SEO_PRESETS,
-} from "@/shared/hooks/usePageSEO";
+  useMetadata,
+  WORKSAUCE_METADATA_PRESETS,
+} from "@/shared/hooks/useMetadata";
 
 export const SettingsPage = () => {
-  usePageSEO(WORKSAUCE_SEO_PRESETS.settings);
+  useMetadata(WORKSAUCE_METADATA_PRESETS.settings);
   const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
 
   const renderContent = () => {

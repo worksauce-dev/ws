@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-interface SEOConfig {
+interface MetadataConfig {
   title: string;
   description: string;
   keywords?: string;
@@ -12,16 +12,16 @@ interface SEOConfig {
   noindex?: boolean;
 }
 
-// 기본 SEO 설정 (워크소스 프로젝트용)
-const DEFAULT_SEO: Partial<SEOConfig> = {
+// 기본 메타데이터 설정 (워크소스 프로젝트용)
+const DEFAULT_METADATA: Partial<MetadataConfig> = {
   ogImage: "/images/og/default.png",
   twitterCard: "OG_orangebg.png",
   canonical: "https://worksauce.kr",
 };
 
-export const usePageSEO = (config: SEOConfig) => {
+export const useMetadata = (config: MetadataConfig) => {
   useEffect(() => {
-    const finalConfig = { ...DEFAULT_SEO, ...config };
+    const finalConfig = { ...DEFAULT_METADATA, ...config };
 
     // 기본 메타태그 설정
     document.title = finalConfig.title;
@@ -105,8 +105,8 @@ const updateLinkTag = (rel: string, href: string) => {
   element.setAttribute("href", href);
 };
 
-// 워크소스 전용 SEO 프리셋
-export const WORKSAUCE_SEO_PRESETS = {
+// 워크소스 전용 메타데이터 프리셋
+export const WORKSAUCE_METADATA_PRESETS = {
   landing: {
     title: "워크소스 | 지속가능한 인재 채용 관리",
     description:

@@ -27,14 +27,14 @@ import {
 } from "../utils/workTypeHelpers";
 import { getScoreColorClass } from "../utils/formatHelpers";
 import {
-  usePageSEO,
-  WORKSAUCE_SEO_PRESETS,
-} from "@/shared/hooks/usePageSEO";
+  useMetadata,
+  WORKSAUCE_METADATA_PRESETS,
+} from "@/shared/hooks/useMetadata";
 import { useResendEmail } from "../hooks/useResendEmail";
 import { Button } from "@/shared/components/ui/Button";
 
 export const GroupPage = () => {
-  usePageSEO(WORKSAUCE_SEO_PRESETS.groupDetail);
+  useMetadata(WORKSAUCE_METADATA_PRESETS.groupDetail);
   const { groupId } = useParams<{ groupId: string }>();
   const navigate = useNavigate();
 

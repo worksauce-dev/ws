@@ -26,14 +26,14 @@ import { OnboardingTour } from "../components/OnboardingTour";
 import { ExtendDeadlineModal } from "../components/ExtendDeadlineModal";
 import { GROUP_STATUS_FILTER_OPTIONS } from "../constants/groupStyles";
 import {
-  usePageSEO,
-  WORKSAUCE_SEO_PRESETS,
-} from "@/shared/hooks/usePageSEO";
+  useMetadata,
+  WORKSAUCE_METADATA_PRESETS,
+} from "@/shared/hooks/useMetadata";
 
 type ViewMode = "grid" | "calendar";
 
 export const DashboardPage = () => {
-  usePageSEO(WORKSAUCE_SEO_PRESETS.dashboard);
+  useMetadata(WORKSAUCE_METADATA_PRESETS.dashboard);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const { isAuthenticated } = useUser();
 

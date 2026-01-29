@@ -17,12 +17,12 @@ import { ApplicantManager } from "@/features/groups/components/ApplicantManager"
 import { CreateGroupLoadingModal } from "@/features/groups/components/CreateGroupLoadingModal";
 import type { CreateTeamRequest } from "../types/team.types";
 import {
-  usePageSEO,
-  WORKSAUCE_SEO_PRESETS,
-} from "@/shared/hooks/usePageSEO";
+  useMetadata,
+  WORKSAUCE_METADATA_PRESETS,
+} from "@/shared/hooks/useMetadata";
 
 export const CreateTeamPage = () => {
-  usePageSEO(WORKSAUCE_SEO_PRESETS.createTeam);
+  useMetadata(WORKSAUCE_METADATA_PRESETS.createTeam);
   const navigate = useNavigate();
   const { userId, isAuthenticated } = useUser();
   const { showToast } = useToast();

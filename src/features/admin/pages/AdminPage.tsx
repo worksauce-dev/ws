@@ -13,12 +13,12 @@ import {
 import { useSurveys } from "../hooks/useSurveys";
 import { useAllBusinessVerifications } from "../hooks/useBusinessVerifications";
 import {
-  usePageSEO,
-  WORKSAUCE_SEO_PRESETS,
-} from "@/shared/hooks/usePageSEO";
+  useMetadata,
+  WORKSAUCE_METADATA_PRESETS,
+} from "@/shared/hooks/useMetadata";
 
 export const AdminPage = () => {
-  usePageSEO(WORKSAUCE_SEO_PRESETS.admin);
+  useMetadata(WORKSAUCE_METADATA_PRESETS.admin);
   const { isAdmin, isLoading } = useUser();
   const { data: surveys } = useSurveys();
   const { data: verifications } = useAllBusinessVerifications();

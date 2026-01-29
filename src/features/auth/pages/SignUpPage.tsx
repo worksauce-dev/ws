@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "@/shared/contexts/useAuth";
-import { usePageSEO, WORKSAUCE_SEO_PRESETS } from "@/shared/hooks/usePageSEO";
+import { useMetadata, WORKSAUCE_METADATA_PRESETS } from "@/shared/hooks/useMetadata";
 import { SignupFlow } from "@/features/auth/components/SignUpFlow";
 
 export const SignUpPage = () => {
@@ -10,7 +10,7 @@ export const SignUpPage = () => {
   const navigate = useNavigate();
 
   // SEO 설정
-  usePageSEO(WORKSAUCE_SEO_PRESETS.signup);
+  useMetadata(WORKSAUCE_METADATA_PRESETS.signup);
 
   // 이미 로그인된 경우 리다이렉트
   useEffect(() => {

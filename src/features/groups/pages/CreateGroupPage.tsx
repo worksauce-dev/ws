@@ -21,12 +21,12 @@ import { useGroupFormValidation } from "../hooks/useGroupFormValidation";
 import { buildCreateGroupRequest } from "../utils/buildCreateGroupRequest";
 import { useUser } from "@/shared/hooks/useUser";
 import {
-  usePageSEO,
-  WORKSAUCE_SEO_PRESETS,
-} from "@/shared/hooks/usePageSEO";
+  useMetadata,
+  WORKSAUCE_METADATA_PRESETS,
+} from "@/shared/hooks/useMetadata";
 
 export const CreateGroupPage = () => {
-  usePageSEO(WORKSAUCE_SEO_PRESETS.createGroup);
+  useMetadata(WORKSAUCE_METADATA_PRESETS.createGroup);
   const navigate = useNavigate();
   const { userId, isAuthenticated } = useUser();
 

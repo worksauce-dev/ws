@@ -32,12 +32,12 @@ import {
 import { DeletedResourceNotice } from "@/shared/components/DeletedResourceNotice";
 import type { ApplicantStatus } from "@/shared/types/database.types";
 import {
-  usePageSEO,
-  WORKSAUCE_SEO_PRESETS,
-} from "@/shared/hooks/usePageSEO";
+  useMetadata,
+  WORKSAUCE_METADATA_PRESETS,
+} from "@/shared/hooks/useMetadata";
 
 export const ApplicantDetailPage = () => {
-  usePageSEO(WORKSAUCE_SEO_PRESETS.applicantDetail);
+  useMetadata(WORKSAUCE_METADATA_PRESETS.applicantDetail);
   const { groupId, applicantId } = useParams<{
     groupId: string;
     applicantId: string;

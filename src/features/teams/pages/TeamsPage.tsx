@@ -18,12 +18,12 @@ import { TeamDetailDrawer } from "../components/TeamDetailDrawer";
 import { CreateGroupLoadingModal } from "@/features/groups/components/CreateGroupLoadingModal";
 import { MdAdd, MdPeople } from "react-icons/md";
 import {
-  usePageSEO,
-  WORKSAUCE_SEO_PRESETS,
-} from "@/shared/hooks/usePageSEO";
+  useMetadata,
+  WORKSAUCE_METADATA_PRESETS,
+} from "@/shared/hooks/useMetadata";
 
 export const TeamsPage = () => {
-  usePageSEO(WORKSAUCE_SEO_PRESETS.teams);
+  useMetadata(WORKSAUCE_METADATA_PRESETS.teams);
   const { userId, isAuthenticated } = useUser();
 
   // 모달 관리 훅
