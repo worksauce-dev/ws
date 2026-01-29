@@ -4,8 +4,8 @@ import { Checkbox } from "@/shared/components/ui/Checkbox";
 import type { SignupStepProps } from "@/features/auth/types/auth.types";
 
 export const AgreementStep = ({
-  onNext,
   onPrev,
+  onSubmit,
   formData,
   setFormData,
 }: SignupStepProps) => {
@@ -26,12 +26,13 @@ export const AgreementStep = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSignup = async () => {
+  const handleSubmit = async () => {
     if (!validateAgreements()) return;
+    if (!onSubmit) return;
 
     setIsSubmitting(true);
     try {
-      await onNext();
+      await onSubmit();
     } finally {
       setIsSubmitting(false);
     }
@@ -127,7 +128,7 @@ export const AgreementStep = ({
           이전
         </Button>
         <Button
-          onClick={handleSignup}
+          onClick={handleSubmit}
           variant="primary"
           className="flex-1"
           isLoading={isSubmitting}

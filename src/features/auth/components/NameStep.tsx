@@ -3,6 +3,10 @@ import { MdEmail } from "react-icons/md";
 import { Button } from "@/shared/components/ui/Button";
 import { Input } from "@/shared/components/ui/Input";
 import type { SignupStepProps } from "@/features/auth/types/auth.types";
+import {
+  MIN_NAME_LENGTH,
+  MAX_NAME_LENGTH,
+} from "@/features/auth/constants/auth.constants";
 
 export const NameStep = ({
   onNext,
@@ -16,15 +20,15 @@ export const NameStep = ({
       setErrors(prev => ({ ...prev, name: "이름을 입력해주세요" }));
       return false;
     }
-    if (name.trim().length < 2) {
+    if (name.trim().length < MIN_NAME_LENGTH) {
       setErrors(prev => ({
         ...prev,
-        name: "이름은 최소 2자 이상 입력해주세요",
+        name: `이름은 최소 ${MIN_NAME_LENGTH}자 이상 입력해주세요`,
       }));
       return false;
     }
-    if (name.trim().length > 50) {
-      setErrors(prev => ({ ...prev, name: "이름은 50자 이하로 입력해주세요" }));
+    if (name.trim().length > MAX_NAME_LENGTH) {
+      setErrors(prev => ({ ...prev, name: `이름은 ${MAX_NAME_LENGTH}자 이하로 입력해주세요` }));
       return false;
     }
     setErrors(prev => ({ ...prev, name: "" }));
@@ -48,18 +52,31 @@ export const NameStep = ({
     [setFormData, errors.name]
   );
 
+  // 동적 인사말 메시지
+  const greetingMessage = useMemo(
+    () =>
+      formData.name.trim()
+        ? `안녕하세요 ${formData.name.trim()}님! 👋`
+        : "안녕하세요! 👋",
+    [formData.name]
+  );
+
+  // Enter 키 핸들러
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Enter" && !errors.name && formData.name.trim()) {
+        handleNext();
+      }
+    },
+    [handleNext, errors.name, formData.name]
+  );
+
   return (
     <div className="space-y-6">
       {/* 동적 인사말 */}
       <div className="text-center">
         <h1 className="text-xl font-semibold text-neutral-900 mb-2 transition-all duration-500 ease-in-out">
-          {useMemo(
-            () =>
-              formData.name.trim()
-                ? `안녕하세요 ${formData.name.trim()}님! 👋`
-                : "안녕하세요! 👋",
-            [formData.name]
-          )}
+          {greetingMessage}
         </h1>
         <p className="text-neutral-600 text-sm">
           워크소스에서 사용할 이름을 입력해주세요
@@ -74,17 +91,10 @@ export const NameStep = ({
           value={formData.name}
           onChange={e => handleNameChange(e.target.value)}
           error={errors.name}
-          maxLength={50}
+          maxLength={MAX_NAME_LENGTH}
           className="text-center text-lg font-medium py-4 border-2 border-neutral-200 focus:border-primary-500 transition-colors duration-200"
           autoFocus
-          onKeyDown={useCallback(
-            (e: React.KeyboardEvent) => {
-              if (e.key === "Enter" && !errors.name && formData.name.trim()) {
-                handleNext();
-              }
-            },
-            [handleNext, errors.name, formData.name]
-          )}
+          onKeyDown={handleKeyDown}
         />
       </div>
       {/* 개선된 이름 노출 안내 - 정보 제공 톤으로 변경 */}
@@ -135,7 +145,7 @@ export const NameStep = ({
       <Button
         onClick={handleNext}
         variant="primary"
-        disabled={!formData.name.trim() || formData.name.trim().length < 2 || !!errors.name}
+        disabled={!formData.name.trim() || formData.name.trim().length < MIN_NAME_LENGTH || !!errors.name}
         className="w-full"
       >
         다음 단계로 →

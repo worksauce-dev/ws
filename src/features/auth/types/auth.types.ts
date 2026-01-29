@@ -10,6 +10,7 @@ export interface SignupFormData {
 export interface SignupStepProps {
   onNext: () => void;
   onPrev?: () => void;
+  onSubmit?: () => Promise<void>;
   formData: SignupFormData;
   setFormData: (data: Partial<SignupFormData>) => void;
 }

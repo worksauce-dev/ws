@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { MdCheckCircle } from "react-icons/md";
 import { Button } from "@/shared/components/ui/Button";
 import { Input } from "@/shared/components/ui/Input";
-import { supabase } from "@/shared/lib/supabase";
 import type { SignupStepProps } from "@/features/auth/types/auth.types";
+import { useEmailVerification } from "@/features/auth/hooks/useEmailVerification";
+import { VERIFICATION_CODE_LENGTH } from "@/features/auth/constants/auth.constants";
 
 export const EmailStep = ({
   onNext,
@@ -11,43 +12,19 @@ export const EmailStep = ({
   formData,
   setFormData,
 }: SignupStepProps) => {
-  const [isVerificationSent, setIsVerificationSent] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [timeLeft, setTimeLeft] = useState(0); // 남은 시간 (초)
-  const [canResend, setCanResend] = useState(true);
-  const [isSending, setIsSending] = useState(false); // 이메일 발송 중
-  const [isVerifying, setIsVerifying] = useState(false); // 코드 검증 중
 
-  // 시간 포맷팅 함수 (MM:SS)
-  const formatTime = useCallback((seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-  }, []);
-
-  // 타이머 효과
-  useEffect(() => {
-    let intervalId: NodeJS.Timeout;
-
-    if (timeLeft > 0) {
-      intervalId = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            setCanResend(true);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-    };
-  }, [timeLeft]);
+  const {
+    isVerificationSent,
+    timeLeft,
+    canResend,
+    isSending,
+    isVerifying,
+    sendVerification,
+    verifyCode,
+    formatTime,
+  } = useEmailVerification();
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -65,86 +42,23 @@ export const EmailStep = ({
 
   const handleSendVerification = async () => {
     if (!validateEmail(formData.email)) return;
-    if (isSending) return; // 중복 요청 방지
 
-    setIsSending(true);
-
-    try {
-      // Supabase Edge Function을 통한 인증 코드 발송
-      const { data, error } = await supabase.functions.invoke('send-verification-email', {
-        body: {
-          email: formData.email,
-          type: 'signup_verification'
-        }
-      });
-
-      if (error) {
-        console.error('Error sending verification email:', error);
-        console.error('Error details:', error.message, error.status, error.statusText);
-
-        // Try to get more detailed error from response
-        if (data && typeof data === 'object' && 'error' in data) {
-          console.error('Function response error:', data.error);
-          setErrors({ email: `발송 실패: ${data.error}` });
-        } else {
-          setErrors({ email: "인증 이메일 발송에 실패했습니다. 다시 시도해주세요." });
-        }
-        return;
-      }
-
-      setIsVerificationSent(true);
-      setTimeLeft(600); // 10분 = 600초
-      setCanResend(false);
-      setVerificationCode(""); // 재발송 시 코드 입력 초기화
-      setErrors({}); // 에러 초기화
-    } catch (error) {
-      console.error('Network error:', error);
-      setErrors({ email: "네트워크 오류가 발생했습니다. 다시 시도해주세요." });
-    } finally {
-      setIsSending(false);
+    const result = await sendVerification(formData.email);
+    if (!result.success && result.error) {
+      setErrors({ email: result.error });
+    } else {
+      setVerificationCode("");
+      setErrors({});
     }
   };
 
   const handleVerifyCode = async () => {
-    if (!verificationCode) {
-      setErrors({ code: "인증 코드를 입력해주세요" });
-      return;
-    }
-
-    if (verificationCode.length !== 6) {
-      setErrors({ code: "6자리 인증 코드를 입력해주세요" });
-      return;
-    }
-
-    if (isVerifying) return; // 중복 요청 방지
-    setIsVerifying(true);
-
-    try {
-      // Supabase Edge Function을 통한 인증 코드 확인
-      const { data, error } = await supabase.functions.invoke('verify-email-code', {
-        body: {
-          email: formData.email,
-          code: verificationCode
-        }
-      });
-
-      if (error || !data?.verified) {
-        // 기술적 에러 메시지 대신 사용자 친화적 메시지 사용
-        const userFriendlyMessage = "인증 코드가 올바르지 않거나 만료되었습니다. 다시 확인해주세요.";
-        setErrors({
-          code: userFriendlyMessage
-        });
-        return;
-      }
-
-      // 인증 성공
+    const result = await verifyCode(formData.email, verificationCode);
+    if (!result.success && result.error) {
+      setErrors({ code: result.error });
+    } else {
       setErrors({});
       onNext();
-    } catch (error) {
-      console.error('Verification error:', error);
-      setErrors({ code: "인증 코드 확인 중 오류가 발생했습니다. 다시 시도해주세요." });
-    } finally {
-      setIsVerifying(false);
     }
   };
 
@@ -207,16 +121,14 @@ export const EmailStep = ({
               placeholder="인증 코드 6자리를 입력하세요"
               value={verificationCode}
               onChange={e => {
-                // 숫자만 입력 허용
                 const value = e.target.value.replace(/\D/g, '');
                 setVerificationCode(value);
-                // 에러 초기화
                 if (errors.code) {
                   setErrors(prev => ({ ...prev, code: "" }));
                 }
               }}
               error={errors.code}
-              maxLength={6}
+              maxLength={VERIFICATION_CODE_LENGTH}
               disabled={timeLeft === 0}
             />
             <div className="flex justify-between items-center mt-2">

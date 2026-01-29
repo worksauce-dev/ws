@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "@/shared/contexts/useAuth";
 import { usePageSEO, WORKSAUCE_SEO_PRESETS } from "@/shared/hooks/usePageSEO";
-import { SignupFlow } from "../components/auth/SignUpFlow";
+import { SignupFlow } from "@/features/auth/components/SignUpFlow";
 
 export const SignUpPage = () => {
   const { user, loading } = useAuth();
@@ -21,7 +21,7 @@ export const SignUpPage = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="spinner h-8 w-8 text-primary-500" />
       </div>
     );

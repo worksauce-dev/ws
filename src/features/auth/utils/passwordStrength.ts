@@ -1,4 +1,12 @@
 import type { PasswordStrength } from "@/features/auth/types/password.types";
+import {
+  MIN_PASSWORD_LENGTH,
+  MIN_PASSWORD_STRENGTH_SCORE,
+  STRONG_PASSWORD_THRESHOLD,
+  MAX_PASSWORD_STRENGTH_SCORE,
+  PASSWORD_LENGTH_BONUS_THRESHOLD_1,
+  PASSWORD_LENGTH_BONUS_THRESHOLD_2,
+} from "@/features/auth/constants/auth.constants";
 
 /**
  * 비밀번호 강도를 계산하는 유틸리티 함수
@@ -19,7 +27,7 @@ export function calculatePasswordStrength(password: string): PasswordStrength {
   }
 
   const checks = {
-    length: password.length >= 8,
+    length: password.length >= MIN_PASSWORD_LENGTH,
     lowercase: /[a-z]/.test(password),
     uppercase: /[A-Z]/.test(password),
     number: /[0-9]/.test(password),
@@ -35,17 +43,17 @@ export function calculatePasswordStrength(password: string): PasswordStrength {
   });
 
   // 길이에 따른 추가 보너스 점수
-  if (password.length >= 12) score += 0.5;
-  if (password.length >= 16) score += 0.5;
+  if (password.length >= PASSWORD_LENGTH_BONUS_THRESHOLD_1) score += 0.5;
+  if (password.length >= PASSWORD_LENGTH_BONUS_THRESHOLD_2) score += 0.5;
 
   // 점수를 5점 만점으로 제한
-  score = Math.min(score, 5);
+  score = Math.min(score, MAX_PASSWORD_STRENGTH_SCORE);
 
   // 강도 등급 결정
   let strength: "weak" | "medium" | "strong";
-  if (score < 3) {
+  if (score < MIN_PASSWORD_STRENGTH_SCORE) {
     strength = "weak";
-  } else if (score < 4) {
+  } else if (score < STRONG_PASSWORD_THRESHOLD) {
     strength = "medium";
   } else {
     strength = "strong";
@@ -67,7 +75,7 @@ export function isPasswordValid(strength: PasswordStrength): boolean {
     strength.checks.lowercase &&
     strength.checks.uppercase &&
     strength.checks.number &&
-    strength.score >= 3
+    strength.score >= MIN_PASSWORD_STRENGTH_SCORE
   );
 }
 
@@ -78,7 +86,7 @@ export function getPasswordSuggestions(strength: PasswordStrength): string[] {
   const suggestions: string[] = [];
 
   if (!strength.checks.length) {
-    suggestions.push("최소 8자 이상으로 입력해주세요");
+    suggestions.push(`최소 ${MIN_PASSWORD_LENGTH}자 이상으로 입력해주세요`);
   }
 
   if (!strength.checks.lowercase) {

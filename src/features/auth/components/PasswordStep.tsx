@@ -2,9 +2,13 @@ import { useState, useMemo } from "react";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { Button } from "@/shared/components/ui/Button";
 import { Input } from "@/shared/components/ui/Input";
-import { PasswordStrengthIndicator } from "@/features/auth/components/ui/PasswordStrengthIndicator";
-import { calculatePasswordStrength } from "@/features/auth/utils/calculatePasswordStrength";
+import { PasswordStrengthIndicator } from "@/features/auth/components/PasswordStrengthIndicator";
+import { calculatePasswordStrength } from "@/features/auth/utils/passwordStrength";
 import type { SignupStepProps } from "@/features/auth/types/auth.types";
+import {
+  MIN_PASSWORD_LENGTH,
+  MIN_PASSWORD_STRENGTH_SCORE,
+} from "@/features/auth/constants/auth.constants";
 
 export const PasswordStep = ({
   onNext,
@@ -25,15 +29,15 @@ export const PasswordStep = ({
 
     if (!formData.password) {
       newErrors.password = "비밀번호를 입력해주세요";
-    } else if (formData.password.length < 8) {
-      newErrors.password = "비밀번호는 8자 이상이어야 합니다";
+    } else if (formData.password.length < MIN_PASSWORD_LENGTH) {
+      newErrors.password = `비밀번호는 ${MIN_PASSWORD_LENGTH}자 이상이어야 합니다`;
     } else if (!passwordStrength.checks.uppercase) {
       newErrors.password = "대문자를 포함해주세요";
     } else if (!passwordStrength.checks.lowercase) {
       newErrors.password = "소문자를 포함해주세요";
     } else if (!passwordStrength.checks.number) {
       newErrors.password = "숫자를 포함해주세요";
-    } else if (passwordStrength.score < 3) {
+    } else if (passwordStrength.score < MIN_PASSWORD_STRENGTH_SCORE) {
       newErrors.password = "더 강한 비밀번호를 사용해주세요";
     }
 
@@ -56,10 +60,10 @@ export const PasswordStep = ({
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-xl font-semibold text-neutral-900 mb-2">
+        <h2 className="mb-2 text-xl font-semibold text-neutral-900">
           비밀번호 설정
         </h2>
-        <p className="text-neutral-600 text-sm">
+        <p className="text-sm text-neutral-600">
           안전한 비밀번호로 계정을 보호하세요
         </p>
       </div>
@@ -80,9 +84,9 @@ export const PasswordStep = ({
               onClick={() => setShowPassword(!showPassword)}
             >
               {showPassword ? (
-                <MdVisibilityOff className="w-5 h-5" />
+                <MdVisibilityOff className="h-5 w-5" />
               ) : (
-                <MdVisibility className="w-5 h-5" />
+                <MdVisibility className="h-5 w-5" />
               )}
             </button>
           </div>
@@ -108,9 +112,9 @@ export const PasswordStep = ({
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
           >
             {showConfirmPassword ? (
-              <MdVisibilityOff className="w-5 h-5" />
+              <MdVisibilityOff className="h-5 w-5" />
             ) : (
-              <MdVisibility className="w-5 h-5" />
+              <MdVisibility className="h-5 w-5" />
             )}
           </button>
         </div>
