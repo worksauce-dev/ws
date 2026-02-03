@@ -54,6 +54,11 @@ const SettingsPage = lazy(() =>
     default: module.SettingsPage,
   }))
 );
+const CreditPage = lazy(() =>
+  import("@/features/credit/pages/CreditPage").then(module => ({
+    default: module.CreditPage,
+  }))
+);
 const SauceTestPage = lazy(() =>
   import("@/features/sauceTest/page/SauceTestPage").then(module => ({
     default: module.SauceTestPage,
@@ -206,6 +211,14 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <SettingsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/dashboard/credit"
+                    element={
+                      <ProtectedRoute>
+                        <CreditPage />
                       </ProtectedRoute>
                     }
                   />
