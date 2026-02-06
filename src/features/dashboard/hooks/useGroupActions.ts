@@ -109,13 +109,9 @@ export const useGroupActions = (groups: Group[]) => {
     }
   };
 
-  // 크레딧 클릭 처리
+  // 크레딧 클릭 처리 (크레딧 관리 페이지로 이동)
   const handleCreditClick = () => {
-    showToast(
-      "info",
-      "크레딧 충전",
-      "크레딧 충전 기능은 곧 제공될 예정입니다."
-    );
+    navigate("/dashboard/credit");
   };
 
   // 마감일 변경 핸들러

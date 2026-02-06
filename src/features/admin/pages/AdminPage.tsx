@@ -11,6 +11,7 @@ import {
   MdBusiness,
 } from "react-icons/md";
 import { useSurveys } from "../hooks/useSurveys";
+import { useFeedbackSurveys } from "../hooks/useFeedbackSurveys";
 import { useAllBusinessVerifications } from "../hooks/useBusinessVerifications";
 import {
   useMetadata,
@@ -21,6 +22,7 @@ export const AdminPage = () => {
   useMetadata(WORKSAUCE_METADATA_PRESETS.admin);
   const { isAdmin, isLoading } = useUser();
   const { data: surveys } = useSurveys();
+  const { data: feedbackSurveys } = useFeedbackSurveys();
   const { data: verifications } = useAllBusinessVerifications();
   const navigate = useNavigate();
 
@@ -45,6 +47,12 @@ export const AdminPage = () => {
       (surveysCount || 1)
     : 0;
 
+  const feedbackSurveysCount = feedbackSurveys?.length || 0;
+  const avgNps = feedbackSurveys
+    ? feedbackSurveys.reduce((sum, s) => sum + (s.nps_score || 0), 0) /
+      (feedbackSurveysCount || 1)
+    : 0;
+
   const verificationsCount = verifications?.length || 0;
   const pendingVerifications =
     verifications?.filter(v => v.status === "pending").length || 0;
@@ -52,8 +60,8 @@ export const AdminPage = () => {
   const adminCards = [
     {
       id: "surveys",
-      title: "설문조사 관리",
-      description: "미니 테스트 설문조사 응답 현황 및 관리",
+      title: "미니테스트 설문 관리",
+      description: "미니 테스트 완료 후 수집된 설문 응답 관리",
       icon: MdQuiz,
       color: "bg-blue-500",
       stats: [
@@ -62,6 +70,19 @@ export const AdminPage = () => {
       ],
       enabled: true,
       path: "/admin/surveys",
+    },
+    {
+      id: "feedback-surveys",
+      title: "서비스 피드백 관리",
+      description: "크레딧 페이지에서 수집된 서비스 피드백 설문 관리",
+      icon: MdAssessment,
+      color: "bg-violet-500",
+      stats: [
+        { label: "총 응답", value: feedbackSurveysCount },
+        { label: "추천 지수", value: avgNps.toFixed(1) },
+      ],
+      enabled: true,
+      path: "/admin/feedback-surveys",
     },
     {
       id: "business-verifications",
@@ -204,7 +225,11 @@ export const AdminPage = () => {
           <ul className="space-y-2 text-sm text-neutral-700">
             <li className="flex items-start gap-2">
               <span className="text-green-600 mt-0.5">✓</span>
-              <span>설문조사 관리 시스템 구축 완료</span>
+              <span>미니테스트 설문 관리 시스템 구축 완료</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-green-600 mt-0.5">✓</span>
+              <span>서비스 피드백 관리 시스템 구축 완료</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-green-600 mt-0.5">✓</span>

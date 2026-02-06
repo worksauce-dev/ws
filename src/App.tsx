@@ -86,6 +86,13 @@ const BusinessVerificationsManagementPage = lazy(() =>
     default: module.BusinessVerificationsManagementPage,
   }))
 );
+const FeedbackSurveysManagementPage = lazy(() =>
+  import(
+    "@/features/admin/pages/FeedbackSurveysManagementPage"
+  ).then(module => ({
+    default: module.FeedbackSurveysManagementPage,
+  }))
+);
 // 팀 관리 기능 - MVP 범위에서 제외 (Phase 5 이후 재활성화 예정)
 // const TeamsPage = lazy(() =>
 //   import("@/features/teams/pages/TeamsPage").then(module => ({
@@ -252,6 +259,14 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <BusinessVerificationsManagementPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/feedback-surveys"
+                    element={
+                      <ProtectedRoute>
+                        <FeedbackSurveysManagementPage />
                       </ProtectedRoute>
                     }
                   />
